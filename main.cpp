@@ -27,8 +27,6 @@ CGraph::CGraph(list<CEdge*> listEdge,int node_num,int edge_num){
 	numEdge=edge_num*2;
 }
 
-
-
 int main()
 {
 	list<CEdge*> listEdge;
@@ -46,9 +44,21 @@ int main()
 	}
 	CGraph g(listEdge,node_num,edge_num);
 	g.p4();
-	int s=1; // begin
-	int ds=14;// end
-	g.DijkstraAlg(g,s,ds);
+	CReq* r1=new CReq(0,0,0);
+	g.r.push_back(r1);
+	ifstream flow_test("d:\\a\\CRANA_Voting\\req6.txt");
+	for(int i=1;i<=K;i++)
+	{
+		int src,dst,bw;
+		flow_test>>src>>dst>>bw;
+		CReq* r2=new CReq(src,dst,bw);
+		g.r.push_back(r2);
+	}
+	for(int i=1;i<K;i++)
+	{
+		g.DijkstraAlg(i);
+	}
+	
 	getchar();
 	return 0;
 }

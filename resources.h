@@ -19,6 +19,14 @@ public:
 	}
 };
 
+class CReq {
+public:
+	int src;
+	int dst;
+	int bw;
+	CReq(int a,int b, int c){src=a;dst=b;bw=c;}
+};
+
 class CVertex {
 public:
 	int d;
@@ -31,7 +39,7 @@ public:
 class CPath {
 public:
 	int size;//the num of nodes
-	list<CVertex*> path;
+	list<int> path;
 	CPath(){size=0;}
 	~CPath();
 };
@@ -42,6 +50,10 @@ private:
 	int numEdge;
 	list<CEdge*> IncidentList;
 public:
+	CGraph(char* inputFile);
+	CGraph(list<CEdge*> listEdge,int node_num,int edge_num);
+	CGraph(CGraph &);
+
 	set<int> S;
 	set<int> V;
 	int d[N+10];
@@ -49,18 +61,19 @@ public:
 
 	map<int,int> degree_vertex;
 	multimap<int,int> degree_vertex2;
-
 	map<int,list<int>> adjlist;
-	
 	vector<vector<CEdge*>> adjmatrix;
-	
 	map<int,list<CEdge*>> nelist;
-	
 	map<int,CVertex*> mapVID_Vertex;
 
-	CGraph(char* inputFile);
-	CGraph(list<CEdge*> listEdge,int node_num,int edge_num);
-	CGraph(CGraph &);
+	int link_bw[K][N+1][N+1];
+	int bw[K];
+	vector<CReq*> r;
+
+	void single_flow_propose(int k);
+	void single_flow_implement(CPath* p, int k);
+	int single_flow_evaluate(int k);
+
 	int getNumVertex(){
 		return numVertex;
 	}
@@ -86,7 +99,6 @@ public:
 		for(;it2!=degree_vertex2.begin();it2--)
 			printf("%d,%d\n",it2->second,it2->first);
 	}
-
 	void p2(){
 		list<CEdge*>::iterator it,iend;
 		list<int>::iterator it2,iend2;
@@ -104,8 +116,6 @@ public:
 		for(;it2!=iend2;it2++)
 			printf("%d ",*it2);
 	}
-
-	
 	void p3(){
 		list<CEdge*>::iterator it,iend;
 		iend=IncidentList.end();
@@ -127,7 +137,6 @@ public:
 		printf("project 3:\n");
 		printf("%d,%d",adjmatrix[2][3]->getTail(),adjmatrix[2][3]->getHead());
 	}
-
 	void p4(){
 		list<CEdge*>::iterator it,iend;
 		iend=IncidentList.end();
@@ -136,17 +145,21 @@ public:
 		}
 	}
 	
-	void Update(int i){
+
+
+	void Update(int i,int k){
 		list<CEdge*>::iterator it,iend;
 		it=nelist[i].begin();
 		iend=nelist[i].end();
-		for(;it!=iend;it++)
+		for(;it!=iend;it++){
+			if(((*it)->getCap()-link_bw[k][i][(*it)->getHead()])<bw[k]) continue;
 			if((*it)->getWeight()+d[i]<d[(*it)->getHead()]){
 				d[(*it)->getHead()]=(*it)->getWeight()+d[i];
 				p[(*it)->getHead()]=i;
 				mapVID_Vertex[(*it)->getHead()]->d=(*it)->getWeight()+d[i];
 				mapVID_Vertex[(*it)->getHead()]->p=i;
 			}
+		}
 	}
 
 	int FindMin(){
@@ -160,49 +173,53 @@ public:
 		return loc;
 	}
 
-	void make_CPath(int s,int d){
-		printf("project2_1, the path from %d to %d is \n",s,d);
+	CPath* make_CPath(int s,int d){
 		CPath* pa = new CPath();
 		while(1)
 		{
-			pa->path.push_front(mapVID_Vertex[d]);
+			pa->path.push_front(d);
 			pa->size++;
 			if(p[d]==-1) break;
 			d=p[d];
 		}
-		list<CVertex*>::iterator it,iend;
-		it=pa->path.begin();
-		iend=pa->path.end();
-		for(;it!=iend;it++)
-			printf("%d ",(*it)->ID);
-		printf("\n");
+		return pa;
 	}
 
 	//用dijkstra计算单源单宿最短路
-	void DijkstraAlg(CGraph &g,int s, int ds){
+	void DijkstraAlg(int k){
 		int i,j;
+		int src,dst;
+		src=r[k]->src;
+		dst=r[k]->dst;
+		S.clear();
+		V.clear();
+		for(i=1;i<=numVertex;i++)
+			{d[i]=INF;p[i]=-2;}
 		for(i=1;i<=numVertex;i++)
 		{
 			V.insert(i);
 			CVertex* node = new CVertex(i);
 			mapVID_Vertex[i]=node;
-		}
-		for(i=1;i<=numVertex;i++)
-			{d[i]=INF;p[i]=-2;}
-		S.insert(s);
-		V.erase(s);
-		d[s]=0;
-		p[s]=-1;
-		mapVID_Vertex[s]->d=0;
-		mapVID_Vertex[s]->p=-1;
-		Update(s);
+		}	
+		S.insert(src);
+		V.erase(src);
+		d[src]=0;
+		p[src]=-1;
+		mapVID_Vertex[src]->d=0;
+		mapVID_Vertex[src]->p=-1;
+		Update(src,k);
 		while (V.size()!=0){
 			j=FindMin();
-			if(j==ds) make_CPath(s,ds);
+			if(j==dst) {
+				CPath* p;
+				p=make_CPath(src,dst);
+				single_flow_implement(p,k);
+			}
 			S.insert(j);
 			V.erase(j);
-			Update(j);
+			Update(j,k);
 		}
-		printf("begin->end:%d\n",d[ds]);
+		printf("begin->end:%d\n",d[dst]);
 	}
+
 };

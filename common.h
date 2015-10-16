@@ -15,6 +15,7 @@ using namespace std;
 #include<time.h>
 #include<math.h>
 #define INF 10000
-#define M 5 // (the number of candidates)
-#define N 8 // (how many kinds of ranking)
+#define N 14 // nodes
+#define M 25 // edges
+#define K 10 // the number of flows
 #endif
