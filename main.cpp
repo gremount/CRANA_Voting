@@ -1,5 +1,6 @@
+#pragma once
 #include "resources.h"
-
+#include "single_flow.h"
 
 CEdge::CEdge(int a, int b, int c, int d){
 	tail=a;
@@ -25,6 +26,11 @@ CGraph::CGraph(list<CEdge*> listEdge,int node_num,int edge_num){
 	IncidentList=listEdge;
 	numVertex=node_num;
 	numEdge=edge_num*2;
+	for(int i=1;i<=K;i++)
+	{
+		CPath* p=new CPath();
+		path_record[i].push_back(p);
+	}
 }
 
 int main()
@@ -43,6 +49,7 @@ int main()
 		listEdge.push_back(e2);
 	}
 	CGraph g(listEdge,node_num,edge_num);
+	g.p3();
 	g.p4();
 	CReq* r1=new CReq(0,0,0);
 	g.r.push_back(r1);
@@ -54,11 +61,15 @@ int main()
 		CReq* r2=new CReq(src,dst,bw);
 		g.r.push_back(r2);
 	}
+
 	for(int i=1;i<K;i++)
 	{
 		g.DijkstraAlg(i);
 	}
-	
+
+	for(int i=1;i<K;i++)
+		g.single_flow_evaluate(i);
+
 	getchar();
 	return 0;
 }

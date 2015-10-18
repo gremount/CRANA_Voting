@@ -17,5 +17,5 @@ using namespace std;
 #define INF 10000
 #define N 14 // nodes
 #define M 25 // edges
-#define K 10 // the number of flows
+#define K 4 // the number of flows
 #endif

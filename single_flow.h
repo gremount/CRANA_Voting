@@ -10,7 +10,7 @@ void CGraph::single_flow_propose(int k){
 	bw=r[k]->bw;
 
 	//给主要流分配路径
-	DijkstraAlg(src,dst,bw);
+	DijkstraAlg(k);
 	//给剩余的流分配路径
     for(int i=1;i<=K;i++)
 	{
@@ -18,19 +18,23 @@ void CGraph::single_flow_propose(int k){
 		src=r[i]->src;
 		dst=r[i]->dst;
 		bw=r[i]->bw;
-		DijkstraAlg(src,dst,k);
+		DijkstraAlg(k);
 	}
 }
 
-int CGraph::single_flow_evaluate(int k){
-	list<CEdge*>::iterator it,iend;
-	iend=IncidentList.end();
-	int sum=0;
-	for(it=IncidentList.begin();it!=iend;it++)
+void CGraph::single_flow_evaluate(int k){
+	CPath* p;
+	for(int i=1;i<=K;i++)
 	{
-		sum+=(*it)->getWeight() * link_bw[k][(*it)->getTail()][(*it)->getHead()];
-	}
-	return sum;
+		if(i==k) p=path_record[i][1];
+		else if(i<k) p=path_record[i][k];
+		else p=path_record[i][k+1];
+		
+		list<int>::iterator it,iend;
+		iend=(p->path).end();
+		for(it=(p->path).begin();it!=iend;it++)
+			judge[k][i] = judge[k][i] + (adjmatrix[r[k]->src][*it]->getWeight())*bw[k];
+	} 
 }
 
 void CGraph::single_flow_implement(CPath* p,int k)

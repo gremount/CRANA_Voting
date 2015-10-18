@@ -1,4 +1,6 @@
+#pragma once
 #include "common.h"
+
 class CEdge{
 private:
 	int tail, head;
@@ -66,13 +68,15 @@ public:
 	map<int,list<CEdge*>> nelist;
 	map<int,CVertex*> mapVID_Vertex;
 
-	int link_bw[K][N+1][N+1];
-	int bw[K];
+	int link_bw[K+1][N+1][N+1];
+	int bw[K+1];
 	vector<CReq*> r;
+	vector<CPath*> path_record[K+1];
+	int judge[K+1][K+1];
 
 	void single_flow_propose(int k);
 	void single_flow_implement(CPath* p, int k);
-	int single_flow_evaluate(int k);
+	void single_flow_evaluate(int k);
 
 	int getNumVertex(){
 		return numVertex;
@@ -133,10 +137,9 @@ public:
 			//CEdge* e = new CEdge((*it)->getTail(),(*it)->getHead(),(*it)->getWeight(),(*it)->getCap());
 			adjmatrix[(*it)->getTail()][(*it)->getHead()] = *it ;
 		}
-		printf("\n");
-		printf("project 3:\n");
-		printf("%d,%d",adjmatrix[2][3]->getTail(),adjmatrix[2][3]->getHead());
+
 	}
+
 	void p4(){
 		list<CEdge*>::iterator it,iend;
 		iend=IncidentList.end();
@@ -173,7 +176,9 @@ public:
 		return loc;
 	}
 
-	CPath* make_CPath(int s,int d){
+	CPath* make_CPath(int k){
+		int d;
+		d=r[k]->dst;
 		CPath* pa = new CPath();
 		while(1)
 		{
@@ -182,6 +187,7 @@ public:
 			if(p[d]==-1) break;
 			d=p[d];
 		}
+		path_record[k].push_back(pa);
 		return pa;
 	}
 
@@ -212,7 +218,7 @@ public:
 			j=FindMin();
 			if(j==dst) {
 				CPath* p;
-				p=make_CPath(src,dst);
+				p=make_CPath(k);
 				single_flow_implement(p,k);
 			}
 			S.insert(j);
