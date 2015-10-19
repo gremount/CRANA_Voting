@@ -73,10 +73,13 @@ public:
 	vector<CReq*> r;
 	vector<vector<CPath*> > path_record;
 	int judge[K+1][K+1];
+	int judge_sum[K+1];
 
 	void single_flow_propose(int k);
-	void single_flow_implement(CPath* p, int k);
+	void single_flow_implement(CPath* p, int k,int k2);
 	void single_flow_evaluate(int k);
+
+	void cost_evaluate(int k);
 
 	int getNumVertex(){
 		return numVertex;
@@ -176,9 +179,9 @@ public:
 		return loc;
 	}
 
-	CPath* make_CPath(int k){
+	CPath* make_CPath(int k,int k2){
 		int d;
-		d=r[k]->dst;
+		d=r[k2]->dst;
 		CPath* pa = new CPath();
 		while(1)
 		{
@@ -223,8 +226,8 @@ public:
 			j=FindMin();
 			if(j==dst) {
 				CPath* p;
-				p=make_CPath(k);
-				single_flow_implement(p,k);
+				p=make_CPath(k,k2);
+				single_flow_implement(p,k,k2);
 			}
 			S.insert(j);
 			V.erase(j);

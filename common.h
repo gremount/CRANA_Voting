@@ -15,7 +15,7 @@ using namespace std;
 #include<time.h>
 #include<math.h>
 #define INF 10000
-#define N 5 // nodes
-#define M 6 // edges
-#define K 2 // the number of flows
+#define N 14 // nodes
+#define M 25 // edges
+#define K 7 // the number of flows
 #endif

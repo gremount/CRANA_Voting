@@ -24,12 +24,12 @@ void CGraph::single_flow_propose(int k){
 	}
 }
 
-void CGraph::single_flow_implement(CPath* p,int k)
+void CGraph::single_flow_implement(CPath* p,int k,int k2)
 {
 	// allocate bw  //
 	list<int>::iterator it2,end2;
 	end2 = (p->path).end();
-	int band=r[k]->bw;
+	int band=r[k2]->bw;
 	for(it2=(p->path).begin();it2!=end2;)
 	{	
 		int v1=(*it2);
@@ -63,4 +63,13 @@ void CGraph::single_flow_evaluate(int k){
 			past=*it;
 		}
 	}
+}
+void CGraph::cost_evaluate(int k){
+	list<CEdge*>::iterator it,iend;
+	iend=IncidentList.end();
+	for(it=IncidentList.begin();it!=iend;it++)
+	{
+		judge_sum[k]+=((*it)->getWeight())*link_bw[k][(*it)->getTail()][(*it)->getHead()];
+	}
+
 }

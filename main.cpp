@@ -44,7 +44,7 @@ int main()
 	list<CEdge*> listEdge;
 
 	//图的初始化
-	ifstream test("d:\\a\\CRANA_Voting\\graph1.txt");
+	ifstream test("d:\\a\\CRANA_Voting\\graph6.txt");
 	int node_num,edge_num;
 	int src,dst,weight,cap;
 	test>>node_num>>edge_num;
@@ -63,7 +63,7 @@ int main()
 	//需求记录
 	CReq* r1=new CReq(0,0,0);
 	g.r.push_back(r1);
-	ifstream flow_test("d:\\a\\CRANA_Voting\\req1.txt");
+	ifstream flow_test("d:\\a\\CRANA_Voting\\req6.txt");
 	for(int i=1;i<=K;i++)
 	{
 		int src,dst,bw;
@@ -84,15 +84,28 @@ int main()
 		for(int j=1;j<=K;j++)
 		g.judge[i][j]=0;
 	for(int i=1;i<=K;i++)
+		g.judge_sum[i]=0;
+	for(int i=1;i<=K;i++)
+	{
 		g.single_flow_evaluate(i);
+		g.cost_evaluate(i);
+	}
+
 	cout<<endl;
-	cout<<"************judge value**************"<<endl;
+	cout<<"************ single judge **************"<<endl;
 	for(int i=1;i<=K;i++)
 	{
 		cout<<"flow "<<i<<" 对所有方案的评价";
 		for(int j=1;j<=K;j++)
 			cout<<g.judge[i][j]<<" ";
 		cout<<endl;
+	}
+	cout<<endl;
+	cout<<"************ sum judge **************"<<endl;
+	
+	for(int i=1;i<=K;i++)
+	{	
+		cout<<"proposal "<<i<<" : "<<g.judge_sum[i]<<endl;
 	}
 	getchar();
 	return 0;
