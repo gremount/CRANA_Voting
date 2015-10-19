@@ -71,7 +71,7 @@ public:
 	int link_bw[K+1][N+1][N+1];
 	int bw[K+1];
 	vector<CReq*> r;
-	vector<CPath*> path_record[K+1];
+	vector<vector<CPath*> > path_record;
 	int judge[K+1][K+1];
 
 	void single_flow_propose(int k);
@@ -225,7 +225,7 @@ public:
 			V.erase(j);
 			Update(j,k);
 		}
-		printf("begin->end:%d\n",d[dst]);
+		printf("distance from begin to end:%d\n",d[dst]);
 	}
 
 };

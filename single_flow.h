@@ -32,9 +32,16 @@ void CGraph::single_flow_evaluate(int k){
 		
 		list<int>::iterator it,iend;
 		iend=(p->path).end();
+		int past;
+		past=r[k]->src;
 		for(it=(p->path).begin();it!=iend;it++)
-			judge[k][i] = judge[k][i] + (adjmatrix[r[k]->src][*it]->getWeight())*bw[k];
-	} 
+		{
+			if(*it==past){continue;}
+			cout<<past<<"   &&&&&   "<<(*it)<<endl;
+			judge[k][i] = judge[k][i] + (adjmatrix[past][*it]->getWeight())*bw[k];
+			past=*it;
+		}
+	}
 }
 
 void CGraph::single_flow_implement(CPath* p,int k)

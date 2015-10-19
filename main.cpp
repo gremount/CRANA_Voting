@@ -26,10 +26,12 @@ CGraph::CGraph(list<CEdge*> listEdge,int node_num,int edge_num){
 	IncidentList=listEdge;
 	numVertex=node_num;
 	numEdge=edge_num*2;
-	for(int i=1;i<=K;i++)
+	for(int i=0;i<=K;i++)
 	{
 		CPath* p=new CPath();
-		path_record[i].push_back(p);
+		vector<CPath*> vec;
+		vec.push_back(p);
+		path_record.push_back(vec);
 	}
 }
 
@@ -59,16 +61,25 @@ int main()
 		int src,dst,bw;
 		flow_test>>src>>dst>>bw;
 		CReq* r2=new CReq(src,dst,bw);
+		g.bw[i]=bw;
 		g.r.push_back(r2);
 	}
 
-	for(int i=1;i<K;i++)
+	for(int i=1;i<=K;i++)
 	{
 		g.DijkstraAlg(i);
+		for(int j=1;j<=K;j++)
+		{
+			if(i==j)continue;
+			g.DijkstraAlg(i);
+		}
 	}
-
-	for(int i=1;i<K;i++)
+	for(int i=1;i<=K;i++)
+		for(int j=1;j<=K;j++)
+		g.judge[i][j]=0;
+	for(int i=1;i<=K;i++)
 		g.single_flow_evaluate(i);
+
 
 	getchar();
 	return 0;
