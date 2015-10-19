@@ -150,12 +150,12 @@ public:
 	
 
 
-	void Update(int i,int k){
+	void Update(int i,int k,int k2){
 		list<CEdge*>::iterator it,iend;
 		it=nelist[i].begin();
 		iend=nelist[i].end();
 		for(;it!=iend;it++){
-			if(((*it)->getCap()-link_bw[k][i][(*it)->getHead()])<bw[k]) continue;
+			if(((*it)->getCap()-link_bw[k][(*it)->getTail()][(*it)->getHead()])<bw[k2]) continue;
 			if((*it)->getWeight()+d[i]<d[(*it)->getHead()]){
 				d[(*it)->getHead()]=(*it)->getWeight()+d[i];
 				p[(*it)->getHead()]=i;
@@ -187,16 +187,21 @@ public:
 			if(p[d]==-1) break;
 			d=p[d];
 		}
+		list<int>::iterator it,iend;
+		iend=pa->path.end();
+		for(it=pa->path.begin();it!=iend;it++)
+			cout<<*it<<" ";
+		cout<<endl;
 		path_record[k].push_back(pa);
 		return pa;
 	}
 
-	//用dijkstra计算单源单宿最短路
-	void DijkstraAlg(int k){
+	//用dijkstra计算单源单宿最短路,k表示提出方案的流，k2表示当前算路的流
+	void DijkstraAlg(int k,int k2){
 		int i,j;
 		int src,dst;
-		src=r[k]->src;
-		dst=r[k]->dst;
+		src=r[k2]->src;
+		dst=r[k2]->dst;
 		S.clear();
 		V.clear();
 		for(i=1;i<=numVertex;i++)
@@ -213,7 +218,7 @@ public:
 		p[src]=-1;
 		mapVID_Vertex[src]->d=0;
 		mapVID_Vertex[src]->p=-1;
-		Update(src,k);
+		Update(src,k,k2);
 		while (V.size()!=0){
 			j=FindMin();
 			if(j==dst) {
@@ -223,9 +228,9 @@ public:
 			}
 			S.insert(j);
 			V.erase(j);
-			Update(j,k);
+			Update(j,k,k2);
 		}
-		printf("distance from begin to end:%d\n",d[dst]);
+		printf("distance is %d\n",d[dst]);
 	}
 
 };

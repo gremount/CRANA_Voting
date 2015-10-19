@@ -27,6 +27,10 @@ CGraph::CGraph(list<CEdge*> listEdge,int node_num,int edge_num){
 	numVertex=node_num;
 	numEdge=edge_num*2;
 	for(int i=0;i<=K;i++)
+		for(int j=0;j<=N;j++)
+			for(int k=0;k<=N;k++)
+				link_bw[i][j][k]=0;
+	for(int i=0;i<=K;i++)
 	{
 		CPath* p=new CPath();
 		vector<CPath*> vec;
@@ -38,7 +42,9 @@ CGraph::CGraph(list<CEdge*> listEdge,int node_num,int edge_num){
 int main()
 {
 	list<CEdge*> listEdge;
-	ifstream test("d:\\a\\CRANA_Voting\\graph6.txt");
+
+	//图的初始化
+	ifstream test("d:\\a\\CRANA_Voting\\graph1.txt");
 	int node_num,edge_num;
 	int src,dst,weight,cap;
 	test>>node_num>>edge_num;
@@ -53,9 +59,11 @@ int main()
 	CGraph g(listEdge,node_num,edge_num);
 	g.p3();
 	g.p4();
+
+	//需求记录
 	CReq* r1=new CReq(0,0,0);
 	g.r.push_back(r1);
-	ifstream flow_test("d:\\a\\CRANA_Voting\\req6.txt");
+	ifstream flow_test("d:\\a\\CRANA_Voting\\req1.txt");
 	for(int i=1;i<=K;i++)
 	{
 		int src,dst,bw;
@@ -65,22 +73,27 @@ int main()
 		g.r.push_back(r2);
 	}
 
+	//提方案
 	for(int i=1;i<=K;i++)
 	{
-		g.DijkstraAlg(i);
-		for(int j=1;j<=K;j++)
-		{
-			if(i==j)continue;
-			g.DijkstraAlg(i);
-		}
+		g.single_flow_propose(i);
 	}
+
+	//评价
 	for(int i=1;i<=K;i++)
 		for(int j=1;j<=K;j++)
 		g.judge[i][j]=0;
 	for(int i=1;i<=K;i++)
 		g.single_flow_evaluate(i);
-
-
+	cout<<endl;
+	cout<<"************judge value**************"<<endl;
+	for(int i=1;i<=K;i++)
+	{
+		cout<<"flow "<<i<<" 对所有方案的评价";
+		for(int j=1;j<=K;j++)
+			cout<<g.judge[i][j]<<" ";
+		cout<<endl;
+	}
 	getchar();
 	return 0;
 }
