@@ -11,16 +11,39 @@ void CGraph::single_flow_propose(int k){
 	cout<<"****************************************"<<endl;
 	cout<<"flow "<<k<<" give this proposal "<<endl;
 
+	//洗牌算法，结果存在a[]
+	int a[K+2];
+    for(int i=1;i<=K;i++)
+       a[i]=i;
+    
+    int kk=0;
+    int temp=0;
+    int randnum;
+    
+    while(1)
+    {
+     if(kk>=K-1) break;
+     randnum=rand()%(K-kk)+kk+1;      
+     temp=a[kk+1];
+     a[kk+1]=a[randnum];
+     a[randnum]=temp;
+     kk++;
+    }
+	cout<<endl;
+	for(int i=1;i<=K;i++)
+       cout<<a[i]<<" ";
+	cout<<endl;
+
 	//给主要流分配路径
 	DijkstraAlg(k,k);
 	//给剩余的流分配路径
     for(int i=1;i<=K;i++)
 	{
-		if(i==k) continue;
-		src=r[i]->src;
-		dst=r[i]->dst;
-		bw=r[i]->bw;
-		DijkstraAlg(k,i);
+		if(a[i]==k) continue;
+		src=r[a[i]]->src;
+		dst=r[a[i]]->dst;
+		bw=r[a[i]]->bw;
+		DijkstraAlg(k,a[i]);
 	}
 }
 
@@ -57,6 +80,7 @@ void CGraph::single_flow_evaluate(int k){
 		past=r[k]->src;
 		for(it=(p->path).begin();it!=iend;it++)
 		{
+			if(*it==INF) {judge[k][i]=INF;break;}
 			if(*it==past){continue;}
 			//cout<<past<<"   &&&&&   "<<(*it)<<endl;
 			judge[k][i] = judge[k][i] + (adjmatrix[past][*it]->getWeight())*bw[k];
@@ -64,6 +88,7 @@ void CGraph::single_flow_evaluate(int k){
 		}
 	}
 }
+
 void CGraph::cost_evaluate(int k){
 	list<CEdge*>::iterator it,iend;
 	iend=IncidentList.end();

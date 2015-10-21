@@ -185,6 +185,11 @@ public:
 		CPath* pa = new CPath();
 		while(1)
 		{
+			if(d==-2){
+			pa->path.push_front(INF);
+			pa->size++;
+			break;
+			}
 			pa->path.push_front(d);
 			pa->size++;
 			if(p[d]==-1) break;
@@ -214,7 +219,7 @@ public:
 			V.insert(i);
 			CVertex* node = new CVertex(i);
 			mapVID_Vertex[i]=node;
-		}	
+		}
 		S.insert(src);
 		V.erase(src);
 		d[src]=0;
@@ -227,13 +232,14 @@ public:
 			if(j==dst) {
 				CPath* p;
 				p=make_CPath(k,k2);
+				if(p->path.front()==INF) break;
 				single_flow_implement(p,k,k2);
 			}
 			S.insert(j);
 			V.erase(j);
 			Update(j,k,k2);
 		}
-		printf("distance is %d\n",d[dst]);
+		//printf("distance is %d\n",d[dst]);
 	}
 
 };

@@ -42,7 +42,7 @@ CGraph::CGraph(list<CEdge*> listEdge,int node_num,int edge_num){
 int main()
 {
 	list<CEdge*> listEdge;
-
+	srand((unsigned)time(0));
 	//图的初始化
 	ifstream test("d:\\a\\CRANA_Voting\\graph6.txt");
 	int node_num,edge_num;
@@ -95,9 +95,15 @@ int main()
 	cout<<"************ single judge **************"<<endl;
 	for(int i=1;i<=K;i++)
 	{
-		cout<<"flow "<<i<<" 对所有方案的评价";
-		for(int j=1;j<=K;j++)
+		cout<<"flow ";
+		cout.setf(ios::right);
+		cout.width(3);
+		cout<<i<<" judge: ";
+		for(int j=1;j<=K;j++){
+			cout.setf(ios::left);
+			cout.width(4);
 			cout<<g.judge[i][j]<<" ";
+		}
 		cout<<endl;
 	}
 	cout<<endl;

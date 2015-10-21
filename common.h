@@ -8,14 +8,15 @@
 using namespace std;
 #include <iostream>
 #include <stdio.h>
+#include <cstdlib>
+
 #include <algorithm>
 #include <windows.h>
 #include<fstream>
-#include<ctime>
 #include<time.h>
 #include<math.h>
-#define INF 10000
+#define INF 999999
 #define N 14 // nodes
 #define M 25 // edges
-#define K 7 // the number of flows
+#define K 10 // the number of flows
 #endif
