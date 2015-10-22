@@ -1,7 +1,7 @@
 #pragma once
 #include "resources.h"
 #include "single_flow.h"
-
+#include "voting.h"
 CEdge::CEdge(int a, int b, int c, int d){
 	tail=a;
 	head=b;
@@ -43,6 +43,10 @@ int main()
 {
 	list<CEdge*> listEdge;
 	srand((unsigned)time(0));
+	int winner = 0;//No.1
+	float table[M2+1][N2+1] = {0};
+	int ranking[N2+1]={0};//记录一种排序的投票人数
+
 	//图的初始化
 	ifstream test("d:\\a\\CRANA_Voting\\graph6.txt");
 	int node_num,edge_num;
@@ -113,6 +117,22 @@ int main()
 	{	
 		cout<<"proposal "<<i<<" : "<<g.judge_sum[i]<<endl;
 	}
+	
+	//voting method
+	for(int i=1;i<=K;i++)
+		for(int j=1;j<=K;j++)
+		{
+			if(g.judge[j][i]==0) {table[i][j]=10000;continue;}//如果是0，说明流没有摆在网络中
+			table[i][j]=g.judge[j][i];
+		}
+	for(int i=1;i<=K;i++)
+		ranking[i]=1;
+
+	Voting vv(table,ranking);
+	winner=vv.voting(1);
+	cout<<endl;
+	cout<<"schulze method : "<< winner<<endl;
+
 	getchar();
 	return 0;
 }

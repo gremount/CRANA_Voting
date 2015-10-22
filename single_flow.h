@@ -89,6 +89,7 @@ void CGraph::single_flow_evaluate(int k){
 	}
 }
 
+//基于所有流，对方案的评价
 void CGraph::cost_evaluate(int k){
 	list<CEdge*>::iterator it,iend;
 	iend=IncidentList.end();
