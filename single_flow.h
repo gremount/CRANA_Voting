@@ -29,7 +29,7 @@ void CGraph::single_flow_propose(int k){
      a[randnum]=temp;
      kk++;
     }
-	cout<<endl;
+	cout<<"flow routing sequence: ";
 	for(int i=1;i<=K;i++)
        cout<<a[i]<<" ";
 	cout<<endl;
@@ -70,10 +70,7 @@ void CGraph::single_flow_evaluate(int k){
 	CPath* p;
 	for(int i=1;i<=K;i++)
 	{
-		if(i==k) p=path_record[i][1];
-		else if(i<k) p=path_record[i][k];
-		else p=path_record[i][k+1];
-		
+		p=path_record[i][k];
 		list<int>::iterator it,iend;
 		iend=(p->path).end();
 		int past;
@@ -82,8 +79,7 @@ void CGraph::single_flow_evaluate(int k){
 		{
 			if(*it==INF) {judge[k][i]=INF;break;}
 			if(*it==past){continue;}
-			//cout<<past<<"   &&&&&   "<<(*it)<<endl;
-			judge[k][i] = judge[k][i] + (adjmatrix[past][*it]->getWeight())*bw[k];
+			judge[k][i] = judge[k][i] + 1*bw[k];
 			past=*it;
 		}
 	}

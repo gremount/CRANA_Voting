@@ -71,7 +71,7 @@ public:
 	int link_bw[K+1][N+1][N+1];
 	int bw[K+1];
 	vector<CReq*> r;
-	vector<vector<CPath*> > path_record;
+	CPath* path_record[K+1][K+1];
 	int judge[K+1][K+1];
 	int judge_sum[K+1];
 
@@ -185,7 +185,7 @@ public:
 		CPath* pa = new CPath();
 		while(1)
 		{
-			if(d==-2){
+			if(p[d]==-2){
 			pa->path.push_front(INF);
 			pa->size++;
 			break;
@@ -200,7 +200,7 @@ public:
 		for(it=pa->path.begin();it!=iend;it++)
 			cout<<*it<<" ";
 		cout<<endl;
-		path_record[k].push_back(pa);
+		path_record[k][k2]=pa;
 		return pa;
 	}
 
@@ -208,6 +208,7 @@ public:
 	void DijkstraAlg(int k,int k2){
 		int i,j;
 		int src,dst;
+		int flag=0;//if flag=1, there is a routing path
 		src=r[k2]->src;
 		dst=r[k2]->dst;
 		S.clear();
@@ -229,6 +230,7 @@ public:
 		Update(src,k,k2);
 		while (V.size()!=0){
 			j=FindMin();
+			if(d[j]==INF) break;
 			if(j==dst) {
 				CPath* p;
 				p=make_CPath(k,k2);
@@ -241,5 +243,4 @@ public:
 		}
 		//printf("distance is %d\n",d[dst]);
 	}
-
 };

@@ -14,7 +14,7 @@ using namespace std;
 #include<fstream>
 #include<time.h>
 #include<math.h>
-#define INF 999999
+#define INF 99999
 #define N 14 // nodes
 #define M 25 // edges
 #define M2 10 //the number of candidates

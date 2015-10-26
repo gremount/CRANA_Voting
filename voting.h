@@ -252,8 +252,6 @@ class Voting
 			return winner;
 		}
 
-		
-
 		int Condorcet_Voting()
 		{
 			int small_win[M2 + 1][M2 + 1] = { 0 };
