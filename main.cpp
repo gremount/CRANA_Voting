@@ -2,6 +2,7 @@
 #include "resources.h"
 #include "single_flow.h"
 #include "voting.h"
+int K;
 CEdge::CEdge(int a, int b, int c, int d){
 	tail=a;
 	head=b;
@@ -37,11 +38,11 @@ int main()
 	list<CEdge*> listEdge;
 	srand((unsigned)time(0));
 	int winner = 0;//No.1
-	float table[M2+1][N2+1] = {0};
-	int ranking[N2+1]={0};//记录一种排序的投票人数
+	float table[M2C+1][N2C+1] = {0};
+	int ranking[N2C+1]={0};//记录一种排序的投票人数
 
 	//图的初始化
-	ifstream test("d:\\a\\CRANA_Voting\\graph6.txt");
+	ifstream test("d:\\github\\CRANA_Voting\\graph2.txt");
 	int node_num,edge_num;
 	int src,dst,weight,cap;
 	test>>node_num>>edge_num;
@@ -62,21 +63,19 @@ int main()
 	while(req_num){
 	//各种变量的初始化工作,judge[][]的初始化在评价部分
 	g.r.clear();
-	
-	for(int i=1;i<=K;i++)
-		for(int j=1;j<=K;j++)
-		{
-			CPath* pa=new CPath();
-			g.path_record[i][j]=pa;
-		}
 
 	//需求记录
 	CReq* r1=new CReq(0,0,0);
 	g.r.push_back(r1);
 	
-	
-	ifstream flow_test("d:\\a\\CRANA_Voting\\req6.txt");
-	
+	ifstream flow_test("d:\\github\\CRANA_Voting\\req2.txt");
+	flow_test >> K;
+	for (int i = 1; i <= K; i++)
+		for (int j = 1; j <= K; j++)
+		{
+			CPath* pa = new CPath();
+			g.path_record[i][j] = pa;
+		}
 
 	for(int i=1;i<=K;i++)
 	{
@@ -90,7 +89,7 @@ int main()
 	//提方案
 	for(int i=1;i<=K;i++)
 	{
-		g.single_flow_propose(i);
+		g.single_flow_propose(i,K);
 	}
 
 	//评价
@@ -102,7 +101,7 @@ int main()
 	for(int i=1;i<=K;i++)
 	{
 		//cout<<"evaluate "<<i<<endl;
-		g.single_flow_evaluate(i);
+		g.single_flow_evaluate(i,K);
 		g.cost_evaluate(i);
 	}
 
@@ -155,7 +154,7 @@ int main()
 	}
 	cout<<endl;
 
-	Voting vv(table,ranking);
+	Voting vv(table,ranking,K,K);
 	winner=vv.voting(3);
 	cout<<endl;
 	cout<<"schulze method : "<< winner<<endl;

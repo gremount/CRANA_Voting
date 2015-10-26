@@ -2,7 +2,7 @@
 #include"resources.h"
 //Single Flow Routing
 
-void CGraph::single_flow_propose(int k){
+void CGraph::single_flow_propose(int k,int K){
 
 	int src,dst,bw;
 	src=r[k]->src;
@@ -12,7 +12,7 @@ void CGraph::single_flow_propose(int k){
 	cout<<"flow "<<k<<" give this proposal "<<endl;
 
 	//洗牌算法，结果存在a[]
-	int a[K+2];
+	int a[KC+2];
     for(int i=1;i<=K;i++)
        a[i]=i;
     
@@ -66,7 +66,7 @@ void CGraph::single_flow_implement(CPath* p,int k,int k2)
 }
 
 //第k条流对所有方案的评价
-void CGraph::single_flow_evaluate(int k){
+void CGraph::single_flow_evaluate(int k,int K){
 	CPath* p;
 	for(int i=1;i<=K;i++)
 	{

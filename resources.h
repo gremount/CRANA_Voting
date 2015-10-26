@@ -55,7 +55,6 @@ public:
 	CGraph(char* inputFile);
 	CGraph(list<CEdge*> listEdge,int node_num,int edge_num);
 	CGraph(CGraph &);
-
 	set<int> S;
 	set<int> V;
 	int d[N+10];
@@ -68,16 +67,16 @@ public:
 	map<int,list<CEdge*>> nelist;
 	map<int,CVertex*> mapVID_Vertex;
 
-	int link_bw[K+1][N+1][N+1];
-	int bw[K+1];
+	int link_bw[KC+1][N+1][N+1];
+	int bw[KC+1];
 	vector<CReq*> r;
-	CPath* path_record[K+1][K+1];
-	int judge[K+1][K+1];
-	int judge_sum[K+1];
+	CPath* path_record[KC+1][KC+1];
+	int judge[KC+1][KC+1];
+	int judge_sum[KC+1];
 
-	void single_flow_propose(int k);
+	void single_flow_propose(int k,int K);
 	void single_flow_implement(CPath* p, int k,int k2);
-	void single_flow_evaluate(int k);
+	void single_flow_evaluate(int k,int K);
 
 	void cost_evaluate(int k);
 
@@ -195,11 +194,13 @@ public:
 			if(p[d]==-1) break;
 			d=p[d];
 		}
+		/*
 		list<int>::iterator it,iend;
 		iend=pa->path.end();
 		for(it=pa->path.begin();it!=iend;it++)
 			cout<<*it<<" ";
 		cout<<endl;
+		*/
 		path_record[k][k2]=pa;
 		return pa;
 	}

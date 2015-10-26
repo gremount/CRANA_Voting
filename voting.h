@@ -31,10 +31,13 @@ class Voting
 {
 	private:
 	public:
-		float t[M2+1][N2+1];
-		int rank[N2+1];
-		Voting(float table[M2 + 1][N2 + 1], int ranking[N2+1])
+		float t[M2C+1][N2C+1];
+		int rank[N2C+1];
+		int M2, N2;
+		Voting(float table[][N2C+1], int ranking[],int m2,int n2)
 		{
+			M2 = m2;
+			N2 = n2;
 			for(int i=1;i<=N2;i++)
 				rank[i]=ranking[i];
 			for(int i=1;i<=M2;i++)
@@ -53,8 +56,8 @@ class Voting
 
 		int Schulze_Voting()
 		{
-			int d[M2 + 1][M2 + 1] = { 0 };
-			int p[M2+1][M2+1]={0};
+			int d[M2C + 1][M2C + 1] = { 0 };
+			int p[M2C+1][M2C+1]={0};
 			int max_win = 0;//record the score of final winner
 			vector<int> winners;
 			for (int j = 1; j <= N2; j++)
@@ -93,7 +96,7 @@ class Voting
 			}
 
 			//find the winner
-			int beat[M2+1]={0};
+			int beat[M2C+1]={0};
 			for(int i=1;i<=M2;i++)
 			{
 				for(int j=1;j<=M2;j++)
@@ -108,14 +111,15 @@ class Voting
 				for(int j=1;j<=M2;j++)
 					if(beat[j]==i) return j;
 			}
+
 			cout<<"no winner"<<endl;
 			return 0;
 		}
 
 		int Cumulative_Voting()
 		{
-			float small_score[M2+1][N2+1]={0};
-			float big_score[M2+1]={0};
+			float small_score[M2C+1][N2C+1]={0};
+			float big_score[M2C+1]={0};
 			float max_score = 0;//record the score of final winner
 			vector<int> winners;
 			float sum=0;
@@ -152,8 +156,8 @@ class Voting
 
 		int Ranked_Pairs_Voting()
 		{
-			int small_win[M2 + 1][M2 + 1] = { 0 };
-			int big_win[M2 + 1] = { 0 };
+			int small_win[M2C + 1][M2C + 1] = { 0 };
+			int big_win[M2C + 1] = { 0 };
 			int max_win = 0;//record the score of final winner
 			vector<int> winners;
 			vector<pair<int,pair<int,int> > > comp;
@@ -254,8 +258,8 @@ class Voting
 
 		int Condorcet_Voting()
 		{
-			int small_win[M2 + 1][M2 + 1] = { 0 };
-			int big_win[M2 + 1] = { 0 };
+			int small_win[M2C + 1][M2C + 1] = { 0 };
+			int big_win[M2C + 1] = { 0 };
 			int max_win = 0;//record the score of final winner
 			vector<int> winners;
 			for (int j = 1; j <= N2; j++)
