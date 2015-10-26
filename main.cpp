@@ -58,9 +58,14 @@ int main()
 	g.p3();
 	g.p4();
 	int req_num;
-	req_num=1;
+	req_num=2;
+	string s;
+	s = "d:\\github\\CRANA_Voting\\req2.txt";
 
 	while(req_num){
+	
+		cout << endl;
+		cout << "一轮开始" << endl;
 	//各种变量的初始化工作,judge[][]的初始化在评价部分
 	g.r.clear();
 
@@ -68,7 +73,7 @@ int main()
 	CReq* r1=new CReq(0,0,0);
 	g.r.push_back(r1);
 	
-	ifstream flow_test("d:\\github\\CRANA_Voting\\req2.txt");
+	ifstream flow_test(s);
 	flow_test >> K;
 	for (int i = 1; i <= K; i++)
 		for (int j = 1; j <= K; j++)
@@ -167,6 +172,7 @@ int main()
 				g.link_bw[k][i][j]=g.link_bw[winner][i][j];
 	}
 	req_num--;
+	s[26]++;//req2-->req3
 	}
 
 	getchar();
