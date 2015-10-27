@@ -8,8 +8,8 @@ void CGraph::single_flow_propose(int k,int K){
 	src=r[k]->src;
 	dst=r[k]->dst;
 	bw=r[k]->bw;
-	cout<<"****************************************"<<endl;
-	cout<<"flow "<<k<<" give this proposal "<<endl;
+	//cout<<"****************************************"<<endl;
+	//cout<<"flow "<<k<<" give this proposal "<<endl;
 
 	//洗牌算法，结果存在a[]
 	int a[KC+2];
@@ -29,11 +29,12 @@ void CGraph::single_flow_propose(int k,int K){
      a[randnum]=temp;
      kk++;
     }
+	/*
 	cout<<"flow routing sequence: ";
 	for(int i=1;i<=K;i++)
        cout<<a[i]<<" ";
 	cout<<endl;
-
+	*/
 	//给主要流分配路径
 	DijkstraAlg(k,k);
 	//给剩余的流分配路径

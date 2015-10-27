@@ -2,6 +2,12 @@
 #include "resources.h"
 #include "single_flow.h"
 #include "voting.h"
+
+/*
+如果要增加测试的轮数，只需要增加req.txt文件，注意数字，然后修改req_num的
+值就可以，有几个req.txt文件，req_num就是几
+*/
+
 int K;
 CEdge::CEdge(int a, int b, int c, int d){
 	tail=a;
@@ -57,17 +63,21 @@ int main()
 	CGraph g(listEdge,node_num,edge_num);
 	g.p3();
 	g.p4();
-	int req_num;
-	req_num=2;
+	int req_num,req_constant;
+	req_num=6;
+	req_constant = req_num+1;
 	string s;
-	s = "d:\\github\\CRANA_Voting\\req2.txt";
+	s = "d:\\github\\CRANA_Voting\\req1.txt";
 
+	//*********************big turn*****************************
+	
 	while(req_num){
 	
 		cout << endl;
-		cout << "一轮开始" << endl;
+		cout << "第 "<< req_constant-req_num << " 轮开始" << endl;
 	//各种变量的初始化工作,judge[][]的初始化在评价部分
 	g.r.clear();
+	
 
 	//需求记录
 	CReq* r1=new CReq(0,0,0);
@@ -75,6 +85,21 @@ int main()
 	
 	ifstream flow_test(s);
 	flow_test >> K;
+
+	if (req_num != (req_constant-1))
+	{
+		for (int k = 1; k <= K; k++)
+		{
+			list<CEdge*>::iterator it, iend;
+			iend = listEdge.end();
+			for (it = listEdge.begin(); it != iend; it++)
+			{
+				g.link_bw[k][(*it)->getTail()][(*it)->getHead()] = g.link_bw[winner][(*it)->getTail()][(*it)->getHead()];
+				//cout << (*it)->getTail() << " " << (*it)->getHead() << " " << g.link_bw[k][(*it)->getTail()][(*it)->getHead()]<<endl;
+			}
+		}
+	}
+
 	for (int i = 1; i <= K; i++)
 		for (int j = 1; j <= K; j++)
 		{
@@ -159,18 +184,25 @@ int main()
 	}
 	cout<<endl;
 
+	int choice = 1;
 	Voting vv(table,ranking,K,K);
-	winner=vv.voting(3);
+	winner=vv.voting(choice);
 	cout<<endl;
-	cout<<"schulze method : "<< winner<<endl;
+	if (choice == 1)
+		cout << "schulze method : " << winner << endl;
+	else if (choice == 2)
+		cout << "comulative method: " << winner << endl;
+	else if (choice == 3)
+		cout << "copeland condorcet method: " << winner << endl;
+	else
+		cout << "ranked pairs method: " << winner << endl;
 
-	for(int k=1;k<=K;k++)
-	{
-		if(k==winner) continue;
-		for(int i=1;i<=N;i++)
-			for(int j=1;j<=N;j++)
-				g.link_bw[k][i][j]=g.link_bw[winner][i][j];
-	}
+	//计算满意度
+	float happiness=0;//一轮所有流的满意度和，越高越好,0<=满意度<=1
+	for (int i = 1; i <= K; i++)
+		happiness += table[i][i] / table[i][winner];//最好抉择评分/当前抉择评分
+	cout << "第" << req_constant - req_num << "轮整体满意度： " << happiness/K << endl;
+	cout << "第" << req_constant - req_num << "轮整体代价: " << g.judge_sum[winner] << endl;
 	req_num--;
 	s[26]++;//req2-->req3
 	}
