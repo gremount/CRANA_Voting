@@ -44,6 +44,8 @@ int main()
 	list<CEdge*> listEdge;
 	srand((unsigned)time(0));
 	int winner = 0;//No.1
+	float happiness_sum = 0;//记录各轮服务累加起来的满意度
+	int K_sum = 0;//记录一共有多少条流需要安排路径
 	float table[M2C+1][N2C+1] = {0};
 	int ranking[N2C+1]={0};//记录一种排序的投票人数
 
@@ -201,8 +203,11 @@ int main()
 	float happiness=0;//一轮所有流的满意度和，越高越好,0<=满意度<=1
 	for (int i = 1; i <= K; i++)
 		happiness += table[i][i] / table[i][winner];//最好抉择评分/当前抉择评分
+	happiness_sum += happiness;
+	K_sum += K;
 	cout << "第" << req_constant - req_num << "轮整体满意度： " << happiness/K << endl;
-	cout << "第" << req_constant - req_num << "轮整体代价: " << g.judge_sum[winner] << endl;
+	cout << "多轮整体满意度和：" << happiness_sum / K_sum << endl;
+	cout << "多轮整体代价和: " << g.judge_sum[winner] << endl;
 	req_num--;
 	s[26]++;//req2-->req3
 	}
