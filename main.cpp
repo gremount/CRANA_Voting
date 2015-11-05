@@ -36,7 +36,7 @@ CGraph::CGraph(list<CEdge*> listEdge,int node_num,int edge_num){
 	for(int i=0;i<=K;i++)
 		for(int j=0;j<=N;j++)
 			for(int k=0;k<=N;k++)
-				link_bw[i][j][k]=0;
+				link_bw[i][j][k]=1;
 }
 
 int main()
@@ -89,6 +89,7 @@ int main()
 	ifstream flow_test(s);
 	flow_test >> K;
 
+	//第一个case不用算
 	if (req_num != (req_constant-1))
 	{
 		for (int k = 1; k <= K; k++)
@@ -101,7 +102,14 @@ int main()
 				//cout << (*it)->getTail() << " " << (*it)->getHead() << " " << g.link_bw[k][(*it)->getTail()][(*it)->getHead()]<<endl;
 			}
 		}
+		list<CEdge*>::iterator it, iend;
+		iend = listEdge.end();
+		for (it = listEdge.begin(); it != iend; it++)
+			g.link_bw_backup[(*it)->getTail()][(*it)->getHead()] = g.link_bw[winner][(*it)->getTail()][(*it)->getHead()];
 	}
+
+	
+		
 
 	for (int i = 1; i <= K; i++)
 		for (int j = 1; j <= K; j++)
@@ -208,7 +216,7 @@ int main()
 	K_sum += K;
 	cout << "第" << req_constant - req_num << "轮整体满意度： " << happiness/K << endl;
 	cout << "多轮整体满意度和：" << happiness_sum / K_sum << endl;
-	cout << "多轮整体代价和: " << g.judge_sum[winner] << endl;
+	cout << "多轮整体延时和: " << g.judge_sum[winner] << endl;
 	req_num--;
 	s[26]++;//req2-->req3
 	}

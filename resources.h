@@ -68,6 +68,7 @@ public:
 
 
 	int link_bw[KC+1][N+1][N+1];//每条Link的当前流量
+	int link_bw_backup[N+1][N+1];//方案部署前link的流量
 	int bw[KC+1];//每个需求的流量
 	vector<CReq*> r;
 	CPath* path_record[KC+1][KC+1];
@@ -157,9 +158,9 @@ public:
 		it=nelist[i].begin();
 		iend=nelist[i].end();
 		for(;it!=iend;it++){
-			if(((*it)->getCap()-link_bw[k][(*it)->getTail()][(*it)->getHead()])<bw[k2]) continue;
+			//if(((*it)->getCap()-link_bw[k][(*it)->getTail()][(*it)->getHead()])<bw[k2]) continue;
 			if(link_bw[k][(*it)->getTail()][(*it)->getHead()]+d[i]<d[(*it)->getHead()]){
-				d[(*it)->getHead()]=link_bw[k][(*it)->getTail()][(*it)->getHead()]+d[i];
+				d[(*it)->getHead()]=link_bw[k][(*it)->getTail()][(*it)->getHead()] + bw[k2] + d[i];
 				p[(*it)->getHead()]=i;
 			}
 		}

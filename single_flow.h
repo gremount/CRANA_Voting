@@ -76,11 +76,14 @@ void CGraph::single_flow_evaluate(int k,int K){
 		iend=(p->path).end();
 		int past;
 		past=r[k]->src;
+		int band;
+		band=r[k]->bw;
 		for(it=(p->path).begin();it!=iend;it++)
 		{
 			if(*it==INF) {judge[k][i]=INF;break;}
 			if(*it==past){continue;}
-			judge[k][i] = judge[k][i] + link_bw[i][past][*it];
+			judge[k][i] = judge[k][i] + band + link_bw_backup[past][*it];
+			//这个不是应该有的评价，因为放在后面部署，就会有更高的延时
 			past=*it;
 		}
 	}
