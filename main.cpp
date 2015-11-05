@@ -57,6 +57,7 @@ int main()
 	for(int i=1;i<=edge_num;i++)
 	{
 		test>>src>>dst>>weight>>cap;
+		cap=INF;
 		CEdge* e1=new CEdge(src,dst,weight,cap);
 		CEdge* e2=new CEdge(dst,src,weight,cap);
 		listEdge.push_back(e1);
@@ -81,7 +82,7 @@ int main()
 	g.r.clear();
 	
 
-	//需求记录
+	//需求记录 && 初始化工作
 	CReq* r1=new CReq(0,0,0);
 	g.r.push_back(r1);
 	

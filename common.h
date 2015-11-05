@@ -15,7 +15,7 @@ using namespace std;
 #include<time.h>
 #include<math.h>
 #include<string>
-#define INF 99999
+#define INF 999999
 #define N 17
 #define M 21
 #define KC 100

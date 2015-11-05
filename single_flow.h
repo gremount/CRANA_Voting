@@ -80,7 +80,7 @@ void CGraph::single_flow_evaluate(int k,int K){
 		{
 			if(*it==INF) {judge[k][i]=INF;break;}
 			if(*it==past){continue;}
-			judge[k][i] = judge[k][i] + 1*bw[k];
+			judge[k][i] = judge[k][i] + link_bw[i][past][*it];
 			past=*it;
 		}
 	}
@@ -91,8 +91,6 @@ void CGraph::cost_evaluate(int k){
 	list<CEdge*>::iterator it,iend;
 	iend=IncidentList.end();
 	for(it=IncidentList.begin();it!=iend;it++)
-	{
-		judge_sum[k]+=((*it)->getWeight())*link_bw[k][(*it)->getTail()][(*it)->getHead()];
-	}
-
+		judge_sum[k] += link_bw[k][(*it)->getTail()][(*it)->getHead()];
+	
 }

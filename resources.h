@@ -65,14 +65,14 @@ public:
 	map<int,list<int>> adjlist;
 	vector<vector<CEdge*>> adjmatrix;
 	map<int,list<CEdge*>> nelist;
-	map<int,CVertex*> mapVID_Vertex;
 
-	int link_bw[KC+1][N+1][N+1];
-	int bw[KC+1];
+
+	int link_bw[KC+1][N+1][N+1];//每条Link的当前流量
+	int bw[KC+1];//每个需求的流量
 	vector<CReq*> r;
 	CPath* path_record[KC+1][KC+1];
-	int judge[KC+1][KC+1];
-	int judge_sum[KC+1];
+	int judge[KC+1][KC+1];//第i条流对j方案的评价
+	int judge_sum[KC+1];//第i个case的总体评价
 
 	void single_flow_propose(int k,int K);
 	void single_flow_implement(CPath* p, int k,int k2);
@@ -158,11 +158,9 @@ public:
 		iend=nelist[i].end();
 		for(;it!=iend;it++){
 			if(((*it)->getCap()-link_bw[k][(*it)->getTail()][(*it)->getHead()])<bw[k2]) continue;
-			if((*it)->getWeight()+d[i]<d[(*it)->getHead()]){
-				d[(*it)->getHead()]=(*it)->getWeight()+d[i];
+			if(link_bw[k][(*it)->getTail()][(*it)->getHead()]+d[i]<d[(*it)->getHead()]){
+				d[(*it)->getHead()]=link_bw[k][(*it)->getTail()][(*it)->getHead()]+d[i];
 				p[(*it)->getHead()]=i;
-				mapVID_Vertex[(*it)->getHead()]->d=(*it)->getWeight()+d[i];
-				mapVID_Vertex[(*it)->getHead()]->p=i;
 			}
 		}
 	}
@@ -220,14 +218,11 @@ public:
 		{
 			V.insert(i);
 			CVertex* node = new CVertex(i);
-			mapVID_Vertex[i]=node;
 		}
 		S.insert(src);
 		V.erase(src);
 		d[src]=0;
 		p[src]=-1;
-		mapVID_Vertex[src]->d=0;
-		mapVID_Vertex[src]->p=-1;
 		Update(src,k,k2);
 		while (V.size()!=0){
 			j=FindMin();
