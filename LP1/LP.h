@@ -74,9 +74,13 @@ double LP(Graph *g,vector<Req*> &reqL)
 				cout<<"from node "<<g->incL[i]->src<<" to node "<<
 					g->incL[i]->dst<< " has flow "<<
 					solver.getValue(x[d][i])*reqL[d]->flow<<endl;
+				g->incL[i]->capacity -= reqL[d]->flow;
 			}
 		}
 	}
+
+
+
 	environment.end();
 	return obj;
 }
