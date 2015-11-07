@@ -26,6 +26,7 @@ public:
 	int src;
 	int dst;
 	int bw;
+	CReq(){;}
 	CReq(int a,int b, int c){src=a;dst=b;bw=c;}
 };
 
@@ -47,11 +48,11 @@ public:
 };
 
 class CGraph{
-private:
+public:
 	int numVertex;
 	int numEdge;
 	list<CEdge*> IncidentList;
-public:
+
 	CGraph(char* inputFile);
 	CGraph(list<CEdge*> listEdge,int node_num,int edge_num);
 	CGraph(CGraph &);

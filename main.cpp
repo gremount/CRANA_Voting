@@ -88,7 +88,7 @@ int main()
 	ifstream flow_test(s);
 	flow_test >> K;
 
-	if (req_num != (req_constant-1))
+	if (req_num != (req_constant-1)) //第一个req来的时候，不需要修改link_bw
 	{
 		for (int k = 1; k <= K; k++)
 		{
