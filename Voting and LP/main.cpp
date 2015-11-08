@@ -12,7 +12,6 @@ int main()
 	sAddress="d:\\github\\CRANA_Voting\\req1.txt";
 	for(int icase=1;icase<=caseN;icase++)
 	{
-		
 		//case输入
 		ifstream reqfile(sAddress);
 		sAddress[26]++;
@@ -42,10 +41,7 @@ int main()
 		result=LP(&g,reqL);
 
 		//用线性规划解计算cost
-		if(result==999999) //如果没有线性规划解，就不增加cost
-			result_sum += 0;
-		else	
-			result_sum += result;
+		result_sum += result;
 		cout<<"cost of this case is: "<<result<<endl;
 		cout<<"cost of all cases is: "<<result_sum<<endl;
 		
