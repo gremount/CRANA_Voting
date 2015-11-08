@@ -34,7 +34,7 @@ public:
 	set<int> S, V;
     vector<int> d, p;
 	vector<Edge*> incL;//边的列表
-	vector<vector<Edge*> > adjL,adjRL; //正向和反向邻接矩阵
+	vector<vector<Edge*> > adjL,adjRL; //正向和反向邻接链表
 	
 	vector<int> cost_best;//记录每个req的最佳部署结果
 	vector<int> cost_LP;//记录每个req的LP部署结果
@@ -107,10 +107,12 @@ public:
             int mind;
             mind = FindMin();
             if (mind == dst) return d[mind];
+			if (mind==-1) break;//没有路可达
             Update(mind,flow);
             S.erase(mind);
             V.insert(mind);
         }
+		return INF;//没有路可达
     }
 
 };

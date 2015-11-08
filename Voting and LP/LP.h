@@ -68,15 +68,15 @@ double LP(Graph *g,vector<Req*> &reqL)
 		int distance=0;
 		for(int d=0;d<K;d++)
 		{
-			cout<<"flow "<<d+1<<" : "<<endl;
+			//cout<<"flow "<<d+1<<" : "<<endl;
 			distance=0;
 			for(int i=0;i<g->m;i++)
 			{
 				if(solver.getValue(x[d][i]>0))
 				{
-					cout<<"from node "<<g->incL[i]->src<<" to node "<<
+					/*cout<<"from node "<<g->incL[i]->src<<" to node "<<
 						g->incL[i]->dst<< " has flow "<<
-						solver.getValue(x[d][i])*reqL[d]->flow<<endl;
+						solver.getValue(x[d][i])*reqL[d]->flow<<endl;*/
 					g->incL[i]->capacity -= reqL[d]->flow;
 					distance += g->incL[i]->weight;
 				}

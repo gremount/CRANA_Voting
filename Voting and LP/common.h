@@ -16,6 +16,7 @@
 using namespace std;
 
 #define INF 999999;
+#define MAXFLOW 10;
 
 
 #endif
