@@ -17,14 +17,11 @@ int main()
 		vector<Req*> reqL;
 		reqN=10;
 		reqL.clear();
+		a=1;b=17;
 		for(int i=0;i<reqN;i++)
 		{
-			a=0;b=0;c=0;
-			while(a==b || c==0){
-				a=rand() % (g.n-1)+1;
-				b=rand() % (g.n-1)+1;
-				c=rand() % MAXFLOW + 1;
-			}
+			c=0;
+			while(c==0)c=rand() % MAXFLOW + 1;	
 			Req* r=new Req(a,b,c);
 			reqL.push_back(r);
 		}

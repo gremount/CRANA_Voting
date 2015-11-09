@@ -72,7 +72,7 @@ double LP(Graph *g,vector<Req*> &reqL)
 			distance=0;
 			for(int i=0;i<g->m;i++)
 			{
-				if(solver.getValue(x[d][i]>0))
+				if(solver.getValue(x[d][i])>0)
 				{
 					/*cout<<"from node "<<g->incL[i]->src<<" to node "<<
 						g->incL[i]->dst<< " has flow "<<
@@ -81,6 +81,7 @@ double LP(Graph *g,vector<Req*> &reqL)
 					distance += g->incL[i]->weight;
 				}
 			}
+			//cout<<distance<<endl;
 			g->cost_LP.push_back(distance * reqL[d]->flow);
 		}
 	}
