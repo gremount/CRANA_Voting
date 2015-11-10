@@ -1,6 +1,7 @@
 #include"common.h"
 #include"resources.h"
 #include"LP.h"
+#include"LP2.h"
 #include"voting.h"
 #include"single_flow.h"
 
@@ -39,16 +40,18 @@ int main()
 {
 	srand((unsigned)time(NULL));
 	Graph g("d:\\github\\CRANA_Voting\\graph2.txt");
-	int caseN=10;
+	int caseN=6;
 	double judge=0,judge_sum=0;
 	int req_sum=0,result_sum=0;
-	
+	vector<Req*> reqL_all;
+
 	list<CEdge*> listEdge;
 	int winner = 0;//No.1
 	float happiness_sum = 0;//记录各轮服务累加起来的满意度
 	int K_sum = 0;//记录一共有多少条流需要安排路径
 	float table[M2C+1][N2C+1] = {0};
 	int ranking[N2C+1]={0};//记录一种排序的投票人数
+	ofstream reqRecord("d:\\github\\reqRecord.txt");
 
 	//图的初始化
 	ifstream test("d:\\github\\CRANA_Voting\\graph2.txt");
@@ -103,6 +106,7 @@ int main()
 			}
 
 		//case输入
+		reqRecord<<"case "<<icase<<endl;
 		int reqN,a,b,c;
 		vector<Req*> reqL;
 		reqN=MAXREQ;
@@ -111,14 +115,16 @@ int main()
 		for(int i=0;i<reqN;i++)
 		{
 			c=0;
-			while(c==0)c=rand() % MAXFLOW + 1;	
+			while(c==0){c = 3 + rand()%MAXFLOW;}	
 			Req* r=new Req(a,b,c);
 			reqL.push_back(r);
 			CReq* r2=new CReq(a,b,c);
 			gv.bw[i+1]=c;
 			gv.r.push_back(r2);
+			reqL_all.push_back(r);
+			reqRecord<<c<<" ";
 		}
-		
+		reqRecord<<endl<<endl;
 		//@@@@@@@@@@@@@@@@  Voting  @@@@@@@@@@@@@@@@@@@@@@
 		//@@@@@@@@@@@@@@@@  Voting  @@@@@@@@@@@@@@@@@@@@@@
 
@@ -212,6 +218,11 @@ int main()
 			happiness += table[i][i] / table[i][winner];//最好抉择评分/当前抉择评分
 		happiness_sum += happiness;
 		K_sum += K;
+
+		//如果流没有被安排进网络，就增加惩罚cost
+		for(int i=1;i<=K;i++)
+			if(table[i][winner]=10000) gv.judge_sum[winner]+=MAXPATH*gv.bw[i];
+
 		cout << "第" << req_constant - req_num << "轮整体满意度： " << happiness/K << endl;
 		cout << "多轮整体满意度和：" << happiness_sum / K_sum << endl;
 		cout << "多轮整体代价和: " << gv.judge_sum[winner] << endl;
@@ -260,8 +271,16 @@ int main()
 		cout<<"多轮满意度： "<<judge_sum/req_sum<<endl;
 	}
 
+	//全局线性规划部署
+	cout<<endl<<"			LP_ALL result			"<<endl;
+	Graph g3("d:\\github\\CRANA_Voting\\graph2.txt");
+	double result3=0;
+	result3=LP(&g3,reqL_all);
+	cout<<"cost of all cases is: "<<result3<<endl;
+
 	cout<<"End of the Program"<<endl;
-	
+	test.close();
+	reqRecord.close();
 	getchar();
 	return 0;
 }
