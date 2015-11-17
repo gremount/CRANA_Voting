@@ -44,7 +44,8 @@ public:
     vector<int> d, p;
 	vector<Edge*> incL;//边的列表
 	vector<vector<Edge*> > adjL,adjRL; //正向和反向邻接链表
-	
+	vector<vector<Edge*> > adj;//邻接矩阵
+
 	vector<Req*> reqL;
 	vector<int> cost_best;//记录每个req的最佳部署结果
 	vector<int> cost_LP;//记录每个req的LP部署结果
@@ -60,6 +61,9 @@ public:
         p.resize(n);
 		adjL.resize(n);//点的编号从0开始
 		adjRL.resize(n);
+		adj.resize(n);
+		for(int i=0;i<n;i++)
+			adj[i].resize(n);
 
 		int a,b,c,d;
 		int temp=m/2;
@@ -72,6 +76,7 @@ public:
 			incL.push_back(e1);incL.push_back(e2);
 			adjL[a].push_back(e1);adjL[b].push_back(e2);
 			adjRL[b].push_back(e1);adjRL[a].push_back(e2);
+			adj[a][b]=e1;adj[b][a]=e2;
 		}
 	}
 

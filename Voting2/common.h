@@ -18,9 +18,6 @@
 
 using namespace std;
 
-
-
-
 #define MAXFLOW 3;
 #define KC 100
 #define M2C 100 //the number of candidates

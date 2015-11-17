@@ -4,8 +4,7 @@
 #include"graph.h"
 #include"common.h"
 #include "res.h"
-
-
+#include "LP.h"
 
 class Flow
 {
@@ -35,6 +34,8 @@ public:
 			adj[i].resize(N);
 		path_record.resize(Maxreq);
 		judge.resize(Maxreq);
+		d.resize(N);
+        p.resize(N);
 	}
 
 	//流的维护，针对新的流需求
@@ -58,8 +59,8 @@ public:
 		else{
 			//将路径记录下来
 			Path* path = new Path();
-			while(loc!=-1){
-				path->pathL.push_back(g.adjL[p[loc]][loc]);
+			while(p[loc]!=-1){
+				path->pathL.push_back(g.adj[p[loc]][loc]);
 				loc=p[loc];
 			}
 			path_record[id]=path;
@@ -74,7 +75,9 @@ public:
 			if(i==id) reqPL.push_back(new Req(src,dst,0));
 			else	  reqPL.push_back(g.reqL[i]);
 		}
-		LP(&g,reqPL,id,flowL);
+
+		LP(&g,reqPL,path_record);
+		
 	}
 
 	//流部署 自己提出的方案
@@ -178,7 +181,6 @@ public:
     }
 };
 
-
 //统计累加的cost
 void judge_sum_function(VGraph &g, vector<Flow*> &flowL)
 {
@@ -192,5 +194,6 @@ void judge_sum_function(VGraph &g, vector<Flow*> &flowL)
 		judge_sum+=weight * flowL[0]->adj[src][dst];//由于已经调用过end_implement(),所以任何流的adj都是相同的
 	}
 }
+
 
 #endif

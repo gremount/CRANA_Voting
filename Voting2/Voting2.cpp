@@ -1,8 +1,6 @@
-paragram once
 #include"common.h"
 #include"Flow.h"
 #include"graph.h"
-#include"LP.h"
 #include"voting.h"
 #include "res.h"
 
@@ -20,7 +18,7 @@ int main()
 	VGraph gv("d:\\github\\CRANA_Voting\\graph2.txt");
 	vector<Flow*> flowL;//记录所有的流实例
 
-	int caseN=2;
+	int caseN=5;
 	vector<Req*> reqL;
 	float table[M2C+1][N2C+1] = {0};
 	int ranking[N2C+1]={0};//记录一种排序的投票人数
@@ -32,23 +30,29 @@ int main()
 
 	for(int i=0;i<caseN;i++)
 	{
+		cout<<i<<endl;
 		//初始化
 		for(int j=0;j<Maxreq;j++)
 			for(int k=0;k<Maxreq;k++)
 				table[j][k]=0;
 		
 		reqL.clear();
+		gv.reqL.clear();
 		if(i==0){
 			for(int j=0;j<Maxreq;j++)
 			{
-				int a,b,c;
-				while(c==0){
-					a = rand()%N;
-					b = rand()%N;
+				int a=0,b=0,c=0;
+				while(1){
+					//a = rand()%N;
+					//b = rand()%N;
 					c = 3 + rand()%Maxflow;
+					if(c!=0) break;
+					//if(a!=b && c!=0) break;
 				}
+				a=1;b=17;
 				Req* r = new Req(a,b,c);
 				reqL.push_back(r);
+				gv.reqL.push_back(r);
 				Flow* flow_now = new Flow(j,a,b,c);
 				flowL.push_back(flow_now);
 			}
@@ -56,14 +60,18 @@ int main()
 		else{
 			for(int j=0;j<Maxreq;j++)
 			{
-				int a,b,c;
-				while(c==0){
-					a = rand()%N;
-					b = rand()%N;
+				int a=0,b=0,c=0;
+				while(1){
+					//a = rand()%N;
+					//b = rand()%N;
 					c = 3 + rand()%Maxflow;
+					if(c!=0) break;
+					//if(a!=b && c!=0) break;
 				}
+				a=1;b=17;
 				Req* r = new Req(a,b,c);
 				reqL.push_back(r);
+				gv.reqL.push_back(r);
 				flowL[j]->flow_modify(a,b,c);
 			}
 		}
@@ -81,13 +89,14 @@ int main()
 			for(int k=0;k<Maxreq;k++)
 			{
 				if(flowL[j]->judge[k]==0) table[j+1][k+1]=10000;//如果是0，说明流没有摆在网络中
-				else table[i+1][j+1]=flowL[j]->judge[k];
+				else table[j+1][k+1]=flowL[j]->judge[k];
 			}
-		cout<<"          voting result          "<<endl;
+		cout<<endl<<"          voting result          "<<endl;
 		int choice=1;//选择一种投票算法
 		int winner=0;
 		Voting vv(table,ranking,Maxreq,Maxreq);
 		winner=vv.voting(choice);
+		winner=winner-1;//因为我们的流是从0开始的，但是投票算法的winner是从1开始的
 		if (choice == 1)
 			cout << "schulze method : " << winner << endl;
 		else if (choice == 2)
@@ -97,18 +106,25 @@ int main()
 		else
 			cout << "ranked pairs method: " << winner << endl;
 
-
+		/* table show
+		for(int j=1;j<=Maxreq;j++)
+		{
+			cout<<endl;
+			for(int k=1;k<=Maxreq;k++)
+				cout<<table[j][k]<<" ";
+		}
+		*/
 
 		//计算满意度
 		float happiness=0;//一轮所有流的满意度和，越高越好,0<=满意度<=1
-		for(int j=0;j<Maxreq;j++)
+		for(int j=1;j<=Maxreq;j++)
 			happiness += table[j][j]/table[j][winner];//最好抉择评分/当前抉择评分
 		happiness_sum += happiness;
 
 		//计算方案部署后当前总的cost，如果流没有被安排进网络，就增加惩罚cost
 		judge_sum_function(gv,flowL);
-		for(int j=0;j<=Maxreq;j++)
-			if(table[j][winner]=10000) judge_sum += MAXPATH * reqL[j]->flow;
+		for(int j=0;j<Maxreq;j++)
+			if(table[j+1][winner]=10000) judge_sum += MAXPATH * reqL[j]->flow;
 
 		cout << "第" << i << "轮整体满意度： " << happiness/Maxreq << endl;
 		cout << "多轮整体满意度和：" << happiness_sum / ((i+1)*10) << endl;
@@ -119,7 +135,11 @@ int main()
 		{
 			for(int k1=0;k1<N;k1++)
 				for(int k2=0;k2<N;k2++)
+				{
+					//cout<<j<<" "<<k1<<" "<<k2<<endl;
 					flowL[j]->adj[k1][k2]=flowL[winner]->adj[k1][k2];
+		
+				}
 		}
 		
 	}//一个case结束

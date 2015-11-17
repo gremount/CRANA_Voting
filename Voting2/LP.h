@@ -10,7 +10,7 @@
 //不允许分流的规划,因为这里有x[d]=IloIntVarArray(environment,g->m,0,1);
 //使得x[d][i]是0,1变量
 
-double LP(VGraph *g,vector<Req*> &reqL,int flow_id, vector<Flow*> &flowL)
+double LP(VGraph *g,vector<Req*> &reqL,vector<Path*> &path_record)
 {
 	IloEnv environment;
 	IloModel model(environment);
@@ -81,7 +81,7 @@ double LP(VGraph *g,vector<Req*> &reqL,int flow_id, vector<Flow*> &flowL)
 				}
 			}
 			if(distance==0)continue;
-			flowL[flow_id]->path_record[d]=path;
+			path_record[d]=path;
 		}
 	}
 	else
