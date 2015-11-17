@@ -1,3 +1,4 @@
+paragram once
 #include"common.h"
 #include"Flow.h"
 #include"graph.h"
@@ -9,15 +10,16 @@ const int Inf=99999;
 const int N=18;
 const int M=42;
 const int Maxreq=10;
-const int Maxflow=5;
+const int Maxflow=5;	
 int judge_sum;
-vector<Flow*> flowL;//定义全局变量
+
 
 int main()
 {
 	srand((unsigned)time(NULL));
 	VGraph gv("d:\\github\\CRANA_Voting\\graph2.txt");
-	
+	vector<Flow*> flowL;//记录所有的流实例
+
 	int caseN=2;
 	vector<Req*> reqL;
 	float table[M2C+1][N2C+1] = {0};
@@ -68,11 +70,11 @@ int main()
 
 		//提方案
 		for(int j=0;j<Maxreq;j++)
-			flowL[j]->propose(gv);
+			flowL[j]->propose(gv,flowL);
 
 		//评价
 		for(int j=0;j<Maxreq;j++)
-			flowL[j]->evaluate(gv);
+			flowL[j]->evaluate(gv,flowL);
 
 		//投票算法
 		for(int j=0;j<Maxreq;j++)
@@ -104,9 +106,9 @@ int main()
 		happiness_sum += happiness;
 
 		//计算方案部署后当前总的cost，如果流没有被安排进网络，就增加惩罚cost
-		judge_sum_function(gv);
-		for(int i=0;i<=Maxreq;i++)
-			if(table[i][winner]=10000) judge_sum += MAXPATH * reqL[i]->flow;
+		judge_sum_function(gv,flowL);
+		for(int j=0;j<=Maxreq;j++)
+			if(table[j][winner]=10000) judge_sum += MAXPATH * reqL[j]->flow;
 
 		cout << "第" << i << "轮整体满意度： " << happiness/Maxreq << endl;
 		cout << "多轮整体满意度和：" << happiness_sum / ((i+1)*10) << endl;

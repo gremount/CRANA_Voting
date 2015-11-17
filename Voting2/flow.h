@@ -7,20 +7,6 @@
 
 
 
-//统计累加的cost
-void judge_sum_function(VGraph &g)
-{
-	judge_sum=0;
-	for(int i=0;i<M;i++)
-	{
-		int src,dst,weight;
-		int cost=0;
-		src=g.incL[i]->src;dst=g.incL[i]->dst;
-		weight=g.incL[i]->weight;
-		judge_sum+=weight * flowL[0]->adj[src][dst];//由于已经调用过end_implement(),所以任何流的adj都是相同的
-	}
-}
-
 class Flow
 {
 public:
@@ -63,7 +49,7 @@ public:
 	}
 
 	//流提出方案
-	void propose(VGraph &g)
+	void propose(VGraph &g,vector<Flow*> &flowL)
 	{
 		//对自己的流先算dijkstra
 		int dist=0,loc=dst;
@@ -88,7 +74,7 @@ public:
 			if(i==id) reqPL.push_back(new Req(src,dst,0));
 			else	  reqPL.push_back(g.reqL[i]);
 		}
-		LP(&g,reqPL,id);
+		LP(&g,reqPL,id,flowL);
 	}
 
 	//流部署 自己提出的方案
@@ -108,7 +94,7 @@ public:
 	}
 	
 	//流评价所有方案
-	void evaluate(VGraph &g)
+	void evaluate(VGraph &g, vector<Flow*> &flowL)
 	{
 		//流评价所有方案
 		int temp=0,edge_num=0;//temp记录路径权值和
@@ -122,7 +108,7 @@ public:
 	}
 
 	//流部署 获胜的方案
-	void end_implement(VGraph &g,int winner)
+	void end_implement(VGraph &g,int winner, vector<Flow*> &flowL)
 	{
 		//Flow记录的图负载信息更新
 		for(int i=0;i<Maxreq;i++)
@@ -192,5 +178,19 @@ public:
     }
 };
 
+
+//统计累加的cost
+void judge_sum_function(VGraph &g, vector<Flow*> &flowL)
+{
+	judge_sum=0;
+	for(int i=0;i<M;i++)
+	{
+		int src,dst,weight;
+		int cost=0;
+		src=g.incL[i]->src;dst=g.incL[i]->dst;
+		weight=g.incL[i]->weight;
+		judge_sum+=weight * flowL[0]->adj[src][dst];//由于已经调用过end_implement(),所以任何流的adj都是相同的
+	}
+}
 
 #endif

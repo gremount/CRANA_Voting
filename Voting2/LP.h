@@ -10,7 +10,7 @@
 //不允许分流的规划,因为这里有x[d]=IloIntVarArray(environment,g->m,0,1);
 //使得x[d][i]是0,1变量
 
-double LP(VGraph *g,vector<Req*> &reqL,int flow_id)
+double LP(VGraph *g,vector<Req*> &reqL,int flow_id, vector<Flow*> &flowL)
 {
 	IloEnv environment;
 	IloModel model(environment);
