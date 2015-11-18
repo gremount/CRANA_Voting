@@ -30,7 +30,7 @@ int main()
 
 	for(int i=0;i<caseN;i++)
 	{
-		cout<<i<<endl;
+		cout<<endl<<"*************************"<<" case "<<i<<"*************************"<<endl;
 		//初始化
 		for(int j=0;j<Maxreq;j++)
 			for(int k=0;k<Maxreq;k++)
@@ -91,12 +91,12 @@ int main()
 				if(flowL[j]->judge[k]==0) table[j+1][k+1]=10000;//如果是0，说明流没有摆在网络中
 				else table[j+1][k+1]=flowL[j]->judge[k];
 			}
-		cout<<endl<<"          voting result          "<<endl;
+		cout<<endl<<"voting uses ";
 		int choice=1;//选择一种投票算法
 		int winner=0;
 		Voting vv(table,ranking,Maxreq,Maxreq);
 		winner=vv.voting(choice);
-		winner=winner-1;//因为我们的流是从0开始的，但是投票算法的winner是从1开始的
+		
 		if (choice == 1)
 			cout << "schulze method : " << winner << endl;
 		else if (choice == 2)
@@ -105,6 +105,21 @@ int main()
 			cout << "copeland condorcet method: " << winner << endl;
 		else
 			cout << "ranked pairs method: " << winner << endl;
+
+		for(int i=1;i<=Maxreq;i++)
+		{
+			cout<<"flow ";
+			cout.setf(ios::right);
+			cout.width(3);
+			cout<<i<<" judge: ";
+			for(int j=1;j<=Maxreq;j++){
+				cout.setf(ios::left);
+				cout.width(5);
+				cout<<table[i][j]<<" ";
+			}
+			cout<<endl;
+		}
+		cout<<endl;
 
 		/* table show
 		for(int j=1;j<=Maxreq;j++)
@@ -122,7 +137,7 @@ int main()
 		happiness_sum += happiness;
 
 		//计算方案部署后当前总的cost，如果流没有被安排进网络，就增加惩罚cost
-		judge_sum_function(gv,flowL);
+		judge_sum_function(gv,flowL,winner-1);
 		for(int j=0;j<Maxreq;j++)
 			if(table[j+1][winner]=10000) judge_sum += MAXPATH * reqL[j]->flow;
 
@@ -137,7 +152,7 @@ int main()
 				for(int k2=0;k2<N;k2++)
 				{
 					//cout<<j<<" "<<k1<<" "<<k2<<endl;
-					flowL[j]->adj[k1][k2]=flowL[winner]->adj[k1][k2];
+					flowL[j]->adj[k1][k2]=flowL[winner-1]->adj[k1][k2];
 		
 				}
 		}

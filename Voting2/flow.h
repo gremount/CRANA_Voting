@@ -76,7 +76,7 @@ public:
 			else	  reqPL.push_back(g.reqL[i]);
 		}
 
-		LP(&g,reqPL,path_record);
+		LP(&g,reqPL,path_record,id);
 		
 	}
 
@@ -104,6 +104,7 @@ public:
 		for(int i=0;i<Maxreq;i++)
 		{
 			edge_num=flowL[i]->path_record[id]->pathL.size();
+			temp=0;
 			for(int j=0;j<edge_num;j++)
 				temp+=flowL[i]->path_record[id]->pathL[j]->weight;
 			judge[i]=temp*flow;
@@ -182,7 +183,7 @@ public:
 };
 
 //统计累加的cost
-void judge_sum_function(VGraph &g, vector<Flow*> &flowL)
+void judge_sum_function(VGraph &g, vector<Flow*> &flowL, int winner)
 {
 	judge_sum=0;
 	for(int i=0;i<M;i++)
@@ -191,7 +192,7 @@ void judge_sum_function(VGraph &g, vector<Flow*> &flowL)
 		int cost=0;
 		src=g.incL[i]->src;dst=g.incL[i]->dst;
 		weight=g.incL[i]->weight;
-		judge_sum+=weight * flowL[0]->adj[src][dst];//由于已经调用过end_implement(),所以任何流的adj都是相同的
+		judge_sum+=weight * flowL[winner]->adj[src][dst];//由于已经调用过end_implement(),所以任何流的adj都是相同的
 	}
 }
 
