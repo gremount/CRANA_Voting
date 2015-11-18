@@ -4,7 +4,7 @@
 #include"graph.h"
 #include"common.h"
 #include "res.h"
-#include "LP.h"
+#include "LP2.h"
 
 class Flow
 {
@@ -88,7 +88,7 @@ public:
 			else	  reqPL.push_back(g.reqL[i]);
 		}
 
-		LP(&g,reqPL,path_record,id,adj);
+		LP2(&g,reqPL,path_record,id,adj);
 		begin_implement(g);
 
 	}

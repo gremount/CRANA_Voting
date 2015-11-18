@@ -1,15 +1,15 @@
-#ifndef LP_H
-#define LP_H
+#ifndef LP2_H
+#define LP2_H
 
 #include "common.h"
 #include "graph.h"
 #include "res.h"
 #include <ilcplex/ilocplex.h>
 
-//不允许分流的规划,因为这里有x[d]=IloIntVarArray(environment,g->m,0,1);
-//使得x[d][i]是0,1变量
 
-double LP(PGraph *g,vector<Req*> &reqL)
+//处理特殊的reqL, reqL中有一个的flow = 0
+
+double LP2(VGraph *g,vector<Req*> &reqL,vector<Path*> &path_record, int id, vector<vector<int> > &adj)
 {
 	IloEnv environment;
 	IloModel model(environment);
@@ -25,9 +25,13 @@ double LP(PGraph *g,vector<Req*> &reqL)
 
 	//优化目标
 	IloExpr goal(environment);
-	for(int i=0;i<g->m;i++)
-		for(int d=0;d<K;d++)
-			goal += x[d][i] * reqL[d]->flow * g->incL[i]->weight;
+	IloExpr temp(environment);
+	for(int d=0;d<K;d++)
+	{
+		for(int i=0;i<g->m;i++)		
+			temp += x[d][i] * reqL[d]->flow * g->incL[i]->weight;
+		goal += temp/g->cost_best[d];
+	}
 	model.add(IloMinimize(environment, goal));
 
 	//约束1，流量约束
@@ -40,9 +44,9 @@ double LP(PGraph *g,vector<Req*> &reqL)
 			for(int k=0;k<g->adjRL[i].size();k++)
 				constraint -= x[d][g->adjRL[i][k]->id];
 		
-			if(i==reqL[d]->src)
+			if(i==reqL[d]->src && d!=id)
 				model.add(constraint==1);
-			else if(i==reqL[d]->dst)
+			else if(i==reqL[d]->dst && d!=id)
 				model.add(constraint==-1);
 			else
 				model.add(constraint==0);
@@ -54,7 +58,7 @@ double LP(PGraph *g,vector<Req*> &reqL)
 		IloExpr constraint(environment);
 		for(int d=0;d<K;d++)
 			constraint += reqL[d]->flow * x[d][i];
-		model.add(constraint<=g->incL[i]->capacity);
+		model.add(constraint <= (g->incL[i]->capacity - adj[g->incL[i]->src][g->incL[i]->dst]));
 	}
 
 	//计算模型
@@ -64,26 +68,23 @@ double LP(PGraph *g,vector<Req*> &reqL)
 	{
 		obj=solver.getObjValue();
 
-		//展示流量所走的路径，并且修改各条link的capacity
+		//路径记录，其中有一条流用dijk算法记录过了，这里的路径为0，所以不在这里记录
 		
 		int distance=0;
 		for(int d=0;d<K;d++)
 		{
-			//cout<<"flow "<<d+1<<" : "<<endl;
 			distance=0;
+			Path* path=new Path();
 			for(int i=0;i<g->m;i++)
 			{
 				if(solver.getValue(x[d][i])>0)
 				{
-					/*cout<<"from node "<<g->incL[i]->src<<" to node "<<
-						g->incL[i]->dst<< " has flow "<<
-						solver.getValue(x[d][i])*reqL[d]->flow<<endl;*/
-					g->incL[i]->capacity -= reqL[d]->flow;
+					path->pathL.push_back(g->incL[i]);
 					distance += g->incL[i]->weight;
 				}
 			}
-			//cout<<distance<<endl;
-			g->cost_LP[d]=distance * reqL[d]->flow;
+			if(distance==0)continue;
+			path_record[d]=path;
 		}
 	}
 	else

@@ -3,6 +3,7 @@
 #include"graph.h"
 #include"voting.h"
 #include "res.h"
+#include "LP.h"
 
 const int Inf=99999;
 const int N=18;
@@ -20,8 +21,11 @@ int main()
 {
 	srand((unsigned)time(NULL));
 	VGraph gv("d:\\github\\CRANA_Voting\\graph2.txt");
+	PGraph gp("d:\\github\\CRANA_Voting\\graph2.txt");
 	vector<Flow*> flowL;//记录所有的流实例
 
+	double judge_LP=0,judge_sum_LP=0,result_sum_LP=0;
+	int judge_sum=0;
 	
 	vector<Req*> reqL;
 	float table[M2C+1][N2C+1] = {0};
@@ -80,10 +84,13 @@ int main()
 			}
 		}
 
+		//@@@@@@@@@@@@@@@@  Voting  @@@@@@@@@@@@@@@@@@@@@@
+		//@@@@@@@@@@@@@@@@  Voting  @@@@@@@@@@@@@@@@@@@@@@
+
 		//算最完美方案，所有的路都第一个走得到的方案
 		for(int j=0;j<Maxreq;j++)
 			gv.cost_best[j] = gv.dijkstra(reqL[j]->src,reqL[j]->dst,reqL[j]->flow,flowL[0]->adj);
-		
+
 		//提方案
 		for(int j=0;j<Maxreq;j++)
 			flowL[j]->propose(gv,flowL);
@@ -144,7 +151,7 @@ int main()
 			if(table[j+1][winner]=10000) judge_sum += MAXPATH * reqL[j]->flow;
 
 		cout << "第" << i << "轮整体满意度： " << happiness/Maxreq << endl;
-		cout << "多轮整体满意度和：" << happiness_sum / ((i+1)*10) << endl;
+		cout << "多轮满意度：" << happiness_sum / ((i+1)*10) << endl;
 		cout << "多轮整体代价和: " << judge_sum << endl;
 
 		//胜利的方案部署
@@ -160,6 +167,42 @@ int main()
 		}
 		
 		cout<<endl;
+
+		//@@@@@@@@@@@@@@@@@End of Voting@@@@@@@@@@@@@@@@@@@@@@@@@
+		//@@@@@@@@@@@@@@@@@End of Voting@@@@@@@@@@@@@@@@@@@@@@@@@
+
+		//分段规划部分
+		cout<<endl<<"			LP result			"<<endl;
+		
+		//最优部署计算
+		for(int j=0;j<Maxreq;j++)
+			gp.cost_best[j] = reqL[j]->flow * gp.dijkstra(reqL[j]->src,reqL[j]->dst,reqL[j]->flow);
+
+		//线性规划部署
+		double result_LP=0;
+		result_LP=LP(&gp,reqL);
+
+		//用线性规划解计算cost
+		result_sum_LP += result_LP;
+		//cout<<"cost of this case is: "<<result_LP<<endl;
+		//cout<<"多轮整体代价和: "<<result_sum_LP<<endl;
+		
+		//计算满意度
+		if(result_LP==Inf)
+			judge_LP=0;
+		else
+		{
+			judge_LP=0;
+			//for(int i=0;i<reqN;i++)
+			//	cout<<g.cost_best[i]<<" "<<g.cost_LP[i]<<endl;
+			for(int j=0;j<Maxreq;j++)
+				judge_LP += gp.cost_best[j]/gp.cost_LP[j];
+		}
+		judge_sum_LP += judge_LP;
+		cout<<"单轮满意度： "<<judge_LP/Maxreq<<endl;
+		cout<<"多轮满意度： "<<judge_sum_LP/(Maxreq*(i+1))<<endl;
+		cout<<"多轮整体代价和: "<<result_sum_LP<<endl;
+
 
 	}//一个case结束
 	getchar();
