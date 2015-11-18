@@ -203,7 +203,6 @@ void judge_sum_function(VGraph &g, vector<Flow*> &flowL, int winner)
 	for(int i=0;i<M;i++)
 	{
 		int src,dst,weight;
-		int cost=0;
 		src=g.incL[i]->src;dst=g.incL[i]->dst;
 		weight=g.incL[i]->weight;
 		judge_sum+=weight * flowL[winner]->adj[src][dst];

@@ -25,7 +25,7 @@ int main()
 	vector<Flow*> flowL;//记录所有的流实例
 
 	double judge_LP=0,judge_sum_LP=0,result_sum_LP=0;
-	int judge_sum=0;
+	judge_sum=0;
 	
 	vector<Req*> reqL;
 	float table[M2C+1][N2C+1] = {0};
@@ -35,7 +35,7 @@ int main()
 	for(int j=0;j<Maxreq;j++)
 		ranking[j]=1;//每种投票结果有1个voter
 
-
+	
 	for(int i=0;i<caseN;i++)
 	{
 		cout<<endl<<"*************************"<<" case "<<i<<"*************************"<<endl;
@@ -121,7 +121,7 @@ int main()
 		else
 			cout << "ranked pairs method: " << winner << endl;
 
-
+		
 		// table show
 		for(int i=1;i<=Maxreq;i++)
 		{
@@ -148,8 +148,10 @@ int main()
 		//计算方案部署后当前总的cost，如果流没有被安排进网络，就增加惩罚cost
 		judge_sum_function(gv,flowL,winner-1);
 		for(int j=0;j<Maxreq;j++)
-			if(table[j+1][winner]=10000) judge_sum += MAXPATH * reqL[j]->flow;
-
+			if(table[j+1][winner]==10000) {
+				cout<<"触发惩罚机制"<<endl;
+				judge_sum += MAXPATH * reqL[j]->flow;
+			}
 		cout << "第" << i << "轮整体满意度： " << happiness/Maxreq << endl;
 		cout << "多轮满意度：" << happiness_sum / ((i+1)*10) << endl;
 		cout << "多轮整体代价和: " << judge_sum << endl;
