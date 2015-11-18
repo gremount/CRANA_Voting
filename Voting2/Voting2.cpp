@@ -80,6 +80,10 @@ int main()
 			}
 		}
 
+		//算最完美方案，所有的路都第一个走得到的方案
+		for(int j=0;j<Maxreq;j++)
+			gv.cost_best[j] = gv.dijkstra(reqL[j]->src,reqL[j]->dst,reqL[j]->flow,flowL[0]->adj);
+		
 		//提方案
 		for(int j=0;j<Maxreq;j++)
 			flowL[j]->propose(gv,flowL);

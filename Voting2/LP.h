@@ -26,9 +26,13 @@ double LP(VGraph *g,vector<Req*> &reqL,vector<Path*> &path_record, int id, vecto
 
 	//优化目标
 	IloExpr goal(environment);
-	for(int i=0;i<g->m;i++)
-		for(int d=0;d<K;d++)
-			goal += x[d][i] * reqL[d]->flow * g->incL[i]->weight;
+	IloExpr temp(environment);
+	for(int d=0;d<K;d++)
+	{
+		for(int i=0;i<g->m;i++)		
+			temp += x[d][i] * reqL[d]->flow * g->incL[i]->weight;
+		goal += temp/g->cost_best[d];
+	}
 	model.add(IloMinimize(environment, goal));
 
 	//约束1，流量约束

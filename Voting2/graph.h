@@ -64,6 +64,7 @@ public:
 		adj.resize(n);
 		for(int i=0;i<n;i++)
 			adj[i].resize(n);
+		cost_best.resize(Maxreq);
 
 		int a,b,c,d;
 		int temp=m/2;
@@ -89,9 +90,9 @@ public:
 			reqL.push_back(reqL2[i]);
 	}
 
-	void Update(int s,int flow){
+	void Update(int s,int flow,vector<vector<int> > &adj){
         for (int i = 0; i < adjL[s].size();i++){
-			if(flow>adjL[s][i]->capacity)continue;
+			if(flow > (adjL[s][i]->capacity - adj[adjL[s][i]->src][adjL[s][i]->dst] ))continue;
 			if (d[s] + adjL[s][i]->weight < d[adjL[s][i]->dst]){
                 d[adjL[s][i]->dst] = d[s] + adjL[s][i]->weight;
                 p[adjL[s][i]->dst] = s;
@@ -113,7 +114,7 @@ public:
         return min_node;
     }
 
-    int dijkstra(int src, int dst, int flow){
+    int dijkstra(int src, int dst, int flow, vector<vector<int> > &adj){
         S.clear();
         V.clear();
         for (int i = 0; i < n; i++)
@@ -123,7 +124,7 @@ public:
             p[i] = -2;
         }
         d[src] = 0; p[src] = -1;
-        Update(src,flow);
+        Update(src,flow,adj);
         S.erase(src);
         V.insert(src);
         while (S.size() != 0)
@@ -132,7 +133,7 @@ public:
             mind = FindMin();
             if (mind == dst) return d[mind];
 			if (mind==-1) break;//没有路可达
-            Update(mind,flow);
+            Update(mind,flow,adj);
             S.erase(mind);
             V.insert(mind);
         }
