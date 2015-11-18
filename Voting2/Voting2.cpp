@@ -8,7 +8,11 @@ const int Inf=99999;
 const int N=18;
 const int M=42;
 const int Maxreq=10;
-const int Maxflow=5;	
+
+const int caseN=6;
+const int Maxflow=3;	
+const int Begin_num=3;
+
 int judge_sum;
 
 
@@ -18,7 +22,7 @@ int main()
 	VGraph gv("d:\\github\\CRANA_Voting\\graph2.txt");
 	vector<Flow*> flowL;//记录所有的流实例
 
-	int caseN=5;
+	
 	vector<Req*> reqL;
 	float table[M2C+1][N2C+1] = {0};
 	int ranking[N2C+1]={0};//记录一种排序的投票人数
@@ -45,7 +49,7 @@ int main()
 				while(1){
 					//a = rand()%N;
 					//b = rand()%N;
-					c = 3 + rand()%Maxflow;
+					c = Begin_num + rand()%Maxflow;
 					if(c!=0) break;
 					//if(a!=b && c!=0) break;
 				}
@@ -64,7 +68,7 @@ int main()
 				while(1){
 					//a = rand()%N;
 					//b = rand()%N;
-					c = 3 + rand()%Maxflow;
+					c = Begin_num + rand()%Maxflow;
 					if(c!=0) break;
 					//if(a!=b && c!=0) break;
 				}
@@ -106,6 +110,8 @@ int main()
 		else
 			cout << "ranked pairs method: " << winner << endl;
 
+
+		// table show
 		for(int i=1;i<=Maxreq;i++)
 		{
 			cout<<"flow ";
@@ -120,15 +126,7 @@ int main()
 			cout<<endl;
 		}
 		cout<<endl;
-
-		/* table show
-		for(int j=1;j<=Maxreq;j++)
-		{
-			cout<<endl;
-			for(int k=1;k<=Maxreq;k++)
-				cout<<table[j][k]<<" ";
-		}
-		*/
+		
 
 		//计算满意度
 		float happiness=0;//一轮所有流的满意度和，越高越好,0<=满意度<=1
@@ -146,6 +144,7 @@ int main()
 		cout << "多轮整体代价和: " << judge_sum << endl;
 
 		//胜利的方案部署
+		
 		for(int j=0;j<Maxreq;j++)
 		{
 			for(int k1=0;k1<N;k1++)
@@ -153,10 +152,11 @@ int main()
 				{
 					//cout<<j<<" "<<k1<<" "<<k2<<endl;
 					flowL[j]->adj[k1][k2]=flowL[winner-1]->adj[k1][k2];
-		
 				}
 		}
 		
+		cout<<endl;
+
 	}//一个case结束
 	getchar();
 	return 0;

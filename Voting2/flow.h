@@ -64,7 +64,19 @@ public:
 				loc=p[loc];
 			}
 			path_record[id]=path;
+
+			//部署这条路径
+			int edge_num=path->pathL.size();
+			for(int j=0;j<edge_num;j++)
+			{
+				int src,dst;
+				src=path_record[id]->pathL[j]->src;
+				dst=path_record[id]->pathL[j]->dst;
+				adj[src][dst] += g.reqL[id]->flow;
+			}
 		}
+
+		
 
 		//对其他的流用规划计算路径
 		vector<Req*> reqPL;
@@ -76,15 +88,17 @@ public:
 			else	  reqPL.push_back(g.reqL[i]);
 		}
 
-		LP(&g,reqPL,path_record,id);
-		
+		LP(&g,reqPL,path_record,id,adj);
+		begin_implement(g);
+
 	}
 
-	//流部署 自己提出的方案
+	//流部署 自己提出的方案,除掉dijkstra算出的路
 	void begin_implement(VGraph &g)
 	{
 		for(int i=0;i<Maxreq;i++)
 		{
+			if(i==id) continue;
 			int edge_num=path_record[i]->pathL.size();
 			for(int j=0;j<edge_num;j++)
 			{
@@ -124,7 +138,7 @@ public:
 				int src,dst;
 				src=flowL[winner]->path_record[i]->pathL[j]->src;
 				dst=flowL[winner]->path_record[i]->pathL[j]->dst;
-				adj[src][dst] += flowL[winner]->adj[src][dst];
+				adj[src][dst] = flowL[winner]->adj[src][dst];
 			}
 		}
 	}
@@ -192,7 +206,7 @@ void judge_sum_function(VGraph &g, vector<Flow*> &flowL, int winner)
 		int cost=0;
 		src=g.incL[i]->src;dst=g.incL[i]->dst;
 		weight=g.incL[i]->weight;
-		judge_sum+=weight * flowL[winner]->adj[src][dst];//由于已经调用过end_implement(),所以任何流的adj都是相同的
+		judge_sum+=weight * flowL[winner]->adj[src][dst];
 	}
 }
 

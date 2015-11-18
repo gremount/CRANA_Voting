@@ -10,7 +10,7 @@
 //不允许分流的规划,因为这里有x[d]=IloIntVarArray(environment,g->m,0,1);
 //使得x[d][i]是0,1变量
 
-double LP(VGraph *g,vector<Req*> &reqL,vector<Path*> &path_record, int id)
+double LP(VGraph *g,vector<Req*> &reqL,vector<Path*> &path_record, int id, vector<vector<int> > &adj)
 {
 	IloEnv environment;
 	IloModel model(environment);
@@ -55,7 +55,7 @@ double LP(VGraph *g,vector<Req*> &reqL,vector<Path*> &path_record, int id)
 		IloExpr constraint(environment);
 		for(int d=0;d<K;d++)
 			constraint += reqL[d]->flow * x[d][i];
-		model.add(constraint<=g->incL[i]->capacity);
+		model.add(constraint <= (g->incL[i]->capacity - adj[g->incL[i]->src][g->incL[i]->dst]));
 	}
 
 	//计算模型
