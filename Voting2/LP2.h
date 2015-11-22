@@ -83,6 +83,7 @@ double LP2(VGraph *g,vector<Req*> &reqL,vector<Path*> &path_record, int id, vect
 					distance += g->incL[i]->weight;
 				}
 			}
+			if(d==id && distance!=0) cout<<endl<<endl<<"error !!!!!!!!!!!!!!!!!"<<endl<<endl;
 			if(distance==0)continue;
 			path_record[d]=path;
 		}

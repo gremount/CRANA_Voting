@@ -10,9 +10,9 @@ const int N=18;
 const int M=42;
 const int Maxreq=10;
 
-const int caseN=6;
-const int Maxflow=3;	
-const int Begin_num=3;
+const int caseN=7;
+const int Maxflow=5;	
+const int Begin_num=1;
 
 int judge_sum;
 
