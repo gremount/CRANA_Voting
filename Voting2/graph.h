@@ -19,9 +19,10 @@ public:
 class Req
 {
 public:
-	int src, dst, flow;
-	Req(int a, int b, int c)
+	int id, src, dst, flow;
+	Req(int id2, int a, int b, int c)
 	{
+		id=id2;
 		src=a;
 		dst=b;
 		flow=c;

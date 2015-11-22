@@ -6,7 +6,7 @@
 #include "res.h"
 #include <ilcplex/ilocplex.h>
 
-
+//用在flow.h中，是voting方案的规划部分
 //处理特殊的reqL, reqL中有一个的flow = 0
 
 double LP2(VGraph *g,vector<Req*> &reqL,vector<Path*> &path_record, int id, vector<vector<int> > &adj)
@@ -30,7 +30,7 @@ double LP2(VGraph *g,vector<Req*> &reqL,vector<Path*> &path_record, int id, vect
 	{
 		for(int i=0;i<g->m;i++)		
 			temp += x[d][i] * reqL[d]->flow * g->incL[i]->weight;
-		goal += temp/g->cost_best[d];
+		goal += temp/g->cost_best[reqL[d]->id];
 	}
 	model.add(IloMinimize(environment, goal));
 
@@ -44,9 +44,9 @@ double LP2(VGraph *g,vector<Req*> &reqL,vector<Path*> &path_record, int id, vect
 			for(int k=0;k<g->adjRL[i].size();k++)
 				constraint -= x[d][g->adjRL[i][k]->id];
 		
-			if(i==reqL[d]->src && d!=id)
+			if(i==reqL[d]->src)
 				model.add(constraint==1);
-			else if(i==reqL[d]->dst && d!=id)
+			else if(i==reqL[d]->dst)
 				model.add(constraint==-1);
 			else
 				model.add(constraint==0);
@@ -68,7 +68,7 @@ double LP2(VGraph *g,vector<Req*> &reqL,vector<Path*> &path_record, int id, vect
 	{
 		obj=solver.getObjValue();
 
-		//路径记录，其中有一条流用dijk算法记录过了，这里的路径为0，所以不在这里记录
+		//路径记录
 		
 		int distance=0;
 		for(int d=0;d<K;d++)
@@ -83,9 +83,8 @@ double LP2(VGraph *g,vector<Req*> &reqL,vector<Path*> &path_record, int id, vect
 					distance += g->incL[i]->weight;
 				}
 			}
-			if(d==id && distance!=0) cout<<endl<<endl<<"error !!!!!!!!!!!!!!!!!"<<endl<<endl;
-			if(distance==0)continue;
-			path_record[d]=path;
+			if(distance==0){cout<<endl<<endl<<"error !!!!!!!!!!!!!!!!!"<<endl<<endl;continue;}
+			path_record[reqL[d]->id]=path;
 		}
 	}
 	else

@@ -84,7 +84,7 @@ public:
 		{
 			//保证流放置的位置和之前记录的id相同
 			//同时也要注意LP算出的一个商品是一个空路径
-			if(i==id) reqPL.push_back(new Req(src,dst,0));
+			if(i==id) continue;
 			else	  reqPL.push_back(g.reqL[i]);
 		}
 

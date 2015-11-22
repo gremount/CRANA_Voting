@@ -10,9 +10,9 @@ const int N=18;
 const int M=42;
 const int Maxreq=10;
 
-const int caseN=7;
+const int caseN=3;
 const int Maxflow=5;	
-const int Begin_num=1;
+const int Begin_num=5;
 
 int judge_sum;
 
@@ -58,7 +58,7 @@ int main()
 					//if(a!=b && c!=0) break;
 				}
 				a=1;b=17;
-				Req* r = new Req(a,b,c);
+				Req* r = new Req(j,a,b,c);
 				reqL.push_back(r);
 				gv.reqL.push_back(r);
 				Flow* flow_now = new Flow(j,a,b,c);
@@ -77,7 +77,7 @@ int main()
 					//if(a!=b && c!=0) break;
 				}
 				a=1;b=17;
-				Req* r = new Req(a,b,c);
+				Req* r = new Req(j,a,b,c);
 				reqL.push_back(r);
 				gv.reqL.push_back(r);
 				flowL[j]->flow_modify(a,b,c);
