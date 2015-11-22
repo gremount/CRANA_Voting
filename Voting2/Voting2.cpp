@@ -6,22 +6,23 @@
 #include "LP.h"
 
 const int Inf=99999;
-const int N=18;
-const int M=42;
-const int Maxreq=10;
+const int N=20;//所有的点数
+const int M=380;//包含正反向边
+const int Maxreq=10;//一个case的流需求数量
 
-const int caseN=3;
-const int Maxflow=5;	
-const int Begin_num=5;
+const int caseN=10;//case总数
+const int Maxflow=40;//流的大小可变范围
+const int Begin_num=10;//流的大小起始范围
 
 int judge_sum;
 
+//如果改图，需要修改： 上面的参数 + 图输入 + req输入的部分
 
 int main()
 {
 	srand((unsigned)time(NULL));
-	VGraph gv("d:\\github\\CRANA_Voting\\graph2.txt");
-	PGraph gp("d:\\github\\CRANA_Voting\\graph2.txt");
+	VGraph gv("d:\\github\\CRANA_Voting\\graph_all.txt");
+	PGraph gp("d:\\github\\CRANA_Voting\\graph_all.txt");
 	vector<Flow*> flowL;//记录所有的流实例
 
 	double judge_LP=0,judge_sum_LP=0,result_sum_LP=0;
@@ -51,13 +52,13 @@ int main()
 			{
 				int a=0,b=0,c=0;
 				while(1){
-					//a = rand()%N;
-					//b = rand()%N;
 					c = Begin_num + rand()%Maxflow;
-					if(c!=0) break;
-					//if(a!=b && c!=0) break;
+					//if(c!=0) break;
+					a = rand()%N;
+					b = rand()%N;
+					if(a!=b && c!=0) break;
 				}
-				a=1;b=17;
+				//a=1;b=17;
 				Req* r = new Req(j,a,b,c);
 				reqL.push_back(r);
 				gv.reqL.push_back(r);
@@ -70,13 +71,13 @@ int main()
 			{
 				int a=0,b=0,c=0;
 				while(1){
-					//a = rand()%N;
-					//b = rand()%N;
 					c = Begin_num + rand()%Maxflow;
-					if(c!=0) break;
-					//if(a!=b && c!=0) break;
+					//if(c!=0) break;
+					a = rand()%N;
+					b = rand()%N;
+					if(a!=b && c!=0) break;
 				}
-				a=1;b=17;
+				//a=1;b=17;
 				Req* r = new Req(j,a,b,c);
 				reqL.push_back(r);
 				gv.reqL.push_back(r);
@@ -89,7 +90,7 @@ int main()
 
 		//算最完美方案，所有的路都第一个走得到的方案
 		for(int j=0;j<Maxreq;j++)
-			gv.cost_best[j] = gv.dijkstra(reqL[j]->src,reqL[j]->dst,reqL[j]->flow,flowL[0]->adj);
+			gv.cost_best[j] = reqL[j]->flow * gv.dijkstra(reqL[j]->src,reqL[j]->dst,reqL[j]->flow,flowL[0]->adj);
 
 		//提方案
 		for(int j=0;j<Maxreq;j++)

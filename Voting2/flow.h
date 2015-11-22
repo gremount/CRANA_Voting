@@ -76,8 +76,6 @@ public:
 			}
 		}
 
-		
-
 		//对其他的流用规划计算路径
 		vector<Req*> reqPL;
 		for(int i=0;i<g.reqL.size();i++)
@@ -125,7 +123,7 @@ public:
 		}
 	}
 
-	//流部署 获胜的方案
+	//流部署 获胜的方案, 直接在main.cpp里实现也可以
 	void end_implement(VGraph &g,int winner, vector<Flow*> &flowL)
 	{
 		//Flow记录的图负载信息更新
