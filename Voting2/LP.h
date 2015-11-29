@@ -78,7 +78,7 @@ double LP(PGraph *g,vector<Req*> &reqL)
 					/*cout<<"from node "<<g->incL[i]->src<<" to node "<<
 						g->incL[i]->dst<< " has flow "<<
 						solver.getValue(x[d][i])*reqL[d]->flow<<endl;*/
-					g->incL[i]->capacity -= reqL[d]->flow;
+					g->incL[i]->capacity = g->incL[i]->capacity - reqL[d]->flow;
 					distance += g->incL[i]->weight;
 				}
 			}

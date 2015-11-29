@@ -55,7 +55,7 @@ public:
 		//对自己的流先算dijkstra
 		int dist=0,loc=dst;
 		dist=dijkstra(src,dst,flow,g);
-		if(dist==Inf){;}
+		if(dist==Inf){cout<<"*********** no path *********"<<endl;}
 		else{
 			//将路径记录下来
 			Path* path = new Path();
@@ -203,7 +203,7 @@ void judge_sum_function(VGraph &g, vector<Flow*> &flowL, int winner)
 		int src,dst,weight;
 		src=g.incL[i]->src;dst=g.incL[i]->dst;
 		weight=g.incL[i]->weight;
-		judge_sum+=weight * flowL[winner]->adj[src][dst];
+		judge_sum += weight * flowL[winner]->adj[src][dst];
 	}
 }
 

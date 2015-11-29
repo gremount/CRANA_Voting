@@ -10,9 +10,9 @@ const int N=20;//所有的点数
 const int M=380;//包含正反向边
 const int Maxreq=10;//一个case的流需求数量
 
-const int caseN=10;//case总数
-const int Maxflow=40;//流的大小可变范围
-const int Begin_num=10;//流的大小起始范围
+const int caseN=6;//case总数
+const int Maxflow=30;//流的大小可变范围
+const int Begin_num=30;//流的大小起始范围
 
 int judge_sum;
 
@@ -24,8 +24,14 @@ int main()
 	VGraph gv("d:\\github\\CRANA_Voting\\graph_all.txt");
 	PGraph gp("d:\\github\\CRANA_Voting\\graph_all.txt");
 	vector<Flow*> flowL;//记录所有的流实例
+	ofstream outfile("d:\\github\\result.txt");//最后一个case的结果
+	ofstream req_outfile("d:\\github\\req_outfile.txt");
 
-	double judge_LP=0,judge_sum_LP=0,result_sum_LP=0;
+	outfile<<"graph_all网络拓扑 caseN: "<<caseN<<endl;
+	outfile<<"flow Range: "<<Begin_num<<"--"<<Maxflow+Begin_num-1<<endl<<endl;
+
+	double judge_LP=0,judge_sum_LP=0;
+	int result_sum_LP=0;
 	judge_sum=0;
 	
 	vector<Req*> reqL;
@@ -45,6 +51,7 @@ int main()
 			for(int k=0;k<Maxreq;k++)
 				table[j][k]=0;
 		
+		req_outfile<<"case "<<i<<endl;
 		reqL.clear();
 		gv.reqL.clear();
 		if(i==0){
@@ -64,6 +71,7 @@ int main()
 				gv.reqL.push_back(r);
 				Flow* flow_now = new Flow(j,a,b,c);
 				flowL.push_back(flow_now);
+				req_outfile<<j<<" "<<a<<" "<<b<<" "<<c<<endl;
 			}
 		}
 		else{
@@ -82,6 +90,7 @@ int main()
 				reqL.push_back(r);
 				gv.reqL.push_back(r);
 				flowL[j]->flow_modify(a,b,c);
+				req_outfile<<j<<" "<<a<<" "<<b<<" "<<c<<endl;
 			}
 		}
 
@@ -156,6 +165,12 @@ int main()
 		cout << "第" << i << "轮整体满意度： " << happiness/Maxreq << endl;
 		cout << "多轮满意度：" << happiness_sum / ((i+1)*10) << endl;
 		cout << "多轮整体代价和: " << judge_sum << endl;
+		if(i==(caseN-1)){
+			outfile << "Voting result"<<endl;
+			outfile << "第" << i << "轮整体满意度： " << happiness/Maxreq << endl;
+			outfile << "多轮满意度：" << happiness_sum / ((i+1)*10) << endl;
+			outfile << "多轮整体代价和: " << judge_sum << endl;
+		}
 
 		//胜利的方案部署
 		
@@ -182,7 +197,7 @@ int main()
 			gp.cost_best[j] = reqL[j]->flow * gp.dijkstra(reqL[j]->src,reqL[j]->dst,reqL[j]->flow);
 
 		//线性规划部署
-		double result_LP=0;
+		int result_LP=0;
 		result_LP=LP(&gp,reqL);
 
 		//用线性规划解计算cost
@@ -206,6 +221,15 @@ int main()
 		cout<<"多轮满意度： "<<judge_sum_LP/(Maxreq*(i+1))<<endl;
 		cout<<"多轮整体代价和: "<<result_sum_LP<<endl;
 
+		if(result_sum_LP>judge_sum) 
+			cout<<"problem occurred"<<endl;
+
+		if(i==(caseN-1)){
+			outfile << "LP result"<<endl;
+			outfile<<"单轮满意度： "<<judge_LP/Maxreq<<endl;
+			outfile<<"多轮满意度： "<<judge_sum_LP/(Maxreq*(i+1))<<endl;
+			outfile<<"多轮整体代价和: "<<result_sum_LP<<endl;
+		}
 
 	}//一个case结束
 	getchar();
