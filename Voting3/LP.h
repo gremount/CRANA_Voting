@@ -31,7 +31,7 @@ double LP(PGraph *g,vector<Req*> &reqL)
 		IloExpr load(environment);
 		for(int d=0;d<K;d++)
 			load += x[d][i] * reqL[d]->flow;
-		model.add(load <= z * (g->incL[i]->capacity - g->adj[g->incL[i]->src][g->incL[i]->dst]));
+		model.add((load + g->adj[g->incL[i]->src][g->incL[i]->dst]) <= z * g->incL[i]->capacity);
 	}
 	model.add(IloMinimize(environment, z));
 

@@ -5,28 +5,43 @@
 #include "res.h"
 #include "LP.h"
 
+/*
+//graph_all
 const int Inf=99999;
 const int N=20;//所有的点数
 const int M=380;//包含正反向边
 const int Maxreq=10;//一个case的流需求数量
 const int Maxpath=N-1;//可能的最长路径: N-1
 
-const int caseN=5;//case总数
+const int caseN=10;//case总数
 const int Maxflow=30;//流的大小可变范围
-const int Begin_num=30;//流的大小起始范围
+const int Begin_num=1;//流的大小起始范围
+*/
+
+
+//graph_Compuserve
+const int Inf=99999;
+const int N=11;//所有的点数
+const int M=28;//包含正反向边
+const int Maxreq=10;//一个case的流需求数量
+const int Maxpath=N-1;//可能的最长路径: N-1
+
+const int caseN=6;//case总数
+const int Maxflow=10;//流的大小可变范围
+const int Begin_num=1;//流的大小起始范围
 
 //如果改图，需要修改： 上面的参数 + 图输入 + req输入的部分
 
 int main()
 {
 	srand((unsigned)time(NULL));
-	VGraph gv("d:\\github\\CRANA_Voting\\graph_all.txt");//Voting用的图
-	PGraph gp("d:\\github\\CRANA_Voting\\graph_all.txt");//LP用的图
+	VGraph gv("d:\\github\\CRANA_Voting\\graph_Compuserve.txt");//Voting用的图
+	PGraph gp("d:\\github\\CRANA_Voting\\graph_Compuserve.txt");//LP用的图
 	vector<Flow*> flowL;//记录所有的流实例
 	ofstream outfile("d:\\github\\result.txt");//最后一个case的结果
 	ofstream req_outfile("d:\\github\\req_outfile.txt");
 
-	outfile<<"graph_all网络拓扑 caseN: "<<caseN<<endl;
+	outfile<<"graph_Compuserve网络拓扑 caseN: "<<caseN<<endl;
 	outfile<<"flow Range: "<<Begin_num<<"--"<<Maxflow+Begin_num-1<<endl<<endl;
 
 	double judge_LP=0,judge_sum_LP=0;
@@ -224,7 +239,9 @@ int main()
 		double latency_LP=0;
 		latency_LP=judge_sum_LP_function(gp,flowL);
 		cout << "多轮整体延时和: " << latency_LP << endl;
-
+		cout<<"最大链路利用率: "<<result_LP<<endl;
+		
+		/*
 		cout<<"单轮最大剩余链路利用率: "<<result_LP<<endl;
 		double maxUtil_LP=0;
 		for(int j=0;j<gp.m;j++)
@@ -235,7 +252,8 @@ int main()
 			if(maxUtil_LP<(gp.adj[src][dst]/capacity))
 				maxUtil_LP=gp.adj[src][dst]/capacity;
 		}
-		cout<<"最大链路利用率: "<<maxUtil_LP<<endl;
+		*/
+		
 		/*
 		if(i==(caseN-1)){
 			outfile << "LP result"<<endl;

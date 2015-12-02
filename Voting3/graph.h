@@ -57,7 +57,7 @@ public:
 	{
 		ifstream infile(address);
 		infile>>n>>m;
-		m=m*2;
+		
 
 		d.resize(n);
         p.resize(n);
@@ -166,7 +166,7 @@ public:
 	{
 		ifstream infile(address);
 		infile>>n>>m;
-		m=m*2;
+		
 
 		d.resize(n);
         p.resize(n);
