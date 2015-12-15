@@ -177,7 +177,7 @@ int main()
 		//计算满意度
 		double happiness=0;//一轮所有流的满意度和，越高越好,0<=满意度<=1
 		for(int j=1;j<=Maxreq;j++)
-			happiness += gv.cost_best[j-1]/table[j][winner];//最好抉择评分/当前抉择评分
+			happiness += table[j][winner]/gv.cost_best[j-1];//最好抉择评分/当前抉择评分
 		happiness_sum += happiness;
 
 		//计算方案部署后当前总的cost，如果流没有被安排进网络，就增加惩罚cost
@@ -226,7 +226,7 @@ int main()
 		//分段规划部分
 		cout<<endl<<"			LP result			"<<endl;
 		
-		//最优部署计算
+		//最优部署计算，cost_best代表的值和可用带宽有关
 		for(int j=0;j<Maxreq;j++)
 			gp.cost_best[j] = reqL[j]->flow * gp.dijkstra(reqL[j]->src,reqL[j]->dst,reqL[j]->flow);
 
