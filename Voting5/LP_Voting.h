@@ -20,35 +20,32 @@ double LP_Voting(VGraph *g,vector<Req*> &reqL,vector<Path*> &path_record, int id
 	
 	//变量
 	IloArray<IloIntVarArray> x(environment, K);
+
 	for(int d=0;d<K;d++)
 		x[d]=IloIntVarArray(environment,g->m,0,1);
 
 	//优化目标
 	IloExpr goal(environment);
 	IloExpr temp(environment);
-	
+	IloExprArray L(environment, g->m);//L[i]:第i条link上所流经的flow
+	IloExprArray Y(environment,K);//Y[d]:第d种流的可用剩余带宽
+
+
 	//最大化满意度
-	for(int d=0;d<K;d++)
+	for(int i=0;i<g->m;i++)
 	{
-		int temp_bw=Inf;
-		for(int i=0;i<g->m;i++)		
-		{
-			int src=g->incL[i]->src, dst=g->incL[i]->dst;
-			if(temp_bw > g->incL[i]->capacity - adj[src][dst])
-			   temp_bw = g->incL[i]->capacity - adj[src][dst];
-		}
-		temp += reqL[d]->flow * temp_bw;
-		goal += temp/(reqL[d]->flow * g->cost_best[reqL[d]->id]);
+		for(int d=0;d<K;d++)
+			L[i]+=x[d][i]*reqL[d]->flow;
 	}
 
-	//minimize cost
-	/*
-	for(int i=0;i<g->m;i++)
-		for(int d=0;d<K;d++)
-			goal += x[d][i] * reqL[d]->flow * g->incL[i]->weight;
-	*/
+	for(int d=0;d<K;d++)
+		for(int i=0;i<g->m;i++)
+			model.add(Y[d] <= (1-x[d][i])*Inf + (g->incL[i]->capacity-L[i]));
 
-	model.add(IloMinimize(environment, goal));
+	for(int d=0;d<K;d++)
+		goal+=Y[d]*reqL[d]->flow;
+
+	model.add(IloMaximize(environment,goal));
 
 	//约束1，流量约束
 	for(int d=0;d < K;d++)
