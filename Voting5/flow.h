@@ -113,13 +113,14 @@ public:
 		for(int i=0;i<Maxreq;i++)
 		{
 			edge_num=flowL[i]->path_record[id]->pathL.size();
-			temp=0;
+			temp=Inf;
 			for(int j=0;j<edge_num;j++)
 			{
 				int src=flowL[i]->path_record[id]->pathL[j]->src;
 				int dst=flowL[i]->path_record[id]->pathL[j]->dst;
 				int capacity=flowL[i]->path_record[id]->pathL[j]->capacity;
-				temp+=capacity-adj[src][dst];
+				if(Inf>capacity-adj[src][dst])
+				temp=capacity-adj[src][dst];
 			}
 			judge[i]=temp*flow;
 			if(judge[i]==0) judge[i]=Maxpath*flow;//没有路径可以安排，就要增加惩罚

@@ -26,7 +26,7 @@ const int M=28;//包含正反向边
 const int Maxreq=10;//一个case的流需求数量
 const int Maxpath=N-1;//可能的最长路径: N-1
 
-const int caseN=6;//case总数
+const int caseN=3;//case总数
 const int Maxflow=10;//流的大小可变范围
 const int Begin_num=1;//流的大小起始范围
 */
@@ -38,9 +38,9 @@ const int M=112;//包含正反向边
 const int Maxreq=10;//一个case的流需求数量
 const int Maxpath=N-1;//可能的最长路径: N-1
 
-const int caseN=6;//case总数
+const int caseN=5;//case总数
 const int Maxflow=10;//流的大小可变范围
-const int Begin_num=6;//流的大小起始范围
+const int Begin_num=1;//流的大小起始范围
 
 //如果改图，需要修改： 上面的参数 + 图输入 + req输入的部分
 
@@ -53,7 +53,7 @@ int main()
 	ofstream outfile("d:\\github\\result.txt");//最后一个case的结果
 	ofstream req_outfile("d:\\github\\req_outfile.txt");
 
-	outfile<<"graph_ATT网络拓扑 caseN: "<<caseN<<endl;
+	outfile<<"graph_Compuserve网络拓扑 caseN: "<<caseN<<endl;
 	outfile<<"flow Range: "<<Begin_num<<"--"<<Maxflow+Begin_num-1<<endl<<endl;
 
 	double judge_LP=0,judge_sum_LP=0;
@@ -242,7 +242,7 @@ int main()
 			//for(int i=0;i<reqN;i++)
 			//	cout<<g.cost_best[i]<<" "<<g.cost_LP[i]<<endl;
 			for(int j=0;j<Maxreq;j++)
-				judge_LP += gp.cost_best[j]/gp.cost_LP[j];
+				judge_LP += gp.cost_LP[j]/gp.cost_best[j];
 		}
 		judge_sum_LP += judge_LP;
 		cout<<"单轮满意度： "<<judge_LP/Maxreq<<endl;

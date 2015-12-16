@@ -76,16 +76,15 @@ double LP(PGraph *g,vector<Req*> &reqL)
 		{
 			//cout<<"flow "<<d+1<<" : "<<endl;
 			latency=0;
-			int path_len=0;
 			int temp_bw=Inf;
 			for(int i=0;i<g->m;i++)
 			{
 				if(solver.getValue(x[d][i])>0)
 				{
-					path_len++;
+					g->adj[g->incL[i]->src][g->incL[i]->dst] += reqL[d]->flow;
 					int src=g->incL[i]->src, dst=g->incL[i]->dst;
 					if(temp_bw > g->incL[i]->capacity - g->adj[src][dst])
-				    temp_bw = g->incL[i]->capacity - g->adj[src][dst];
+						temp_bw = g->incL[i]->capacity - g->adj[src][dst];
 				}
 			}
 			//cout<<distance<<endl;

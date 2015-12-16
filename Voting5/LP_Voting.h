@@ -29,7 +29,12 @@ double LP_Voting(VGraph *g,vector<Req*> &reqL,vector<Path*> &path_record, int id
 	IloExpr temp(environment);
 	IloExprArray L(environment, g->m);//L[i]:第i条link上所流经的flow
 	IloExprArray Y(environment,K);//Y[d]:第d种流的可用剩余带宽
+	
+	for(int i=0;i<g->m;i++)
+		L[i] = IloExpr(environment);
 
+	for(int d=0;d<K;d++)
+		Y[d] = IloExpr(environment);
 
 	//最大化满意度
 	for(int i=0;i<g->m;i++)
@@ -43,7 +48,7 @@ double LP_Voting(VGraph *g,vector<Req*> &reqL,vector<Path*> &path_record, int id
 			model.add(Y[d] <= (1-x[d][i])*Inf + (g->incL[i]->capacity-L[i]));
 
 	for(int d=0;d<K;d++)
-		goal+=Y[d]*reqL[d]->flow;
+		goal+=Y[d]*reqL[d]->flow/(float)g->cost_best[reqL[d]->id];
 
 	model.add(IloMaximize(environment,goal));
 
