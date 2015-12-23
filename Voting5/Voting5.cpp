@@ -18,7 +18,7 @@ const int Maxflow=30;//流的大小可变范围
 const int Begin_num=1;//流的大小起始范围
 */
 
-/*
+
 //graph_Compuserve
 const int Inf=99999;
 const int N=11;//所有的点数
@@ -26,11 +26,12 @@ const int M=28;//包含正反向边
 const int Maxreq=10;//一个case的流需求数量
 const int Maxpath=N-1;//可能的最长路径: N-1
 
-const int caseN=3;//case总数
-const int Maxflow=10;//流的大小可变范围
+const int caseN=7;//case总数
+const int Maxflow=7;//流的大小可变范围
 const int Begin_num=1;//流的大小起始范围
-*/
 
+
+/*
 //graph_ATT
 const int Inf=99999;
 const int N=25;//所有的点数
@@ -38,17 +39,18 @@ const int M=112;//包含正反向边
 const int Maxreq=10;//一个case的流需求数量
 const int Maxpath=N-1;//可能的最长路径: N-1
 
-const int caseN=5;//case总数
+const int caseN=6;//case总数
 const int Maxflow=10;//流的大小可变范围
-const int Begin_num=1;//流的大小起始范围
+const int Begin_num=5;//流的大小起始范围
+*/
 
 //如果改图，需要修改： 上面的参数 + 图输入 + req输入的部分
 
 int main()
 {
 	srand((unsigned)time(NULL));
-	VGraph gv("d:\\github\\CRANA_Voting\\graph_ATT.txt");//Voting用的图
-	PGraph gp("d:\\github\\CRANA_Voting\\graph_ATT.txt");//LP用的图
+	VGraph gv("d:\\github\\CRANA_Voting\\graph_Compuserve.txt");//Voting用的图
+	PGraph gp("d:\\github\\CRANA_Voting\\graph_Compuserve.txt");//LP用的图
 	vector<Flow*> flowL;//记录所有的流实例
 	ofstream outfile("d:\\github\\result.txt");//最后一个case的结果
 	ofstream req_outfile("d:\\github\\req_outfile.txt");
@@ -138,8 +140,8 @@ int main()
 		for(int j=0;j<Maxreq;j++)
 			for(int k=0;k<Maxreq;k++)
 			{
-				if(flowL[j]->judge[k]==0) table[j+1][k+1]=10000;//如果是0，说明流没有摆在网络中
-				else table[j+1][k+1]=flowL[j]->judge[k];
+				if(flowL[j]->judge[k]==0) table[j+1][k+1]=-1;//如果是0，说明流没有摆在网络中
+				else table[j+1][k+1]=-flowL[j]->judge[k];
 			}
 		cout<<endl<<"voting uses ";
 		int choice=1;//选择一种投票算法
@@ -191,8 +193,8 @@ int main()
 				cout<<"触发惩罚机制"<<endl;
 				latencyVoting += Maxpath * reqL[j]->flow;
 			}
-		cout << "第" << i << "轮整体满意度： " << happiness/Maxreq << endl;
-		cout << "多轮满意度：" << happiness_sum / ((i+1)*10) << endl;
+		cout << "第" << i << "轮整体满意度： " << -happiness/Maxreq << endl;
+		cout << "多轮满意度：" << -happiness_sum / ((i+1)*10) << endl;
 		cout << "多轮整体延时和: " << latencyVoting << endl;
 		
 		double maxUtil_Voting=0;

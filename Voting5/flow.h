@@ -123,7 +123,7 @@ public:
 				temp=capacity-adj[src][dst];
 			}
 			judge[i]=temp*flow;
-			if(judge[i]==0) judge[i]=Maxpath*flow;//没有路径可以安排，就要增加惩罚
+			if(judge[i]==0) judge[i]=0;//没有路径可以安排，就要增加惩罚
 		}
 	}
 
