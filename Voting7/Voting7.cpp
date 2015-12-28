@@ -26,8 +26,8 @@ const int M=28;//包含正反向边
 const int Maxreq=10;//一个case的流需求数量
 const int Maxpath=N-1;//可能的最长路径: N-1
 
-const int caseN=6;//case总数
-const int Maxflow=10;//流的大小可变范围
+const int caseN=5;//case总数
+const int Maxflow=7;//流的大小可变范围
 const int Begin_num=1;//流的大小起始范围
 */
 
@@ -41,7 +41,7 @@ const int Maxpath=N-1;//可能的最长路径: N-1
 
 const int caseN=6;//case总数
 const int Maxflow=10;//流的大小可变范围
-const int Begin_num=6;//流的大小起始范围
+const int Begin_num=5;//流的大小起始范围
 
 
 //如果改图，需要修改： 上面的参数 + 图输入 + req输入的部分
@@ -55,7 +55,7 @@ int main()
 	ofstream outfile("d:\\github\\result.txt");//最后一个case的结果
 	ofstream req_outfile("d:\\github\\req_outfile.txt");
 
-	outfile<<"graph_ATT网络拓扑 caseN: "<<caseN<<endl;
+	outfile<<"graph_Compuserve网络拓扑 caseN: "<<caseN<<endl;
 	outfile<<"flow Range: "<<Begin_num<<"--"<<Maxflow+Begin_num-1<<endl<<endl;
 
 	double judge_LP=0,judge_sum_LP=0;
@@ -140,7 +140,7 @@ int main()
 		for(int j=0;j<Maxreq;j++)
 			for(int k=0;k<Maxreq;k++)
 			{
-				if(flowL[j]->judge[k]==0) table[j+1][k+1]=10000;//如果是0，说明流没有摆在网络中
+				if(flowL[j]->judge[k]==0) table[j+1][k+1]=0;//如果是0，说明流没有摆在网络中
 				else table[j+1][k+1]=flowL[j]->judge[k];
 			}
 		cout<<endl<<"voting uses ";
@@ -179,7 +179,7 @@ int main()
 		//计算满意度
 		double happiness=0;//一轮所有流的满意度和，越高越好,0<=满意度<=1
 		for(int j=1;j<=Maxreq;j++)
-			happiness += gv.cost_best[j-1]/table[j][winner];//最好抉择评分/当前抉择评分
+			happiness += table[j][winner]/gv.cost_best[j-1];//最好抉择评分/当前抉择评分
 		happiness_sum += happiness;
 
 		//计算方案部署后当前总的cost，如果流没有被安排进网络，就增加惩罚cost
@@ -196,7 +196,7 @@ int main()
 		cout << "第" << i << "轮整体满意度： " << happiness/Maxreq << endl;
 		cout << "多轮满意度：" << happiness_sum / ((i+1)*10) << endl;
 		cout << "多轮整体延时和: " << latencyVoting << endl;
-
+		
 		//统计网络能耗
 		double energy_Voting=0;
 		
@@ -235,7 +235,7 @@ int main()
 		//分段规划部分
 		cout<<endl<<"			LP result			"<<endl;
 		
-		//最优部署计算
+		//最优部署计算，cost_best代表的值和可用带宽有关
 		for(int j=0;j<Maxreq;j++)
 			gp.cost_best[j] = reqL[j]->flow * gp.dijkstra(reqL[j]->src,reqL[j]->dst,reqL[j]->flow);
 
@@ -251,7 +251,7 @@ int main()
 			//for(int i=0;i<reqN;i++)
 			//	cout<<g.cost_best[i]<<" "<<g.cost_LP[i]<<endl;
 			for(int j=0;j<Maxreq;j++)
-				judge_LP += gp.cost_best[j]/gp.cost_LP[j];
+				judge_LP += gp.cost_LP[j]/gp.cost_best[j];
 		}
 		judge_sum_LP += judge_LP;
 		cout<<"单轮满意度： "<<judge_LP/Maxreq<<endl;
@@ -260,6 +260,7 @@ int main()
 		double latency_LP=0;
 		latency_LP=judge_sum_LP_function(gp,flowL);
 		cout << "多轮整体延时和: " << latency_LP << endl;
+		cout<<"最大链路利用率: "<<result_LP<<endl;
 		
 		cout << "网络能耗：" << result_LP<<endl;
 

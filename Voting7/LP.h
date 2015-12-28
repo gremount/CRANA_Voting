@@ -75,25 +75,24 @@ double LP(PGraph *g,vector<Req*> &reqL)
 
 		//展示流量所走的路径，并且修改各条link的capacity
 		
-		float latency=0;
+		double latency=0;
 		for(int d=0;d<K;d++)
 		{
 			//cout<<"flow "<<d+1<<" : "<<endl;
 			latency=0;
+			int temp_bw=Inf;
 			for(int i=0;i<g->m;i++)
 			{
 				if(solver.getValue(x[d][i])>0)
 				{
-					/*cout<<"from node "<<g->incL[i]->src<<" to node "<<
-						g->incL[i]->dst<< " has flow "<<
-						solver.getValue(x[d][i])*reqL[d]->flow<<endl;*/
 					g->adj[g->incL[i]->src][g->incL[i]->dst] += reqL[d]->flow;
-					latency += 1 + g->adj[g->incL[i]->src][g->incL[i]->dst]/
-						(1 + g->incL[i]->capacity - g->adj[g->incL[i]->src][g->incL[i]->dst]);
+					int src=g->incL[i]->src, dst=g->incL[i]->dst;
+					if(temp_bw > g->incL[i]->capacity - g->adj[src][dst])
+						temp_bw = g->incL[i]->capacity - g->adj[src][dst];
 				}
 			}
 			//cout<<distance<<endl;
-			g->cost_LP[d] = latency * reqL[d]->flow;
+			g->cost_LP[d] = temp_bw * reqL[d]->flow;
 		}
 	}
 	else
