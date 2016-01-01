@@ -43,14 +43,14 @@ public:
 	int n,m;
 	set<int> S, V;
     vector<int> p;
-	vector<float> d;
+	vector<double> d;
 	vector<Edge*> incL;//边的列表
 	vector<vector<Edge*> > adjL,adjRL; //正向和反向邻接链表
 	vector<vector<Edge*> > adj;//邻接矩阵
 
 	vector<Req*> reqL;
-	vector<int> cost_best;//记录每个req的最佳部署结果
-	vector<int> cost_LP;//记录每个req的LP部署结果
+	vector<double> cost_best;//记录每个req的最佳部署结果
+	vector<double> cost_LP;//记录每个req的LP部署结果
 
 	VGraph(){;}
 	VGraph(string address)
@@ -94,7 +94,7 @@ public:
 	}
 
 	void Update(int s,int flow,vector<vector<int> > &adj){
-        float x;
+        double x;
 		for (int i = 0; i < adjL[s].size();i++){
 			int src,dst;
 			src=adjL[s][i]->src;dst=adjL[s][i]->dst;//这里src = s
@@ -159,13 +159,13 @@ public:
 	int n,m;
 	set<int> S, V;
     vector<int> p;
-	vector<float> d;
+	vector<double> d;
 	vector<Edge*> incL;//边的列表
 	vector<vector<Edge*> > adjL,adjRL; //正向和反向邻接链表
 	
 	vector<vector<int> > adj;//该流维护的邻接矩阵，记录负载
-	vector<int> cost_best;//记录每个req的最佳部署结果
-	vector<int> cost_LP;//记录每个req的LP部署结果
+	vector<double> cost_best;//记录每个req的最佳部署结果
+	vector<double> cost_LP;//记录每个req的LP部署结果
 
 	PGraph(){;}
 	PGraph(string address)
@@ -201,14 +201,14 @@ public:
 
 	void Update(int s,int flow){
         for (int i = 0; i < adjL[s].size();i++){
-			float x=flow;
+			double x=flow;
 			int src=adjL[s][i]->src;
 			int dst=adjL[s][i]->dst;
 			
 			if(flow > (adjL[s][i]->capacity-adj[src][dst]))continue;
 			
 			int temp;//link[i][j]可以通过的最大流（的带宽）
-			if(d[src] > adjL[src][i]->capacity-x) temp=adjL[src][i]->capacity-x;//水管受限
+			if(d[src] > adjL[src][i]->capacity-x) temp=adjL[src][i]->capacity-x-adj[src][dst];//水管受限
 			else temp=d[src];//水源受限(到src点的路径带宽有限)
 			
 			if(temp>d[dst]) {d[dst]=temp;p[dst]=src;}//发现拥有更大带宽的路，更新

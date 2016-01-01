@@ -31,10 +31,10 @@ class Voting
 {
 	private:
 	public:
-		float t[M2C+1][N2C+1];
+		double t[M2C+1][N2C+1];
 		int rank[N2C+1];
 		int M2, N2;
-		Voting(float table[][N2C+1], int ranking[],int m2,int n2)
+		Voting(double table[][N2C+1], int ranking[],int m2,int n2)
 		{
 			M2 = m2;
 			N2 = n2;

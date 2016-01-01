@@ -5,7 +5,19 @@
 #include "res.h"
 #include "LP.h"
 
+/*
+//t3
+const int Inf=99999;
+const int N=3;//所有的点数
+const int M=6;//包含正反向边
+const int Maxreq=3;//一个case的流需求数量
+const int Maxpath=N-1;//可能的最长路径: N-1
 
+const int caseN=5;//case总数
+const int Maxflow=5;//流的大小可变范围
+const int Begin_num=10;//流的大小起始范围
+*/
+/*
 //graph_all
 const int Inf=99999;
 const int N=20;//所有的点数
@@ -16,7 +28,7 @@ const int Maxpath=N-1;//可能的最长路径: N-1
 const int caseN=10;//case总数
 const int Maxflow=30;//流的大小可变范围
 const int Begin_num=1;//流的大小起始范围
-
+*/
 
 /*
 //graph_Compuserve
@@ -31,7 +43,7 @@ const int Maxflow=7;//流的大小可变范围
 const int Begin_num=1;//流的大小起始范围
 */
 
- /*
+ 
 //graph_ATT
 const int Inf=99999;
 const int N=25;//所有的点数
@@ -42,15 +54,15 @@ const int Maxpath=N-1;//可能的最长路径: N-1
 const int caseN=6;//case总数
 const int Maxflow=10;//流的大小可变范围
 const int Begin_num=5;//流的大小起始范围
-*/
+
 
 //如果改图，需要修改： 上面的参数 + 图输入 + req输入的部分
 
 int main()
 {
 	srand((unsigned)time(NULL));
-	VGraph gv("d:\\github\\CRANA_Voting\\graph_all.txt");//Voting用的图
-	PGraph gp("d:\\github\\CRANA_Voting\\graph_all.txt");//LP用的图
+	VGraph gv("d:\\github\\CRANA_Voting\\graph_ATT.txt");//Voting用的图
+	PGraph gp("d:\\github\\CRANA_Voting\\graph_ATT.txt");//LP用的图
 	vector<Flow*> flowL;//记录所有的流实例
 	ofstream outfile("d:\\github\\result.txt");//最后一个case的结果
 	ofstream req_outfile("d:\\github\\req_outfile.txt");
@@ -62,7 +74,7 @@ int main()
 	int result_sum_LP=0;
 	
 	vector<Req*> reqL;
-	float table[M2C+1][N2C+1] = {0};
+	double table[M2C+1][N2C+1] = {0};
 	int ranking[N2C+1]={0};//记录一种排序的投票人数
 	double happiness_sum=0;
 	
@@ -92,7 +104,7 @@ int main()
 					b = rand()%N;
 					if(a!=b && c!=0) break;
 				}
-				//a=1;b=17;
+				//a=0;b=1;c=10;
 				Req* r = new Req(j,a,b,c);
 				reqL.push_back(r);
 				gv.reqL.push_back(r);
@@ -112,7 +124,7 @@ int main()
 					b = rand()%N;
 					if(a!=b && c!=0) break;
 				}
-				//a=1;b=17;
+				//a=0;b=1;c=10;
 				Req* r = new Req(j,a,b,c);
 				reqL.push_back(r);
 				gv.reqL.push_back(r);
@@ -121,6 +133,7 @@ int main()
 			}
 		}
 
+		
 		//@@@@@@@@@@@@@@@@  Voting  @@@@@@@@@@@@@@@@@@@@@@
 		//@@@@@@@@@@@@@@@@  Voting  @@@@@@@@@@@@@@@@@@@@@@
 
@@ -202,7 +215,7 @@ int main()
 		{
 			int src=gv.incL[j]->src;
 			int dst=gv.incL[j]->dst;
-			float capacity=gv.incL[j]->capacity;
+			double capacity=gv.incL[j]->capacity;
 			if(maxUtil_Voting<(flowL[winner-1]->adj[src][dst]/capacity))
 				maxUtil_Voting=flowL[winner-1]->adj[src][dst]/capacity;
 		}
@@ -224,6 +237,7 @@ int main()
 
 		//@@@@@@@@@@@@@@@@@End of Voting@@@@@@@@@@@@@@@@@@@@@@@@@
 		//@@@@@@@@@@@@@@@@@End of Voting@@@@@@@@@@@@@@@@@@@@@@@@@
+		
 
 		//分段规划部分
 		cout<<endl<<"			LP result			"<<endl;
@@ -231,6 +245,9 @@ int main()
 		//最优部署计算，cost_best代表的值和可用带宽有关
 		for(int j=0;j<Maxreq;j++)
 			gp.cost_best[j] = reqL[j]->flow * gp.dijkstra(reqL[j]->src,reqL[j]->dst,reqL[j]->flow);
+
+		//for(int j=0;j<Maxreq;j++)
+			//cout<<"cost_best "<<"j"<<" ："<<gp.cost_best[j]<<endl;
 
 		//线性规划部署
 		double result_LP=0;
@@ -241,8 +258,8 @@ int main()
 		else
 		{
 			judge_LP=0;
-			//for(int i=0;i<reqN;i++)
-			//	cout<<g.cost_best[i]<<" "<<g.cost_LP[i]<<endl;
+			//for(int i=0;i<Maxreq;i++)
+				//cout<<gp.cost_best[i]<<" "<<gp.cost_LP[i]<<endl;
 			for(int j=0;j<Maxreq;j++)
 				judge_LP += gp.cost_LP[j]/gp.cost_best[j];
 		}

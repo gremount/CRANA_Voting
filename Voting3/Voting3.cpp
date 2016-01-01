@@ -39,8 +39,8 @@ const int Maxreq=10;//一个case的流需求数量
 const int Maxpath=N-1;//可能的最长路径: N-1
 
 const int caseN=6;//case总数
-const int Maxflow=10;//流的大小可变范围
-const int Begin_num=6;//流的大小起始范围
+const int Maxflow=20;//流的大小可变范围
+const int Begin_num=20;//流的大小起始范围
 
 //如果改图，需要修改： 上面的参数 + 图输入 + req输入的部分
 
