@@ -155,7 +155,7 @@ public:
 			if(flow > g.adjL[src][i]->capacity - x)continue;//该link无法通过该流
 			
 			int temp;//link[i][j]可以通过的最大流（的带宽）
-			if(d[src] > g.adjL[src][i]->capacity-x) temp=g.adjL[src][i]->capacity-x;//水管受限
+			if(d[src] > g.adjL[src][i]->capacity-x) temp=g.adjL[src][i]->capacity-x-flow;//水管受限
 			else temp=d[src];//水源受限(到src点的路径带宽有限)
 			
 			if(temp>d[dst]) {d[dst]=temp;p[dst]=src;}//发现拥有更大带宽的路，更新

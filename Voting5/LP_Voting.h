@@ -45,10 +45,11 @@ double LP_Voting(VGraph *g,vector<Req*> &reqL,vector<Path*> &path_record, int id
 
 	for(int d=0;d<K;d++)
 		for(int i=0;i<g->m;i++)
-			model.add(Y[d] <= (1-x[d][i])*Inf + (g->incL[i]->capacity-L[i]));
+			model.add(Y[d] <= (1-x[d][i])*Inf + (g->incL[i]->capacity-L[i]-adj[g->incL[i]->src][g->incL[i]->dst]));
 
 	for(int d=0;d<K;d++)
-		goal+=Y[d]*reqL[d]->flow/(float)g->cost_best[reqL[d]->id];
+		goal+=Y[d]*reqL[d]->flow;
+		//goal+=Y[d]*reqL[d]->flow/(double)g->cost_best[reqL[d]->id];
 
 	model.add(IloMaximize(environment,goal));
 

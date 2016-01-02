@@ -1,5 +1,5 @@
-#ifndef LP2_H
-#define LP2_H
+#ifndef LP_VOTING_H
+#define LP_VOTING_H
 
 #include "common.h"
 #include "graph.h"
@@ -9,7 +9,7 @@
 //用在flow.h中，是voting方案的规划部分
 //这里为了避免非线性规划，当前case流互相之间的影响不考虑，也就是延时只和之前case的流有关
 
-double LP_Voting(VGraph *g,vector<Req*> &reqL,vector<Path*> &path_record, int id, vector<vector<int> > &adj)
+double LP_Voting(VGraph *g,vector<Req*> &reqL,vector<Path*> &path_record, int id, vector<vector<double> > &adj)
 {
 	IloEnv environment;
 	IloModel model(environment);

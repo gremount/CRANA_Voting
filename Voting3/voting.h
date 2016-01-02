@@ -31,10 +31,10 @@ class Voting
 {
 	private:
 	public:
-		float t[M2C+1][N2C+1];
+		double t[M2C+1][N2C+1];
 		int rank[N2C+1];
 		int M2, N2;
-		Voting(float table[][N2C+1], int ranking[],int m2,int n2)
+		Voting(double table[][N2C+1], int ranking[],int m2,int n2)
 		{
 			M2 = m2;
 			N2 = n2;
@@ -118,11 +118,11 @@ class Voting
 
 		int Cumulative_Voting()
 		{
-			float small_score[M2C+1][N2C+1]={0};
-			float big_score[M2C+1]={0};
-			float max_score = 0;//record the score of final winner
+			double small_score[M2C+1][N2C+1]={0};
+			double big_score[M2C+1]={0};
+			double max_score = 0;//record the score of final winner
 			vector<int> winners;
-			float sum=0;
+			double sum=0;
 			//change 0 to 1
 			for(int i=1;i<=M2;i++)
 				for(int j=1;j<=N2;j++)

@@ -5,18 +5,18 @@
 #include "res.h"
 #include "LP.h"
 
-/*
+
 //t3
 const int Inf=99999;
 const int N=3;//所有的点数
 const int M=6;//包含正反向边
-const int Maxreq=3;//一个case的流需求数量
+const int Maxreq=5;//一个case的流需求数量
 const int Maxpath=N-1;//可能的最长路径: N-1
 
 const int caseN=5;//case总数
 const int Maxflow=5;//流的大小可变范围
 const int Begin_num=10;//流的大小起始范围
-*/
+
 /*
 //graph_all
 const int Inf=99999;
@@ -43,7 +43,7 @@ const int Maxflow=7;//流的大小可变范围
 const int Begin_num=1;//流的大小起始范围
 */
 
- 
+ /*
 //graph_ATT
 const int Inf=99999;
 const int N=25;//所有的点数
@@ -54,15 +54,15 @@ const int Maxpath=N-1;//可能的最长路径: N-1
 const int caseN=6;//case总数
 const int Maxflow=10;//流的大小可变范围
 const int Begin_num=5;//流的大小起始范围
-
+*/
 
 //如果改图，需要修改： 上面的参数 + 图输入 + req输入的部分
 
 int main()
 {
 	srand((unsigned)time(NULL));
-	VGraph gv("d:\\github\\CRANA_Voting\\graph_ATT.txt");//Voting用的图
-	PGraph gp("d:\\github\\CRANA_Voting\\graph_ATT.txt");//LP用的图
+	VGraph gv("d:\\github\\CRANA_Voting\\t3.txt");//Voting用的图
+	PGraph gp("d:\\github\\CRANA_Voting\\t3.txt");//LP用的图
 	vector<Flow*> flowL;//记录所有的流实例
 	ofstream outfile("d:\\github\\result.txt");//最后一个case的结果
 	ofstream req_outfile("d:\\github\\req_outfile.txt");
@@ -99,12 +99,12 @@ int main()
 				int a=0,b=0,c=0;
 				while(1){
 					c = Begin_num + rand()%Maxflow;
-					//if(c!=0) break;
+					if(c!=0) break;
 					a = rand()%N;
 					b = rand()%N;
-					if(a!=b && c!=0) break;
+					//if(a!=b && c!=0) break;
 				}
-				//a=0;b=1;c=10;
+				a=0;b=1;c=10;
 				Req* r = new Req(j,a,b,c);
 				reqL.push_back(r);
 				gv.reqL.push_back(r);
@@ -119,12 +119,12 @@ int main()
 				int a=0,b=0,c=0;
 				while(1){
 					c = Begin_num + rand()%Maxflow;
-					//if(c!=0) break;
+					if(c!=0) break;
 					a = rand()%N;
 					b = rand()%N;
-					if(a!=b && c!=0) break;
+					//if(a!=b && c!=0) break;
 				}
-				//a=0;b=1;c=10;
+				a=0;b=1;c=10;
 				Req* r = new Req(j,a,b,c);
 				reqL.push_back(r);
 				gv.reqL.push_back(r);
@@ -207,7 +207,7 @@ int main()
 				latencyVoting += Maxpath * reqL[j]->flow;
 			}
 		cout << "第" << i << "轮整体满意度： " << happiness/Maxreq << endl;
-		cout << "多轮满意度：" << happiness_sum / ((i+1)*10) << endl;
+		cout << "多轮满意度：" << happiness_sum / ((i+1)*Maxreq) << endl;
 		cout << "多轮整体延时和: " << latencyVoting << endl;
 		
 		double maxUtil_Voting=0;

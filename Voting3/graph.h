@@ -43,14 +43,14 @@ public:
 	int n,m;
 	set<int> S, V;
     vector<int> p;
-	vector<float> d;
+	vector<double> d;
 	vector<Edge*> incL;//边的列表
 	vector<vector<Edge*> > adjL,adjRL; //正向和反向邻接链表
 	vector<vector<Edge*> > adj;//邻接矩阵
 
 	vector<Req*> reqL;
-	vector<int> cost_best;//记录每个req的最佳部署结果
-	vector<int> cost_LP;//记录每个req的LP部署结果
+	vector<double> cost_best;//记录每个req的最佳部署结果
+	vector<double> cost_LP;//记录每个req的LP部署结果
 
 	VGraph(){;}
 	VGraph(string address)
@@ -93,8 +93,8 @@ public:
 			reqL.push_back(reqL2[i]);
 	}
 
-	void Update(int s,int flow,vector<vector<int> > &adj){
-        float x;
+	void Update(int s,int flow,vector<vector<double> > &adj){
+        double x;
 		for (int i = 0; i < adjL[s].size();i++){
 			x=adj[adjL[s][i]->src][adjL[s][i]->dst];
 			if(flow > (adjL[s][i]->capacity - x ))continue;
@@ -108,7 +108,7 @@ public:
     int FindMin(){
         set<int>::iterator it, iend;
         iend = S.end();
-        int mine = Inf;
+        double mine = Inf;
         int min_node = -1;
         for (it = S.begin(); it != iend; it++){
             if(d[*it] < mine) {
@@ -119,7 +119,7 @@ public:
         return min_node;
     }
 
-    int dijkstra(int src, int dst, int flow, vector<vector<int> > &adj){
+    double dijkstra(int src, int dst, int flow, vector<vector<double> > &adj){
         S.clear();
         V.clear();
         for (int i = 0; i < n; i++)
@@ -153,13 +153,13 @@ public:
 	int n,m;
 	set<int> S, V;
     vector<int> p;
-	vector<float> d;
+	vector<double> d;
 	vector<Edge*> incL;//边的列表
 	vector<vector<Edge*> > adjL,adjRL; //正向和反向邻接链表
 	
-	vector<vector<int> > adj;//该流维护的邻接矩阵，记录负载
-	vector<int> cost_best;//记录每个req的最佳部署结果
-	vector<int> cost_LP;//记录每个req的LP部署结果
+	vector<vector<double> > adj;//该流维护的邻接矩阵，记录负载
+	vector<double> cost_best;//记录每个req的最佳部署结果
+	vector<double> cost_LP;//记录每个req的LP部署结果
 
 	PGraph(){;}
 	PGraph(string address)
@@ -195,7 +195,7 @@ public:
 
 	void Update(int s,int flow){
         for (int i = 0; i < adjL[s].size();i++){
-			float x=flow;
+			double x=flow;
 			int src=adjL[s][i]->src;
 			int dst=adjL[s][i]->dst;
 			if(flow > (adjL[s][i]->capacity-adj[src][dst]))continue;
@@ -209,7 +209,7 @@ public:
     int FindMin(){
         set<int>::iterator it, iend;
         iend = S.end();
-        int mine = Inf;
+        double mine = Inf;
         int min_node = -1;
         for (it = S.begin(); it != iend; it++){
             if(d[*it] < mine) {
@@ -220,7 +220,7 @@ public:
         return min_node;
     }
 
-    int dijkstra(int src, int dst, int flow){
+    double dijkstra(int src, int dst, int flow){
         S.clear();
         V.clear();
         for (int i = 0; i < n; i++)

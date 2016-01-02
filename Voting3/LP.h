@@ -71,7 +71,7 @@ double LP(PGraph *g,vector<Req*> &reqL)
 
 		//展示流量所走的路径，并且修改各条link的capacity
 		
-		float latency=0;
+		double latency=0;
 		for(int d=0;d<K;d++)
 		{
 			//cout<<"flow "<<d+1<<" : "<<endl;
