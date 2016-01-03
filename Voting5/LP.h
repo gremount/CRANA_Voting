@@ -86,7 +86,7 @@ double LP(PGraph *g,vector<Req*> &reqL)
 		}
 		for(int d=0;d<K;d++)
 		{
-			int temp_bw=Inf;
+			double temp_bw=Inf;
 			for(int i=0;i<g->m;i++)
 			{
 				if(solver.getValue(x[d][i])>0)

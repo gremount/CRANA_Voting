@@ -5,7 +5,7 @@
 #include "res.h"
 #include "LP.h"
 
-/*
+
 //t3
 const int Inf=99999;
 const int N=3;//所有的点数
@@ -16,7 +16,7 @@ const int Maxpath=N-1;//可能的最长路径: N-1
 const int caseN=2;//case总数
 const int Maxflow=5;//流的大小可变范围
 const int Begin_num=10;//流的大小起始范围
-*/
+
 /*
 //graph_all
 const int Inf=99999;
@@ -43,7 +43,7 @@ const int Maxflow=10;//流的大小可变范围
 const int Begin_num=1;//流的大小起始范围
 */
 
-
+/*
 //graph_ATT
 const int Inf=99999;
 const int N=25;//所有的点数
@@ -54,15 +54,15 @@ const int Maxpath=N-1;//可能的最长路径: N-1
 const int caseN=6;//case总数
 const int Maxflow=20;//流的大小可变范围
 const int Begin_num=1;//流的大小起始范围
-
+*/
 
 //如果改图，需要修改： 上面的参数 + 图输入 + req输入的部分
 
 int main()
 {
 	srand((unsigned)time(NULL));
-	VGraph gv("d:\\github\\CRANA_Voting\\graph_ATT.txt");//Voting用的图
-	PGraph gp("d:\\github\\CRANA_Voting\\graph_ATT.txt");//LP用的图
+	VGraph gv("d:\\github\\CRANA_Voting\\t3.txt");//Voting用的图
+	PGraph gp("d:\\github\\CRANA_Voting\\t3.txt");//LP用的图
 	vector<Flow*> flowL;//记录所有的流实例
 	ofstream outfile("d:\\github\\result.txt");//最后一个case的结果
 	ofstream req_outfile("d:\\github\\req_outfile.txt");
@@ -103,7 +103,7 @@ int main()
 					b = rand()%N;
 					if(a!=b && c!=0) break;
 				}
-				//a=0;b=1;c=10;
+				a=0;b=1;c=10;
 				Req* r = new Req(j,a,b,c);
 				reqL.push_back(r);
 				gv.reqL.push_back(r);
@@ -123,7 +123,7 @@ int main()
 					b = rand()%N;
 					if(a!=b && c!=0) break;
 				}
-				//a=0;b=1;c=10;
+				a=0;b=1;c=10;
 				Req* r = new Req(j,a,b,c);
 				reqL.push_back(r);
 				gv.reqL.push_back(r);
@@ -139,8 +139,8 @@ int main()
 		for(int j=0;j<Maxreq;j++)
 			gv.cost_best[j] = reqL[j]->flow * gv.dijkstra(reqL[j]->src,reqL[j]->dst,reqL[j]->flow,flowL[0]->adj);
 
-		for(int j=0;j<Maxreq;j++)
-			cout<<"gv.cost_best "<<j<<" : "<<gv.cost_best[j]<<endl;
+		//for(int j=0;j<Maxreq;j++)
+			//cout<<"gv.cost_best "<<j<<" : "<<gv.cost_best[j]<<endl;
 
 		//提方案
 		for(int j=0;j<Maxreq;j++)

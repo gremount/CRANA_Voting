@@ -80,9 +80,9 @@ double LP(PGraph *g,vector<Req*> &reqL)
 			{
 				if(solver.getValue(x[d][i])>0)
 				{
-					/*cout<<"from node "<<g->incL[i]->src<<" to node "<<
-						g->incL[i]->dst<< " has flow "<<
-						solver.getValue(x[d][i])*reqL[d]->flow<<endl;*/
+					//cout<<"from node "<<g->incL[i]->src<<" to node "<<
+						//g->incL[i]->dst<< " has flow "<<
+						//solver.getValue(x[d][i])*reqL[d]->flow<<endl;
 					g->adj[g->incL[i]->src][g->incL[i]->dst] += reqL[d]->flow;
 					latency += 1 + g->adj[g->incL[i]->src][g->incL[i]->dst]/
 						(1 + g->incL[i]->capacity - g->adj[g->incL[i]->src][g->incL[i]->dst]);

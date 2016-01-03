@@ -9,7 +9,7 @@
 //用在flow.h中，是voting方案的规划部分
 //这里为了避免非线性规划，当前case流互相之间的影响不考虑，也就是延时只和之前case的流有关
 
-double LP_Voting(VGraph *g,vector<Req*> &reqL,vector<Path*> &path_record, int id, vector<vector<int> > &adj)
+double LP_Voting(VGraph *g,vector<Req*> &reqL,vector<Path*> &path_record, int id, vector<vector<double> > &adj)
 {
 	IloEnv environment;
 	IloModel model(environment);
@@ -26,17 +26,15 @@ double LP_Voting(VGraph *g,vector<Req*> &reqL,vector<Path*> &path_record, int id
 
 	//优化目标
 	IloExpr goal(environment);
-	IloExpr temp(environment);
 	IloExprArray L(environment, g->m);//L[i]:第i条link上所流经的flow
-	IloExprArray Y(environment,K);//Y[d]:第d种流的可用剩余带宽
+	IloArray<IloIntVar> Y(environment,K);
 	
+	for(int d=0;d<K;d++)
+		Y[d]=IloIntVar(environment);
 	for(int i=0;i<g->m;i++)
 		L[i] = IloExpr(environment);
 
-	for(int d=0;d<K;d++)
-		Y[d] = IloExpr(environment);
-
-	//最大化满意度
+	//目标是最大化满意度
 	for(int i=0;i<g->m;i++)
 	{
 		for(int d=0;d<K;d++)
@@ -45,7 +43,7 @@ double LP_Voting(VGraph *g,vector<Req*> &reqL,vector<Path*> &path_record, int id
 
 	for(int d=0;d<K;d++)
 		for(int i=0;i<g->m;i++)
-			model.add(Y[d] <= (1-x[d][i])*Inf + (g->incL[i]->capacity-L[i]-adj[g->incL[i]->src][g->incL[i]->dst]));
+			model.add(Y[d] <= ((1-x[d][i])*Inf + (g->incL[i]->capacity - L[i] - adj[g->incL[i]->src][g->incL[i]->dst])));
 
 	for(int d=0;d<K;d++)
 		goal+=Y[d]*reqL[d]->flow;
@@ -89,17 +87,27 @@ double LP_Voting(VGraph *g,vector<Req*> &reqL,vector<Path*> &path_record, int id
 
 		//路径记录
 		
-		int distance=0;
+		double distance=0;
+		double temp=0;
 		for(int d=0;d<K;d++)
 		{
 			distance=0;
 			Path* path=new Path();
+			//cout<<"flow "<<d+1<<" : "<<endl;
+			//cout<<"Y[d] is "<<solver.getValue(Y[d])<<endl;
 			for(int i=0;i<g->m;i++)
 			{
+				//cout<<"Y[d]<= "<<(1-solver.getValue(x[d][i]))*Inf + (g->incL[i]->capacity - solver.getValue(L[i]) - adj[g->incL[i]->src][g->incL[i]->dst])<<endl;
 				if(solver.getValue(x[d][i])>0)
 				{
+					//temp=(1-solver.getValue(x[d][i]))*Inf + (g->incL[i]->capacity - solver.getValue(L[i]) - adj[g->incL[i]->src][g->incL[i]->dst]);
+					//cout<<"Y[d]<= "<<temp<<endl;
+					//cout<<"L[i] is "<<solver.getValue(L[i])<<endl;
 					path->pathL.push_back(g->incL[i]);
 					distance += g->incL[i]->weight;
+					//cout<<"from node "<<g->incL[i]->src<<" to node "<<
+						//g->incL[i]->dst<< " has flow "<<
+						//solver.getValue(x[d][i])*reqL[d]->flow<<endl;
 				}
 			}
 			if(distance==0){cout<<endl<<endl<<"error !!!!!!!!!!!!!!!!!"<<endl<<endl;continue;}

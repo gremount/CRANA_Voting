@@ -5,15 +5,27 @@
 #include "res.h"
 #include "LP.h"
 
-
+/*
 //t3
 const int Inf=99999;
 const int N=3;//所有的点数
 const int M=6;//包含正反向边
-const int Maxreq=5;//一个case的流需求数量
+const int Maxreq=3;//一个case的流需求数量
 const int Maxpath=N-1;//可能的最长路径: N-1
 
-const int caseN=5;//case总数
+const int caseN=2;//case总数
+const int Maxflow=5;//流的大小可变范围
+const int Begin_num=10;//流的大小起始范围
+*/
+
+//t4
+const int Inf=99999;
+const int N=4;//所有的点数
+const int M=8;//包含正反向边
+const int Maxreq=3;//一个case的流需求数量
+const int Maxpath=N-1;//可能的最长路径: N-1
+
+const int caseN=2;//case总数
 const int Maxflow=5;//流的大小可变范围
 const int Begin_num=10;//流的大小起始范围
 
@@ -61,8 +73,8 @@ const int Begin_num=5;//流的大小起始范围
 int main()
 {
 	srand((unsigned)time(NULL));
-	VGraph gv("d:\\github\\CRANA_Voting\\t3.txt");//Voting用的图
-	PGraph gp("d:\\github\\CRANA_Voting\\t3.txt");//LP用的图
+	VGraph gv("d:\\github\\CRANA_Voting\\t4.txt");//Voting用的图
+	PGraph gp("d:\\github\\CRANA_Voting\\t4.txt");//LP用的图
 	vector<Flow*> flowL;//记录所有的流实例
 	ofstream outfile("d:\\github\\result.txt");//最后一个case的结果
 	ofstream req_outfile("d:\\github\\req_outfile.txt");
@@ -71,7 +83,6 @@ int main()
 	outfile<<"flow Range: "<<Begin_num<<"--"<<Maxflow+Begin_num-1<<endl<<endl;
 
 	double judge_LP=0,judge_sum_LP=0;
-	int result_sum_LP=0;
 	
 	vector<Req*> reqL;
 	double table[M2C+1][N2C+1] = {0};
@@ -99,12 +110,12 @@ int main()
 				int a=0,b=0,c=0;
 				while(1){
 					c = Begin_num + rand()%Maxflow;
-					if(c!=0) break;
+					//if(c!=0) break;
 					a = rand()%N;
 					b = rand()%N;
-					//if(a!=b && c!=0) break;
+					if(a!=b && c!=0) break;
 				}
-				a=0;b=1;c=10;
+				a=0;b=3;c=10;
 				Req* r = new Req(j,a,b,c);
 				reqL.push_back(r);
 				gv.reqL.push_back(r);
@@ -119,12 +130,12 @@ int main()
 				int a=0,b=0,c=0;
 				while(1){
 					c = Begin_num + rand()%Maxflow;
-					if(c!=0) break;
+					//if(c!=0) break;
 					a = rand()%N;
 					b = rand()%N;
-					//if(a!=b && c!=0) break;
+					if(a!=b && c!=0) break;
 				}
-				a=0;b=1;c=10;
+				a=0;b=3;c=10;
 				Req* r = new Req(j,a,b,c);
 				reqL.push_back(r);
 				gv.reqL.push_back(r);
@@ -140,6 +151,9 @@ int main()
 		//算最完美方案，所有的路都第一个走得到的方案
 		for(int j=0;j<Maxreq;j++)
 			gv.cost_best[j] = reqL[j]->flow * gv.dijkstra(reqL[j]->src,reqL[j]->dst,reqL[j]->flow,flowL[0]->adj);
+
+		for(int j=0;j<Maxreq;j++)
+			cout<<j<<" gv.cost_best[j]="<<gv.cost_best[j]<<endl;
 
 		//提方案
 		for(int j=0;j<Maxreq;j++)
@@ -171,7 +185,6 @@ int main()
 		else
 			cout << "ranked pairs method: " << winner << endl;
 
-		
 		// table show
 		for(int i=1;i<=Maxreq;i++)
 		{

@@ -11,14 +11,15 @@ class Flow
 public:
 	int id;//第id个流需求
 	int src,dst,flow;//源地址，目的地址，流大小
-	vector<vector<int> > adj;//该流维护的邻接矩阵，记录负载
+	vector<vector<double> > adj;//该流维护的邻接矩阵，记录负载
 	vector<Path*> path_record;//具体方案：路径记录
-	vector<int> judge;//该流对所有方案的评价
+	vector<double> judge;//该流对所有方案的评价
 	
 
 	//dijkstra需要用到的变量
 	set<int> S, V;
-    vector<int> d, p;
+    vector<int> p;
+	vector<double> d;
 
 	//初始化，只初始化一次，之后其他需求来的时候，
 	//只修改之前参数，相当于投票的基础设施只建立一次，剩下的是维护
@@ -51,7 +52,8 @@ public:
 	void propose(VGraph &g,vector<Flow*> &flowL)
 	{
 		//对自己的流先算dijkstra
-		int dist=0,loc=dst;
+		int loc=dst;
+		double dist=0;
 		dist=dijkstra(src,dst,flow,g);
 		if(dist==Inf){cout<<"*********** no path *********"<<endl;}
 		//没有路径可以安排，在evaluate里就要增加惩罚
@@ -109,7 +111,8 @@ public:
 	void evaluate(VGraph &g, vector<Flow*> &flowL)
 	{
 		//流评价所有方案
-		int temp=0,edge_num=0;//temp记录路径权值和
+		double temp=0;
+		int edge_num=0;//temp记录路径权值和
 		for(int i=0;i<Maxreq;i++)
 		{
 			edge_num=flowL[i]->path_record[id]->pathL.size();
@@ -119,7 +122,7 @@ public:
 				int src=flowL[i]->path_record[id]->pathL[j]->src;
 				int dst=flowL[i]->path_record[id]->pathL[j]->dst;
 				int capacity=flowL[i]->path_record[id]->pathL[j]->capacity;
-				if(Inf>capacity-adj[src][dst])
+				if(temp>capacity-adj[src][dst])
 				temp=capacity-adj[src][dst];
 			}
 			judge[i]=temp*flow;
@@ -146,16 +149,14 @@ public:
 	}
 
 	void Update(int s,int flow, VGraph &g){
-		float x;
         for (int i = 0; i < g.adjL[s].size();i++){
 			int src,dst;
 			src=g.adjL[s][i]->src;dst=g.adjL[s][i]->dst;//这里src = s
-			x=adj[src][dst];
 			
-			if(flow > g.adjL[src][i]->capacity - x)continue;//该link无法通过该流
+			if(flow > g.adjL[src][i]->capacity - adj[src][dst])continue;//该link无法通过该流
 			
-			int temp;//link[i][j]可以通过的最大流（的带宽）
-			if(d[src] > g.adjL[src][i]->capacity-x) temp=g.adjL[src][i]->capacity-x-flow;//水管受限
+			double temp;//link[i][j]可以通过的最大流（的带宽）
+			if(d[src] > g.adjL[src][i]->capacity-adj[src][dst]-flow) temp=g.adjL[src][i]->capacity-adj[src][dst]-flow;//水管受限
 			else temp=d[src];//水源受限(到src点的路径带宽有限)
 			
 			if(temp>d[dst]) {d[dst]=temp;p[dst]=src;}//发现拥有更大带宽的路，更新
@@ -166,7 +167,7 @@ public:
     int FindMax(){
         set<int>::iterator it, iend;
         iend = S.end();
-        int maxe = 0;
+        double maxe = 0;
         int max_node = -1;
         for (it = S.begin(); it != iend; it++){
             if(d[*it] > maxe) {
@@ -177,7 +178,7 @@ public:
         return max_node;
     }
 
-    int dijkstra(int src, int dst, int flow, VGraph &g){
+    double dijkstra(int src, int dst, int flow, VGraph &g){
         S.clear();
         V.clear();
         for (int i = 0; i < N; i++)
@@ -227,7 +228,7 @@ double judge_sum_LP_function(PGraph &g, vector<Flow*> &flowL)
 	for(int i=0;i<M;i++)
 	{
 		int src,dst;
-		float latencyFunc;
+		double latencyFunc;
 		src=g.incL[i]->src;dst=g.incL[i]->dst;
 		latencyFunc = 1 + g.adj[src][dst]/(1+ g.incL[i]->capacity - g.adj[src][dst]);
 		judge_sum_LP += latencyFunc * g.adj[src][dst];
