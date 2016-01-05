@@ -61,8 +61,8 @@ class Voting
 			{
 				for (int i = 1; i <= M2 - 1; i++)
 					for (int h = i + 1; h <= M2; h++)
-						if (t[i][j] >= t[h][j]) d[i][h]+=rank[j];//排名数字越小越好
-						else d[h][i]+=rank[j];
+						if (t[j][i] > t[j][h]) d[i][h]+=rank[j];//排名数字越小越好
+						else if(t[j][i] < t[j][h]) d[h][i]+=rank[j];
 			}
 
 			//the initial of p[i][j]
@@ -71,7 +71,7 @@ class Voting
 				for(int j=1;j<=M2;j++)
 					if(i!=j)
 					{
-						if(d[i][j]>=d[j][i])
+						if(d[i][j]>d[j][i])
 							p[i][j]=d[i][j];
 						else
 							p[i][j]=0;

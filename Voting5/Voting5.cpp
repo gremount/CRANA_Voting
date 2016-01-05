@@ -17,18 +17,18 @@ const int caseN=2;//case总数
 const int Maxflow=5;//流的大小可变范围
 const int Begin_num=10;//流的大小起始范围
 */
-
-//t4
+/*
+//graph2
 const int Inf=99999;
-const int N=4;//所有的点数
-const int M=8;//包含正反向边
+const int N=18;//所有的点数
+const int M=42;//包含正反向边
 const int Maxreq=3;//一个case的流需求数量
 const int Maxpath=N-1;//可能的最长路径: N-1
 
-const int caseN=2;//case总数
-const int Maxflow=5;//流的大小可变范围
+const int caseN=5;//case总数
+const int Maxflow=10;//流的大小可变范围
 const int Begin_num=10;//流的大小起始范围
-
+*/
 /*
 //graph_all
 const int Inf=99999;
@@ -55,7 +55,7 @@ const int Maxflow=7;//流的大小可变范围
 const int Begin_num=1;//流的大小起始范围
 */
 
- /*
+ 
 //graph_ATT
 const int Inf=99999;
 const int N=25;//所有的点数
@@ -66,15 +66,15 @@ const int Maxpath=N-1;//可能的最长路径: N-1
 const int caseN=6;//case总数
 const int Maxflow=10;//流的大小可变范围
 const int Begin_num=5;//流的大小起始范围
-*/
+
 
 //如果改图，需要修改： 上面的参数 + 图输入 + req输入的部分
 
 int main()
 {
 	srand((unsigned)time(NULL));
-	VGraph gv("d:\\github\\CRANA_Voting\\t4.txt");//Voting用的图
-	PGraph gp("d:\\github\\CRANA_Voting\\t4.txt");//LP用的图
+	VGraph gv("d:\\github\\CRANA_Voting\\graph_ATT.txt");//Voting用的图
+	PGraph gp("d:\\github\\CRANA_Voting\\graph_ATT.txt");//LP用的图
 	vector<Flow*> flowL;//记录所有的流实例
 	ofstream outfile("d:\\github\\result.txt");//最后一个case的结果
 	ofstream req_outfile("d:\\github\\req_outfile.txt");
@@ -115,7 +115,7 @@ int main()
 					b = rand()%N;
 					if(a!=b && c!=0) break;
 				}
-				a=0;b=3;c=10;
+				//a=1;b=17;//c=10;
 				Req* r = new Req(j,a,b,c);
 				reqL.push_back(r);
 				gv.reqL.push_back(r);
@@ -135,7 +135,7 @@ int main()
 					b = rand()%N;
 					if(a!=b && c!=0) break;
 				}
-				a=0;b=3;c=10;
+				//a=1;b=17;//c=10;
 				Req* r = new Req(j,a,b,c);
 				reqL.push_back(r);
 				gv.reqL.push_back(r);
