@@ -13,7 +13,7 @@ const int M=6;//包含正反向边
 const int Maxreq=3;//一个case的流需求数量
 const int Maxpath=N-1;//可能的最长路径: N-1
 
-const int caseN=2;//case总数
+const int caseN=4;//case总数
 const int Maxflow=5;//流的大小可变范围
 const int Begin_num=10;//流的大小起始范围
 */
@@ -25,7 +25,7 @@ const int M=42;//包含正反向边
 const int Maxreq=3;//一个case的流需求数量
 const int Maxpath=N-1;//可能的最长路径: N-1
 
-const int caseN=5;//case总数
+const int caseN=4;//case总数
 const int Maxflow=10;//流的大小可变范围
 const int Begin_num=10;//流的大小起始范围
 */
@@ -118,7 +118,7 @@ int main()
 					b = rand()%N;
 					if(a!=b && c!=0) break;
 				}
-				//a=1;b=17;//c=10;
+				//a=0;b=1;//c=10;
 				Req* r = new Req(j,a,b,c);
 				reqL.push_back(r);
 				gv.reqL.push_back(r);
@@ -138,7 +138,7 @@ int main()
 					b = rand()%N;
 					if(a!=b && c!=0) break;
 				}
-				//a=1;b=17;//c=10;
+				//a=0;b=1;//c=10;
 				Req* r = new Req(j,a,b,c);
 				reqL.push_back(r);
 				gv.reqL.push_back(r);
@@ -205,10 +205,22 @@ int main()
 		cout<<endl;
 		
 
+		//输出比best更好的结果
+		for(int i=1;i<=Maxreq;i++)
+		{
+			for(int j=1;j<=Maxreq;j++)
+			{
+				if(table[i][j]>gv.cost_best[i-1]) {
+					cout<<"%%%%%%%%%%%%%%%%当前方案值比最优值还好error  i:"<<i-1<<" j:"<<j-1<<endl;
+					break;
+				}
+			}
+		}
+
 		//计算满意度
 		double happiness=0;//一轮所有流的满意度和，越高越好,0<=满意度<=1
 		for(int j=1;j<=Maxreq;j++)
-			happiness += table[j][winner]/gv.cost_best[j-1];//最好抉择评分/当前抉择评分
+			happiness += (double)table[j][winner]/gv.cost_best[j-1];//最好抉择评分/当前抉择评分
 		happiness_sum += happiness;
 
 		//计算方案部署后当前总的cost，如果流没有被安排进网络，就增加惩罚cost
@@ -290,7 +302,7 @@ int main()
 			//for(int i=0;i<Maxreq;i++)
 				//cout<<gp.cost_best[i]<<" "<<gp.cost_LP[i]<<endl;
 			for(int j=0;j<Maxreq;j++)
-				judge_LP += gp.cost_LP[j]/gp.cost_best[j];
+				judge_LP += (double)gp.cost_LP[j]/gp.cost_best[j];
 		}
 		judge_sum_LP += judge_LP;
 		cout<<"单轮满意度： "<<judge_LP/Maxreq<<endl;

@@ -74,8 +74,6 @@ double LP(PGraph *g,vector<Req*> &reqL)
 		
 		for(int d=0;d<K;d++)
 		{
-			//cout<<"flow "<<d+1<<" : "<<endl;
-			int temp_bw=Inf;
 			for(int i=0;i<g->m;i++)
 			{
 				if(solver.getValue(x[d][i])>0)
@@ -86,7 +84,7 @@ double LP(PGraph *g,vector<Req*> &reqL)
 		}
 		for(int d=0;d<K;d++)
 		{
-			double temp_bw=Inf;
+			int temp_bw=Inf;
 			for(int i=0;i<g->m;i++)
 			{
 				if(solver.getValue(x[d][i])>0)

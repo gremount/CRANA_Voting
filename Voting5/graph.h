@@ -43,14 +43,14 @@ public:
 	int n,m;
 	set<int> S, V;
     vector<int> p;
-	vector<double> d;
+	vector<int> d;
 	vector<Edge*> incL;//边的列表
 	vector<vector<Edge*> > adjL,adjRL; //正向和反向邻接链表
 	vector<vector<Edge*> > adj;//邻接矩阵
 
 	vector<Req*> reqL;
-	vector<double> cost_best;//记录每个req的最佳部署结果
-	vector<double> cost_LP;//记录每个req的LP部署结果
+	vector<int> cost_best;//记录每个req的最佳部署结果
+	vector<int> cost_LP;//记录每个req的LP部署结果
 
 	VGraph(){;}
 	VGraph(string address)
@@ -67,7 +67,7 @@ public:
 		for(int i=0;i<n;i++)
 			adj[i].resize(n);
 		cost_best.resize(Maxreq);
-		cost_LP.resize(Maxreq);
+		
 
 		int a,b,c,d;
 		int temp=m/2;
@@ -93,7 +93,7 @@ public:
 			reqL.push_back(reqL2[i]);
 	}
 	
-	void Update(int s,int flow,vector<vector<double> > &adj){
+	void Update(int s,int flow,vector<vector<int> > &adj){
         
 		for (int i = 0; i < adjL[s].size();i++){
 			int src,dst;
@@ -101,7 +101,7 @@ public:
 			
 			if(flow > (adjL[s][i]->capacity - adj[src][dst] ))continue;//该link无法通过该流
 			
-			double temp;//link[i][j]可以通过的最大流（的带宽）
+			int temp;//link[i][j]可以通过的最大流（的带宽）
 			if(d[src] > adjL[src][i]->capacity-adj[src][dst]) temp=adjL[src][i]->capacity-adj[src][dst];//水管受限
 			else temp=d[src];//水源受限(到src点的路径带宽有限)
 			
@@ -113,7 +113,7 @@ public:
     int FindMax(){
         set<int>::iterator it, iend;
         iend = S.end();
-        double maxe = 0;
+        int maxe = 0;
         int max_node = -1;
         for (it = S.begin(); it != iend; it++){
             if(d[*it] > maxe) {
@@ -124,7 +124,7 @@ public:
         return max_node;
     }
 
-    double dijkstra(int src, int dst, int flow, vector<vector<double> > &adj){
+    int dijkstra(int src, int dst, int flow, vector<vector<int> > &adj){
         S.clear();
         V.clear();
         for (int i = 0; i < n; i++)
@@ -161,13 +161,13 @@ public:
 	int n,m;
 	set<int> S, V;
     vector<int> p;
-	vector<double> d;
+	vector<int> d;
 	vector<Edge*> incL;//边的列表
 	vector<vector<Edge*> > adjL,adjRL; //正向和反向邻接链表
 	
-	vector<vector<double> > adj;//该流维护的邻接矩阵，记录负载
-	vector<double> cost_best;//记录每个req的最佳部署结果
-	vector<double> cost_LP;//记录每个req的LP部署结果
+	vector<vector<int> > adj;//该流维护的邻接矩阵，记录负载
+	vector<int> cost_best;//记录每个req的最佳部署结果
+	vector<int> cost_LP;//记录每个req的LP部署结果
 
 	PGraph(){;}
 	PGraph(string address)
@@ -209,7 +209,7 @@ public:
 			
 			if(flow > (adjL[s][i]->capacity-adj[src][dst]))continue;
 			
-			double temp;//link[i][j]可以通过的最大流（的带宽）
+			int temp;//link[i][j]可以通过的最大流（的带宽）
 			if(d[src] > adjL[src][i]->capacity-adj[src][dst]) temp=adjL[src][i]->capacity-adj[src][dst];//水管受限
 			else temp=d[src];//水源受限(到src点的路径带宽有限)
 			
@@ -222,7 +222,7 @@ public:
     int FindMax(){
         set<int>::iterator it, iend;
         iend = S.end();
-        double maxe = 0;
+        int maxe = 0;
         int max_node = -1;
         for (it = S.begin(); it != iend; it++){
             if(d[*it] > maxe) {
@@ -233,7 +233,7 @@ public:
         return max_node;
     }
 
-    double dijkstra(int src, int dst, int flow){
+    int dijkstra(int src, int dst, int flow){
         S.clear();
         V.clear();
         for (int i = 0; i < n; i++)
