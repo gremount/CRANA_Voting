@@ -27,10 +27,8 @@ double LP_Voting(VGraph *g,vector<Req*> &reqL,vector<Path*> &path_record, int id
 	//优化目标
 	IloExpr goal(environment);
 	IloExprArray L(environment, g->m);//L[i]:第i条link上所流经的flow
-	IloArray<IloIntVar> Y(environment,K);
-	
-	for(int d=0;d<K;d++)
-		Y[d]=IloIntVar(environment,0,Inf);
+	IloIntVarArray Y(environment,K,0,Inf);
+
 	for(int i=0;i<g->m;i++)
 		L[i] = IloExpr(environment);
 
@@ -96,7 +94,9 @@ double LP_Voting(VGraph *g,vector<Req*> &reqL,vector<Path*> &path_record, int id
 			
 			for(int i=0;i<g->m;i++)
 			{
-				if(solver.getValue(x[d][i])>0)
+				if(solver.getValue(x[d][i])!=0 || solver.getValue(x[d][i])!=1)
+					cout<<"!!!!!!!!!!!!!!!!!!!  x[d][i] error !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<d<<" "<<i<<" "<<solver.getValue(x[d][i])<<endl;
+				if(solver.getValue(x[d][i])>0.5)
 				{
 					path->pathL.push_back(g->incL[i]);
 					distance += g->incL[i]->weight;

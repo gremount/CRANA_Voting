@@ -213,7 +213,7 @@ double judge_sum_function(VGraph &g, vector<Flow*> &flowL, int winner)
 		int src,dst;
 		double latencyTemp;
 		src=g.incL[i]->src;dst=g.incL[i]->dst;
-		latencyTemp = 1 + flowL[winner]->adj[src][dst]/(1+ g.incL[i]->capacity - flowL[winner]->adj[src][dst]);
+		latencyTemp = 1 + (double)flowL[winner]->adj[src][dst]/(1+ g.incL[i]->capacity - flowL[winner]->adj[src][dst]);
 		latencyVoting += latencyTemp * flowL[winner]->adj[src][dst];
 	}
 	return latencyVoting;

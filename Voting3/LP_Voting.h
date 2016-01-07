@@ -91,7 +91,7 @@ double LP_Voting(VGraph *g,vector<Req*> &reqL,vector<Path*> &path_record, int id
 			Path* path=new Path();
 			for(int i=0;i<g->m;i++)
 			{
-				if(solver.getValue(x[d][i])>0)
+				if(solver.getValue(x[d][i])>0.5)
 				{
 					path->pathL.push_back(g->incL[i]);
 					distance += g->incL[i]->weight;
