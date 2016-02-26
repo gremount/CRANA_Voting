@@ -23,28 +23,39 @@ double LP_Voting(VGraph *g,vector<Req*> &reqL,vector<Path*> &path_record, int id
 	for(int d=0;d<K;d++)
 		x[d]=IloIntVarArray(environment,g->m,0,1);
 
+	IloNumVarArray D(environment,g->m,0,Inf);
+
 	//优化目标
 	IloExpr goal(environment);
 	IloExpr temp(environment);
-	
+	IloExprArray L(environment,g->m);
+
+	for(int i=0;i<g->m;i++)
+	{
+		L[i]+=adj[g->incL[i]->src][g->incL[i]->dst];
+		for(int d=0;d<K;d++)
+			L[i]+=x[d][i]*reqL[d]->flow;
+	}
+
+	//延时约束条件，分段线性
+	for(int i=0;i<g->m;i++)
+	{
+		double c=g->incL[i]->capacity;
+		model.add(D[i] >= 2*(c+1)*L[i]/(c*(c+2) + (c+1)/(c+2)));
+		model.add(D[i] >= 20*(c-1)*L[i]/((c+2)*(c+10)) + (-8*c*c+32*c+20)/((c+2)*(c+10)));
+		model.add(D[i] >= 10*(c+1)*L[i]/(c+10) + (-9*c*c+c+10)/(c+10));
+	}
+
 	//maximize happiness
 	for(int d=0;d<K;d++)
 	{
 		for(int i=0;i<g->m;i++)		
 		{
 			int src=g->incL[i]->src, dst=g->incL[i]->dst;
-			temp += x[d][i] * reqL[d]->flow * 
-				(1 + adj[src][dst]/(g->incL[i]->capacity - adj[src][dst] + 1));
+			temp += x[d][i] * reqL[d]->flow * D[i];
 		}
 		goal += temp/g->cost_best[reqL[d]->id];
 	}
-
-	//minimize cost
-	/*
-	for(int i=0;i<g->m;i++)
-		for(int d=0;d<K;d++)
-			goal += x[d][i] * reqL[d]->flow * g->incL[i]->weight;
-	*/
 
 	model.add(IloMinimize(environment, goal));
 

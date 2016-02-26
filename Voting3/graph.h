@@ -96,8 +96,8 @@ public:
 	void Update(int s,int flow,vector<vector<double> > &adj){
         double x;
 		for (int i = 0; i < adjL[s].size();i++){
-			x=adj[adjL[s][i]->src][adjL[s][i]->dst];
-			if(flow > (adjL[s][i]->capacity - x ))continue;
+			x=adj[adjL[s][i]->src][adjL[s][i]->dst]+flow;
+			if(x > adjL[s][i]->capacity)continue;
 			if (d[s] + 1 + x/(adjL[s][i]->capacity - x + 1) < d[adjL[s][i]->dst]){
                 d[adjL[s][i]->dst] = d[s] + 1 + x/(adjL[s][i]->capacity - x + 1);
                 p[adjL[s][i]->dst] = s;
@@ -195,10 +195,10 @@ public:
 
 	void Update(int s,int flow){
         for (int i = 0; i < adjL[s].size();i++){
-			double x=flow;
 			int src=adjL[s][i]->src;
 			int dst=adjL[s][i]->dst;
-			if(flow > (adjL[s][i]->capacity-adj[src][dst]))continue;
+			double x=flow+adj[src][dst];
+			if(x > adjL[s][i]->capacity)continue;
 			if (d[s] + 1 + x/(adjL[s][i]->capacity - x + 1) < d[dst]){
                 d[adjL[s][i]->dst] = d[s] + 1 + x/(adjL[s][i]->capacity - x + 1);
                 p[adjL[s][i]->dst] = s;

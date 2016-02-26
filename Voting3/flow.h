@@ -151,8 +151,8 @@ public:
         for (int i = 0; i < g.adjL[s].size();i++){
 			int src,dst;
 			src=g.adjL[s][i]->src;dst=g.adjL[s][i]->dst;
-			x=adj[src][dst];
-			if(flow>g.adjL[s][i]->capacity - x)continue;
+			x=adj[src][dst]+flow;
+			if(x>g.adjL[s][i]->capacity)continue;
 			if (d[s] + 1 + x/(g.adjL[s][i]->capacity - x + 1) < d[dst]){
                 d[dst] = d[s] + 1 + x/(g.adjL[s][i]->capacity - x + 1);
                 p[dst] = s;
