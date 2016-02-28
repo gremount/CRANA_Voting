@@ -123,8 +123,8 @@ public:
 				int capacity=flowL[i]->path_record[id]->pathL[j]->capacity;
 				temp+=1 + flowL[i]->adj[src][dst]/(capacity-flowL[i]->adj[src][dst]+1);
 			}
-			judge[i]=temp*flow;
-			if(judge[i]==0) judge[i]=Maxpath*flow;//没有路径可以安排，就要增加惩罚
+			judge[i]=temp;
+			//if(judge[i]==0) judge[i]=Maxpath*flow;//没有路径可以安排，就要增加惩罚
 		}
 	}
 
@@ -210,8 +210,10 @@ double judge_sum_function(VGraph &g, vector<Flow*> &flowL, int winner)
 		int src,dst;
 		double latencyTemp;
 		src=g.incL[i]->src;dst=g.incL[i]->dst;
+		if(flowL[winner]->adj[src][dst]==0) continue;//由于延时函数是1+x2/(c-x1)，所以即使没有流量，
+		//依然会在统计中算入延时，所以这里判断一下来消除这些误判
 		latencyTemp = 1 + (double)flowL[winner]->adj[src][dst]/(1+ g.incL[i]->capacity - flowL[winner]->adj[src][dst]);
-		latencyVoting += latencyTemp * flowL[winner]->adj[src][dst];
+		latencyVoting += latencyTemp;
 	}
 	return latencyVoting;
 }
@@ -227,7 +229,7 @@ double judge_sum_LP_function(PGraph &g, vector<Flow*> &flowL)
 		double latencyFunc;
 		src=g.incL[i]->src;dst=g.incL[i]->dst;
 		latencyFunc = 1 + (double)g.adj[src][dst]/(1+ g.incL[i]->capacity - g.adj[src][dst]);
-		judge_sum_LP += latencyFunc * g.adj[src][dst];
+		judge_sum_LP += latencyFunc;
 	}
 	return judge_sum_LP;
 }

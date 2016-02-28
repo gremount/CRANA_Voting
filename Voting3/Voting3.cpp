@@ -137,7 +137,7 @@ int main()
 
 		//算最完美方案，所有的路都第一个走得到的方案
 		for(int j=0;j<Maxreq;j++)
-			gv.cost_best[j] = reqL[j]->flow * gv.dijkstra(reqL[j]->src,reqL[j]->dst,reqL[j]->flow,flowL[0]->adj);
+			gv.cost_best[j] = gv.dijkstra(reqL[j]->src,reqL[j]->dst,reqL[j]->flow,flowL[0]->adj);
 
 		//for(int j=0;j<Maxreq;j++)
 			//cout<<"gv.cost_best "<<j<<" : "<<gv.cost_best[j]<<endl;
@@ -244,7 +244,7 @@ int main()
 		
 		//最优部署计算
 		for(int j=0;j<Maxreq;j++)
-			gp.cost_best[j] = reqL[j]->flow * gp.dijkstra(reqL[j]->src,reqL[j]->dst,reqL[j]->flow);
+			gp.cost_best[j] =gp.dijkstra(reqL[j]->src,reqL[j]->dst,reqL[j]->flow);
 
 		//线性规划部署
 		double result_LP=0;

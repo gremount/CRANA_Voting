@@ -89,7 +89,7 @@ double LP(PGraph *g,vector<Req*> &reqL)
 				}
 			}
 			//cout<<distance<<endl;
-			g->cost_LP[d] = latency * reqL[d]->flow;
+			g->cost_LP[d] = latency;
 		}
 	}
 	else
