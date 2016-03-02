@@ -121,7 +121,7 @@ public:
 				int src=flowL[i]->path_record[id]->pathL[j]->src;
 				int dst=flowL[i]->path_record[id]->pathL[j]->dst;
 				int capacity=flowL[i]->path_record[id]->pathL[j]->capacity;
-				temp+=flowL[i]->adj[src][dst]/(capacity-flowL[i]->adj[src][dst]+1);
+				temp+=flow/(capacity-flowL[i]->adj[src][dst]+1);
 			}
 			judge[i]=temp;
 			//if(judge[i]==0) judge[i]=Maxpath*flow;//没有路径可以安排，就要增加惩罚
@@ -153,8 +153,8 @@ public:
 			src=g.adjL[s][i]->src;dst=g.adjL[s][i]->dst;
 			x=adj[src][dst]+flow;
 			if(x>g.adjL[s][i]->capacity)continue;
-			if (d[s] + x/(g.adjL[s][i]->capacity - x + 1) < d[dst]){
-                d[dst] = d[s] + x/(g.adjL[s][i]->capacity - x + 1);
+			if (d[s] + flow/(g.adjL[s][i]->capacity - x + 1) < d[dst]){
+                d[dst] = d[s] + flow/(g.adjL[s][i]->capacity - x + 1);
                 p[dst] = s;
             }
 		}
