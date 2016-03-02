@@ -84,7 +84,7 @@ double LP(PGraph *g,vector<Req*> &reqL)
 						//g->incL[i]->dst<< " has flow "<<
 						//solver.getValue(x[d][i])*reqL[d]->flow<<endl;
 					g->adj[g->incL[i]->src][g->incL[i]->dst] += reqL[d]->flow;
-					latency += 1 + g->adj[g->incL[i]->src][g->incL[i]->dst]/
+					latency += g->adj[g->incL[i]->src][g->incL[i]->dst]/
 						(1 + g->incL[i]->capacity - g->adj[g->incL[i]->src][g->incL[i]->dst]);
 				}
 			}
