@@ -35,7 +35,7 @@ double LP(PGraph *g,vector<Req*> &reqL)
 			load += x[d][i] * reqL[d]->flow;
 			temp[d] = x[d][i];
 		}
-		energy += 1 * (load + g->adj[g->incL[i]->src][g->incL[i]->dst]) + IloMax(temp) * 0.5 * g->incL[i]->capacity;
+		energy += (load + g->adj[g->incL[i]->src][g->incL[i]->dst])*(load + g->adj[g->incL[i]->src][g->incL[i]->dst]) + IloMax(temp) * 0.5 * g->incL[i]->capacity;
 	}
 	model.add(IloMinimize(environment, energy));
 
@@ -75,7 +75,7 @@ double LP(PGraph *g,vector<Req*> &reqL)
 
 		//展示流量所走的路径，并且修改各条link的capacity
 		
-		float latency=0;
+		double latency=0;
 		for(int d=0;d<K;d++)
 		{
 			//cout<<"flow "<<d+1<<" : "<<endl;
@@ -84,16 +84,16 @@ double LP(PGraph *g,vector<Req*> &reqL)
 			{
 				if(solver.getValue(x[d][i])>0)
 				{
-					/*cout<<"from node "<<g->incL[i]->src<<" to node "<<
-						g->incL[i]->dst<< " has flow "<<
-						solver.getValue(x[d][i])*reqL[d]->flow<<endl;*/
+					//cout<<"from node "<<g->incL[i]->src<<" to node "<<
+						//g->incL[i]->dst<< " has flow "<<
+						//solver.getValue(x[d][i])*reqL[d]->flow<<endl;
 					g->adj[g->incL[i]->src][g->incL[i]->dst] += reqL[d]->flow;
-					latency += 1 + g->adj[g->incL[i]->src][g->incL[i]->dst]/
+					latency += reqL[d]->flow/
 						(1 + g->incL[i]->capacity - g->adj[g->incL[i]->src][g->incL[i]->dst]);
 				}
 			}
 			//cout<<distance<<endl;
-			g->cost_LP[d] = latency * reqL[d]->flow;
+			g->cost_LP[d] = latency;
 		}
 	}
 	else

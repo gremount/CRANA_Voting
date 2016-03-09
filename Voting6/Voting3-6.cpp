@@ -6,6 +6,19 @@
 #include "LP.h"
 
 /*
+//t3
+const int Inf=99999;
+const int N=3;//所有的点数
+const int M=6;//包含正反向边
+const int Maxreq=3;//一个case的流需求数量
+const int Maxpath=N-1;//可能的最长路径: N-1
+
+const int caseN=2;//case总数
+const int Maxflow=5;//流的大小可变范围
+const int Begin_num=10;//流的大小起始范围
+*/
+
+/*
 //graph_all
 const int Inf=99999;
 const int N=20;//所有的点数
@@ -18,7 +31,7 @@ const int Maxflow=30;//流的大小可变范围
 const int Begin_num=1;//流的大小起始范围
 */
 
-/*
+
 //graph_Compuserve
 const int Inf=99999;
 const int N=11;//所有的点数
@@ -29,9 +42,10 @@ const int Maxpath=N-1;//可能的最长路径: N-1
 const int caseN=6;//case总数
 const int Maxflow=10;//流的大小可变范围
 const int Begin_num=1;//流的大小起始范围
-*/
+const int STARTUP=1000;//link开启能量消耗
 
 
+/*
 //graph_ATT
 const int Inf=99999;
 const int N=25;//所有的点数
@@ -40,33 +54,32 @@ const int Maxreq=10;//一个case的流需求数量
 const int Maxpath=N-1;//可能的最长路径: N-1
 
 const int caseN=6;//case总数
-const int Maxflow=10;//流的大小可变范围
-const int Begin_num=6;//流的大小起始范围
-
+const int Maxflow=15;//流的大小可变范围
+const int Begin_num=5;//流的大小起始范围
+*/
 
 //如果改图，需要修改： 上面的参数 + 图输入 + req输入的部分
 
 int main()
 {
 	srand((unsigned)time(NULL));
-	VGraph gv("d:\\github\\CRANA_Voting\\graph_ATT.txt");//Voting用的图
-	PGraph gp("d:\\github\\CRANA_Voting\\graph_ATT.txt");//LP用的图
+	VGraph gv("graph_Compuserve.txt");//Voting用的图
+	PGraph gp("graph_Compuserve.txt");//LP用的图
 	vector<Flow*> flowL;//记录所有的流实例
-	ofstream outfile("d:\\github\\result.txt");//最后一个case的结果
-	ofstream req_outfile("d:\\github\\req_outfile.txt");
+	ofstream outfile("result.txt");//最后一个case的结果
+	ofstream req_outfile("req_outfile.txt");
 
 	outfile<<"graph_ATT网络拓扑 caseN: "<<caseN<<endl;
 	outfile<<"flow Range: "<<Begin_num<<"--"<<Maxflow+Begin_num-1<<endl<<endl;
 
 	double judge_LP=0,judge_sum_LP=0;
-	int result_sum_LP=0;
 	
 	vector<Req*> reqL;
-	float table[M2C+1][N2C+1] = {0};
+	double table[M2C+1][N2C+1] = {0};
 	int ranking[N2C+1]={0};//记录一种排序的投票人数
 	double happiness_sum=0;
 	
-	for(int j=0;j<Maxreq;j++)
+	for(int j=1;j<=Maxreq;j++)
 		ranking[j]=1;//每种投票结果有1个voter,如果为2就说明该方案有得到两个voter的票
 
 	
@@ -79,8 +92,17 @@ int main()
 				table[j][k]=0;
 		
 		req_outfile<<"case "<<i<<endl;
+
+		
+		//以下程序时防止每个case都会创建的Req导致的内存泄露
+		vector<Req*>::iterator it,iend;
+		iend=reqL.end();
+		for(it=reqL.begin();it!=iend;it++)	
+			delete(*it);
+		
 		reqL.clear();
 		gv.reqL.clear();
+
 		if(i==0){
 			for(int j=0;j<Maxreq;j++)
 			{
@@ -92,7 +114,7 @@ int main()
 					b = rand()%N;
 					if(a!=b && c!=0) break;
 				}
-				//a=1;b=17;
+				//a=0;b=1;c=10;
 				Req* r = new Req(j,a,b,c);
 				reqL.push_back(r);
 				gv.reqL.push_back(r);
@@ -112,7 +134,7 @@ int main()
 					b = rand()%N;
 					if(a!=b && c!=0) break;
 				}
-				//a=1;b=17;
+				//a=0;b=1;c=10;
 				Req* r = new Req(j,a,b,c);
 				reqL.push_back(r);
 				gv.reqL.push_back(r);
@@ -126,7 +148,10 @@ int main()
 
 		//算最完美方案，所有的路都第一个走得到的方案
 		for(int j=0;j<Maxreq;j++)
-			gv.cost_best[j] = reqL[j]->flow * gv.dijkstra(reqL[j]->src,reqL[j]->dst,reqL[j]->flow,flowL[0]->adj);
+			gv.cost_best[j] = gv.dijkstra(reqL[j]->src,reqL[j]->dst,reqL[j]->flow,flowL[0]->adj);
+
+		//for(int j=0;j<Maxreq;j++)
+			//cout<<"gv.cost_best "<<j<<" : "<<gv.cost_best[j]<<endl;
 
 		//提方案
 		for(int j=0;j<Maxreq;j++)
@@ -194,23 +219,22 @@ int main()
 				latencyVoting += Maxpath * reqL[j]->flow;
 			}
 		cout << "第" << i << "轮整体满意度： " << happiness/Maxreq << endl;
-		cout << "多轮满意度：" << happiness_sum / ((i+1)*10) << endl;
+		cout << "多轮满意度：" << happiness_sum / ((i+1)*Maxreq) << endl;
 		cout << "多轮整体延时和: " << latencyVoting << endl;
-
+		
 		//统计网络能耗
 		double energy_Voting=0;
 		
-		//统计网络最大链路利用率
 		double maxUtil_Voting=0;
-		for(int j=0;j<gv.m;j++)
+		for(int j=0;j<gp.m;j++)
 		{
 			int src=gv.incL[j]->src;
 			int dst=gv.incL[j]->dst;
-			float capacity=gv.incL[j]->capacity;
+			double capacity=gv.incL[j]->capacity;
 			if(maxUtil_Voting<(flowL[winner-1]->adj[src][dst]/capacity))
 				maxUtil_Voting=flowL[winner-1]->adj[src][dst]/capacity;
 			if(flowL[winner-1]->adj[src][dst]>0)
-				energy_Voting += flowL[winner-1]->adj[src][dst] * 1 +0.5 * 1 * capacity;
+				energy_Voting += flowL[winner-1]->adj[src][dst] * flowL[winner-1]->adj[src][dst] + STARTUP;
 		}
 		cout<<"网络能耗："<<energy_Voting<<endl;
 		cout<<"最大链路利用率: "<<maxUtil_Voting<<endl;
@@ -237,7 +261,7 @@ int main()
 		
 		//最优部署计算
 		for(int j=0;j<Maxreq;j++)
-			gp.cost_best[j] = reqL[j]->flow * gp.dijkstra(reqL[j]->src,reqL[j]->dst,reqL[j]->flow);
+			gp.cost_best[j] =gp.dijkstra(reqL[j]->src,reqL[j]->dst,reqL[j]->flow);
 
 		//线性规划部署
 		double result_LP=0;
@@ -260,10 +284,8 @@ int main()
 		double latency_LP=0;
 		latency_LP=judge_sum_LP_function(gp,flowL);
 		cout << "多轮整体延时和: " << latency_LP << endl;
-		
 		cout << "网络能耗：" << result_LP<<endl;
-
-
+		
 		//统计网络最大链路利用率
 		double maxUtil_LP=0;
 		for(int j=0;j<gp.m;j++)
@@ -274,7 +296,7 @@ int main()
 			if(maxUtil_LP<(gp.adj[src][dst]/capacity))
 				maxUtil_LP=gp.adj[src][dst]/capacity;
 		}
-		cout<<"最大链路利用率: "<<maxUtil_LP<<endl;
+		cout<<"最大链路利用率: "<<result_LP<<endl;
 		
 		/*
 		if(i==(caseN-1)){
