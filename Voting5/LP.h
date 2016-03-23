@@ -76,7 +76,7 @@ double LP(PGraph *g,vector<Req*> &reqL)
 		{
 			for(int i=0;i<g->m;i++)
 			{
-				if(solver.getValue(x[d][i])>0)
+				if(solver.getValue(x[d][i])>0.5)
 				{
 					g->adj[g->incL[i]->src][g->incL[i]->dst] += reqL[d]->flow;
 				}
@@ -87,7 +87,7 @@ double LP(PGraph *g,vector<Req*> &reqL)
 			int temp_bw=Inf;
 			for(int i=0;i<g->m;i++)
 			{
-				if(solver.getValue(x[d][i])>0)
+				if(solver.getValue(x[d][i])>0.5)
 				{
 					int src=g->incL[i]->src, dst=g->incL[i]->dst;
 					if(temp_bw > g->incL[i]->capacity - g->adj[src][dst])

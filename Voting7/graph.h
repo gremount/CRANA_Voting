@@ -43,7 +43,7 @@ public:
 	int n,m;
 	set<int> S, V;
     vector<int> p;
-	vector<float> d;
+	vector<int> d;
 	vector<Edge*> incL;//边的列表
 	vector<vector<Edge*> > adjL,adjRL; //正向和反向邻接链表
 	vector<vector<Edge*> > adj;//邻接矩阵
@@ -67,7 +67,7 @@ public:
 		for(int i=0;i<n;i++)
 			adj[i].resize(n);
 		cost_best.resize(Maxreq);
-		cost_LP.resize(Maxreq);
+		
 
 		int a,b,c,d;
 		int temp=m/2;
@@ -92,22 +92,21 @@ public:
 		for(int i=0;i<req_num;i++)
 			reqL.push_back(reqL2[i]);
 	}
-
+	
 	void Update(int s,int flow,vector<vector<int> > &adj){
-        float x;
+        
 		for (int i = 0; i < adjL[s].size();i++){
 			int src,dst;
 			src=adjL[s][i]->src;dst=adjL[s][i]->dst;//这里src = s
-			x=adj[src][dst];
 			
-			if(flow > (adjL[s][i]->capacity - x ))continue;//该link无法通过该流
+			if(flow > (adjL[s][i]->capacity - adj[src][dst] ))continue;//该link无法通过该流
 			
 			int temp;//link[i][j]可以通过的最大流（的带宽）
-			if(d[src] > adjL[src][i]->capacity-x) temp=adjL[src][i]->capacity-x;//水管受限
+			if(d[src] > adjL[src][i]->capacity-adj[src][dst]) temp=adjL[src][i]->capacity-adj[src][dst];//水管受限
 			else temp=d[src];//水源受限(到src点的路径带宽有限)
 			
 			if(temp>d[dst]) {d[dst]=temp;p[dst]=src;}//发现拥有更大带宽的路，更新
-			else d[dst]=d[dst];//因为还有更宽的路可以到达dst，所以这里不更新
+			else ;//因为还有更宽的路可以到达dst，所以这里不更新
 		}
     }
 
@@ -142,7 +141,10 @@ public:
         {
             int mind;
             mind = FindMax();
-            if (mind == dst) return d[mind];
+			int loc=mind;
+            if (mind == dst) {
+				return d[mind];
+			}
 			if (mind==-1) break;//没有路可达
             Update(mind,flow,adj);
             S.erase(mind);
@@ -150,7 +152,7 @@ public:
         }
 		return 0;//没有路可达
     }
-
+	
 };
 
 class PGraph
@@ -159,7 +161,7 @@ public:
 	int n,m;
 	set<int> S, V;
     vector<int> p;
-	vector<float> d;
+	vector<int> d;
 	vector<Edge*> incL;//边的列表
 	vector<vector<Edge*> > adjL,adjRL; //正向和反向邻接链表
 	
@@ -201,14 +203,14 @@ public:
 
 	void Update(int s,int flow){
         for (int i = 0; i < adjL[s].size();i++){
-			float x=flow;
+			
 			int src=adjL[s][i]->src;
 			int dst=adjL[s][i]->dst;
 			
 			if(flow > (adjL[s][i]->capacity-adj[src][dst]))continue;
 			
 			int temp;//link[i][j]可以通过的最大流（的带宽）
-			if(d[src] > adjL[src][i]->capacity-x) temp=adjL[src][i]->capacity-x;//水管受限
+			if(d[src] > adjL[src][i]->capacity-adj[src][dst]) temp=adjL[src][i]->capacity-adj[src][dst];//水管受限
 			else temp=d[src];//水源受限(到src点的路径带宽有限)
 			
 			if(temp>d[dst]) {d[dst]=temp;p[dst]=src;}//发现拥有更大带宽的路，更新
@@ -248,7 +250,9 @@ public:
         {
             int mind;
             mind = FindMax();
-            if (mind == dst) return d[mind];
+			if (mind == dst) {
+				return d[mind];
+			}
 			if (mind==-1) break;//没有路可达
             Update(mind,flow);
             S.erase(mind);

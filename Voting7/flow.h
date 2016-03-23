@@ -18,7 +18,8 @@ public:
 
 	//dijkstra需要用到的变量
 	set<int> S, V;
-    vector<int> d, p;
+    vector<int> p;
+	vector<int> d;
 
 	//初始化，只初始化一次，之后其他需求来的时候，
 	//只修改之前参数，相当于投票的基础设施只建立一次，剩下的是维护
@@ -51,7 +52,8 @@ public:
 	void propose(VGraph &g,vector<Flow*> &flowL)
 	{
 		//对自己的流先算dijkstra
-		int dist=0,loc=dst;
+		int loc=dst;
+		int dist=0;
 		dist=dijkstra(src,dst,flow,g);
 		if(dist==Inf){cout<<"*********** no path *********"<<endl;}
 		//没有路径可以安排，在evaluate里就要增加惩罚
@@ -71,7 +73,7 @@ public:
 				int src,dst;
 				src=path_record[id]->pathL[j]->src;
 				dst=path_record[id]->pathL[j]->dst;
-				adj[src][dst] += g.reqL[id]->flow;
+				adj[src][dst] += flow;
 			}
 		}
 
@@ -109,7 +111,8 @@ public:
 	void evaluate(VGraph &g, vector<Flow*> &flowL)
 	{
 		//流评价所有方案
-		int temp=0,edge_num=0;//temp记录路径权值和
+		int temp=0;
+		int edge_num=0;//temp记录路径权值和
 		for(int i=0;i<Maxreq;i++)
 		{
 			edge_num=flowL[i]->path_record[id]->pathL.size();
@@ -119,8 +122,7 @@ public:
 				int src=flowL[i]->path_record[id]->pathL[j]->src;
 				int dst=flowL[i]->path_record[id]->pathL[j]->dst;
 				int capacity=flowL[i]->path_record[id]->pathL[j]->capacity;
-				if(Inf>capacity-adj[src][dst])
-				temp=capacity-adj[src][dst];
+				if(temp>capacity-flowL[i]->adj[src][dst]) temp=capacity-flowL[i]->adj[src][dst];
 			}
 			judge[i]=temp*flow;
 			if(judge[i]==0) judge[i]=0;//没有路径可以安排，就要增加惩罚
@@ -146,16 +148,14 @@ public:
 	}
 
 	void Update(int s,int flow, VGraph &g){
-		float x;
         for (int i = 0; i < g.adjL[s].size();i++){
 			int src,dst;
 			src=g.adjL[s][i]->src;dst=g.adjL[s][i]->dst;//这里src = s
-			x=adj[src][dst];
 			
-			if(flow > g.adjL[src][i]->capacity - x)continue;//该link无法通过该流
+			if(flow > g.adjL[src][i]->capacity - adj[src][dst])continue;//该link无法通过该流
 			
 			int temp;//link[i][j]可以通过的最大流（的带宽）
-			if(d[src] > g.adjL[src][i]->capacity-x) temp=g.adjL[src][i]->capacity-x;//水管受限
+			if(d[src] > g.adjL[src][i]->capacity-adj[src][dst]) temp=g.adjL[src][i]->capacity-adj[src][dst];//水管受限
 			else temp=d[src];//水源受限(到src点的路径带宽有限)
 			
 			if(temp>d[dst]) {d[dst]=temp;p[dst]=src;}//发现拥有更大带宽的路，更新
@@ -213,8 +213,10 @@ double judge_sum_function(VGraph &g, vector<Flow*> &flowL, int winner)
 		int src,dst;
 		double latencyTemp;
 		src=g.incL[i]->src;dst=g.incL[i]->dst;
-		latencyTemp = 1 + flowL[winner]->adj[src][dst]/(1+ g.incL[i]->capacity - flowL[winner]->adj[src][dst]);
-		latencyVoting += latencyTemp * flowL[winner]->adj[src][dst];
+		if(flowL[winner]->adj[src][dst]==0) continue;//由于延时函数是1+x2/(c-x1)，所以即使没有流量，
+		//依然会在统计中算入延时，所以这里判断一下来消除这些误判
+		latencyTemp = (double)flowL[winner]->adj[src][dst]/(1+ g.incL[i]->capacity - flowL[winner]->adj[src][dst]);
+		latencyVoting += latencyTemp;
 	}
 	return latencyVoting;
 }
@@ -227,10 +229,11 @@ double judge_sum_LP_function(PGraph &g, vector<Flow*> &flowL)
 	for(int i=0;i<M;i++)
 	{
 		int src,dst;
-		float latencyFunc;
+		double latencyFunc;
 		src=g.incL[i]->src;dst=g.incL[i]->dst;
-		latencyFunc = 1 + g.adj[src][dst]/(1+ g.incL[i]->capacity - g.adj[src][dst]);
-		judge_sum_LP += latencyFunc * g.adj[src][dst];
+		if(g.adj[src][dst]==0) continue;
+		latencyFunc = (double)g.adj[src][dst]/(1+ g.incL[i]->capacity - g.adj[src][dst]);
+		judge_sum_LP += latencyFunc;
 	}
 	return judge_sum_LP;
 }

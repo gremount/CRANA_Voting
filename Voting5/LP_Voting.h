@@ -94,8 +94,8 @@ double LP_Voting(VGraph *g,vector<Req*> &reqL,vector<Path*> &path_record, int id
 			
 			for(int i=0;i<g->m;i++)
 			{
-				if(solver.getValue(x[d][i])!=0 || solver.getValue(x[d][i])!=1)
-					cout<<"!!!!!!!!!!!!!!!!!!!  x[d][i] error !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<d<<" "<<i<<" "<<solver.getValue(x[d][i])<<endl;
+				//if(solver.getValue(x[d][i])!=0 || solver.getValue(x[d][i])!=1)
+					//cout<<"!!!!!!!!!!!!!!!!!!!  x[d][i] error !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<d<<" "<<i<<" "<<solver.getValue(x[d][i])<<endl;
 				if(solver.getValue(x[d][i])>0.5)
 				{
 					path->pathL.push_back(g->incL[i]);

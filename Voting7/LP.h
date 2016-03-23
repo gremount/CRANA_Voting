@@ -24,20 +24,16 @@ double LP(PGraph *g,vector<Req*> &reqL)
 		x[d]=IloIntVarArray(environment,g->m,0,1);
 	
 
-	//优化目标 最小化->能量消耗
-	IloExpr energy(environment);//网络的能量消耗
-	
+	//优化目标 最小化->最大链路利用率 0<=z<=1
+	IloNumVar z(environment,0,1);//如果不限制z的范围，z就可能超过1
 	for(int i=0;i<g->m;i++)
 	{
 		IloExpr load(environment);
-		IloIntVarArray temp(environment,K,0,1);
-		for(int d=0;d<K;d++){
+		for(int d=0;d<K;d++)
 			load += x[d][i] * reqL[d]->flow;
-			temp[d] = x[d][i];
-		}
-		energy += 1 * (load + g->adj[g->incL[i]->src][g->incL[i]->dst]) + IloMax(temp) * 0.5 * g->incL[i]->capacity;
+		model.add((load + g->adj[g->incL[i]->src][g->incL[i]->dst]) <= z * g->incL[i]->capacity);
 	}
-	model.add(IloMinimize(environment, energy));
+	model.add(IloMinimize(environment, z));
 
 	//约束1，流量约束
 	for(int d=0;d < K;d++)
@@ -75,23 +71,30 @@ double LP(PGraph *g,vector<Req*> &reqL)
 
 		//展示流量所走的路径，并且修改各条link的capacity
 		
-		double latency=0;
+		
 		for(int d=0;d<K;d++)
 		{
-			//cout<<"flow "<<d+1<<" : "<<endl;
-			latency=0;
-			int temp_bw=Inf;
 			for(int i=0;i<g->m;i++)
 			{
 				if(solver.getValue(x[d][i])>0)
 				{
 					g->adj[g->incL[i]->src][g->incL[i]->dst] += reqL[d]->flow;
+				}
+			}
+		}
+		for(int d=0;d<K;d++)
+		{
+			int temp_bw=Inf;
+			for(int i=0;i<g->m;i++)
+			{
+				if(solver.getValue(x[d][i])>0)
+				{
 					int src=g->incL[i]->src, dst=g->incL[i]->dst;
 					if(temp_bw > g->incL[i]->capacity - g->adj[src][dst])
 						temp_bw = g->incL[i]->capacity - g->adj[src][dst];
 				}
 			}
-			//cout<<distance<<endl;
+			//cout<<"d"<<d<<" :"<<temp_bw<<" "<<reqL[d]->flow<<endl;
 			g->cost_LP[d] = temp_bw * reqL[d]->flow;
 		}
 	}

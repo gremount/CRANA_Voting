@@ -213,8 +213,10 @@ double judge_sum_function(VGraph &g, vector<Flow*> &flowL, int winner)
 		int src,dst;
 		double latencyTemp;
 		src=g.incL[i]->src;dst=g.incL[i]->dst;
-		latencyTemp = 1 + (double)flowL[winner]->adj[src][dst]/(1+ g.incL[i]->capacity - flowL[winner]->adj[src][dst]);
-		latencyVoting += latencyTemp * flowL[winner]->adj[src][dst];
+		if(flowL[winner]->adj[src][dst]==0) continue;//由于延时函数是x1/(c-x1)，所以即使没有流量，
+		//依然会在统计中算入延时，所以这里判断一下来消除这些误判
+		latencyTemp = (double)flowL[winner]->adj[src][dst]/(1+ g.incL[i]->capacity - flowL[winner]->adj[src][dst]);
+		latencyVoting += latencyTemp;
 	}
 	return latencyVoting;
 }
@@ -229,8 +231,9 @@ double judge_sum_LP_function(PGraph &g, vector<Flow*> &flowL)
 		int src,dst;
 		double latencyFunc;
 		src=g.incL[i]->src;dst=g.incL[i]->dst;
-		latencyFunc = 1 + (double)g.adj[src][dst]/(1+ g.incL[i]->capacity - g.adj[src][dst]);
-		judge_sum_LP += latencyFunc * g.adj[src][dst];
+		if(g.adj[src][dst]==0) continue;
+		latencyFunc = (double)g.adj[src][dst]/(1+ g.incL[i]->capacity - g.adj[src][dst]);
+		judge_sum_LP += latencyFunc;
 	}
 	return judge_sum_LP;
 }

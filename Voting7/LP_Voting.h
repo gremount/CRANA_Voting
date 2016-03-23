@@ -26,17 +26,13 @@ double LP_Voting(VGraph *g,vector<Req*> &reqL,vector<Path*> &path_record, int id
 
 	//优化目标
 	IloExpr goal(environment);
-	IloExpr temp(environment);
 	IloExprArray L(environment, g->m);//L[i]:第i条link上所流经的flow
-	IloExprArray Y(environment,K);//Y[d]:第d种流的可用剩余带宽
-	
+	IloIntVarArray Y(environment,K,0,Inf);
+
 	for(int i=0;i<g->m;i++)
 		L[i] = IloExpr(environment);
 
-	for(int d=0;d<K;d++)
-		Y[d] = IloExpr(environment);
-
-	//最大化满意度
+	//目标是最大化满意度
 	for(int i=0;i<g->m;i++)
 	{
 		for(int d=0;d<K;d++)
@@ -45,10 +41,11 @@ double LP_Voting(VGraph *g,vector<Req*> &reqL,vector<Path*> &path_record, int id
 
 	for(int d=0;d<K;d++)
 		for(int i=0;i<g->m;i++)
-			model.add(Y[d] <= (1-x[d][i])*Inf + (g->incL[i]->capacity-L[i]));
+			model.add(Y[d] <= ((1-x[d][i])*Inf + (g->incL[i]->capacity - L[i] - adj[g->incL[i]->src][g->incL[i]->dst])));
 
 	for(int d=0;d<K;d++)
-		goal+=Y[d]*reqL[d]->flow/(float)g->cost_best[reqL[d]->id];
+		goal+=Y[d]*reqL[d]->flow;
+		//goal+=Y[d]*reqL[d]->flow/(int)g->cost_best[reqL[d]->id];
 
 	model.add(IloMaximize(environment,goal));
 
@@ -89,20 +86,24 @@ double LP_Voting(VGraph *g,vector<Req*> &reqL,vector<Path*> &path_record, int id
 		//路径记录
 		
 		int distance=0;
+		int temp=0;
 		for(int d=0;d<K;d++)
 		{
 			distance=0;
 			Path* path=new Path();
+			
 			for(int i=0;i<g->m;i++)
 			{
-				if(solver.getValue(x[d][i])>0)
+				if(solver.getValue(x[d][i])!=0 || solver.getValue(x[d][i])!=1)
+					cout<<"!!!!!!!!!!!!!!!!!!!  x[d][i] error !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<d<<" "<<i<<" "<<solver.getValue(x[d][i])<<endl;
+				if(solver.getValue(x[d][i])>0.5)
 				{
 					path->pathL.push_back(g->incL[i]);
 					distance += g->incL[i]->weight;
 				}
 			}
-			if(distance==0){cout<<endl<<endl<<"error !!!!!!!!!!!!!!!!!"<<endl<<endl;continue;}
 			path_record[reqL[d]->id]=path;
+			if(distance==0){cout<<endl<<endl<<"error !!!!!!!!!!!!!!!!!"<<endl<<endl;continue;}
 		}
 	}
 	else
