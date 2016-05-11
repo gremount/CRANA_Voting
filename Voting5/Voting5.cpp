@@ -83,6 +83,7 @@ int main()
 	outfile<<"graph_Compuserve网络拓扑"<<endl;
 	outfile<<"flow Range: "<<Begin_num<<"--"<<Maxflow+Begin_num-1<<endl;
 	outfile<<"caseN = "<<caseN<<"  Maxreq = "<<Maxreq<<endl<<endl;
+	
 	vector<Flow*> flowL;//记录所有的流实例
 	double judge_LP=0,judge_sum_LP=0;
 	vector<Req*> reqL;

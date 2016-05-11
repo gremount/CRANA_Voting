@@ -35,7 +35,7 @@ double LP(PGraph *g,vector<Req*> &reqL)
 			load += x[d][i] * reqL[d]->flow;
 			temp[d] = x[d][i];
 		}
-		energy += (load + g->adj[g->incL[i]->src][g->incL[i]->dst])*(load + g->adj[g->incL[i]->src][g->incL[i]->dst]) + IloMax(temp) * 0.5 * g->incL[i]->capacity;
+		energy += (load + g->adj[g->incL[i]->src][g->incL[i]->dst])*(load + g->adj[g->incL[i]->src][g->incL[i]->dst]) + IloMax(temp) * STARTUP;
 	}
 	model.add(IloMinimize(environment, energy));
 
@@ -82,7 +82,7 @@ double LP(PGraph *g,vector<Req*> &reqL)
 			latency=0;
 			for(int i=0;i<g->m;i++)
 			{
-				if(solver.getValue(x[d][i])>0)
+				if(solver.getValue(x[d][i])>0.5)
 				{
 					//cout<<"from node "<<g->incL[i]->src<<" to node "<<
 						//g->incL[i]->dst<< " has flow "<<

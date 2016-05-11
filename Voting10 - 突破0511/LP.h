@@ -24,22 +24,18 @@ double LP(PGraph *g,vector<Req*> &reqL)
 		x[d]=IloIntVarArray(environment,g->m,0,1);
 	
 
-	//优化目标 最小化->能量消耗
-	IloExpr energy(environment);//网络的能量消耗
-	
+	//优化目标 最小化->最大链路利用率 0<=z<=1
+	IloNumVar z(environment,0,1);//如果不限制z的范围，z就可能超过1
 	for(int i=0;i<g->m;i++)
 	{
 		IloExpr load(environment);
-		IloIntVarArray temp(environment,K,0,1);
-		for(int d=0;d<K;d++){
+		for(int d=0;d<K;d++)
 			load += x[d][i] * reqL[d]->flow;
-			temp[d] = x[d][i];
-		}
-		energy += (load + g->adj[g->incL[i]->src][g->incL[i]->dst])*(load + g->adj[g->incL[i]->src][g->incL[i]->dst]) + IloMax(temp) * STARTUP;
+		model.add((load + g->adj[g->incL[i]->src][g->incL[i]->dst]) <= z * g->incL[i]->capacity);
 	}
-	model.add(IloMinimize(environment, energy));
+	model.add(IloMinimize(environment, z));
 
-	//约束1，流量约束
+	//约束1，流量约束，保证是一条流
 	for(int d=0;d < K;d++)
 		for(int i=0;i < g->n;i++)
 		{
@@ -57,7 +53,7 @@ double LP(PGraph *g,vector<Req*> &reqL)
 				model.add(constraint==0);
 		}
 
-	//约束2，容量约束
+	//约束2，容量约束，保证流量的大小不超过链路的容量
 	for(int i=0;i<g->m;i++)
 	{
 		IloExpr constraint(environment);
@@ -75,7 +71,7 @@ double LP(PGraph *g,vector<Req*> &reqL)
 
 		//展示流量所走的路径，并且修改各条link的capacity
 		
-		
+		double latency=0;
 		for(int d=0;d<K;d++)
 		{
 			for(int i=0;i<g->m;i++)
@@ -86,20 +82,20 @@ double LP(PGraph *g,vector<Req*> &reqL)
 				}
 			}
 		}
+
 		for(int d=0;d<K;d++)
 		{
-			int temp_bw=Inf;
+			latency=0;
 			for(int i=0;i<g->m;i++)
 			{
 				if(solver.getValue(x[d][i])>0.5)
 				{
-					int src=g->incL[i]->src, dst=g->incL[i]->dst;
-					if(temp_bw > g->incL[i]->capacity - g->adj[src][dst])
-						temp_bw = g->incL[i]->capacity - g->adj[src][dst];
+					latency += reqL[d]->flow/
+						(1 + g->incL[i]->capacity - g->adj[g->incL[i]->src][g->incL[i]->dst]);
 				}
 			}
-			//cout<<"d"<<d<<" :"<<temp_bw<<" "<<reqL[d]->flow<<endl;
-			g->cost_LP[d] = temp_bw * reqL[d]->flow;
+			//cout<<distance<<endl;
+			g->cost_LP[d] = latency;
 		}
 	}
 	else
