@@ -34,6 +34,7 @@ class Voting
 		double t[M2C+1][N2C+1];
 		int rank[N2C+1];
 		int M2, N2;
+		int beat_record[N2C+1];
 		Voting(double table[][N2C+1], int ranking[],int m2,int n2)
 		{
 			M2 = m2;
@@ -108,7 +109,10 @@ class Voting
 
 			cout<<"beat num: ";
 			for(int i=1;i<=N2;i++)
+			{
+				beat_record[i]=beat[i];
 				cout<<beat[i]<<" ";
+			}
 			cout<<endl;
 
 			for(int i=N2-1;i>=1;i--)

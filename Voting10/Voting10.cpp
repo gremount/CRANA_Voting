@@ -363,6 +363,11 @@ int main()
 		winner=vv.voting(choice);
 		winner=winner-1;//将结果还是按照从0开始编号
 
+		outfile<<endl<<"beat_record: ";
+		for(int i=1;i<=candiL.size();i++)
+			outfile<<vv.beat_record[i]<<" ";
+		outfile<<endl;
+
 		if (choice == 1)
 			cout << "schulze method : " << winner << endl;
 		else if (choice == 2)
