@@ -101,6 +101,19 @@ int main()
 	neutral_middle->te = 0.4;
 	neutral_high->te = 0.5;
 
+	//******** Flow Voting Variables *******
+	VGraph gv_flow("graph_all.txt"); //Flow Voting用的图
+	vector<Voter*> flowL_flow;//记录Flow Voting所有的流实例
+	vector<Voter*> voterL_flow;//记录Flow Voting所有的投票者
+	vector<Voter*> candiL_flow;//记录Flow Voting所有的候选者
+	double table_flow[M2C+1][N2C+1] = {0};
+	int ranking_flow[N2C+1]={0};//记录一种排序的投票人数
+	double happiness_sum_flow=0;
+	for(int j=1;j<=Maxreq;j++)
+		ranking_flow[j]=1;//每种投票结果有1个voter,如果为2就说明该方案有得到两个voter的票
+
+
+
 	for(int i=0;i<caseN;i++)
 	{
 		cout<<endl<<"*************************"<<" case "<<i<<"*************************"<<endl;
@@ -108,8 +121,10 @@ int main()
 		//初始化
 		for(int j=0;j<Voternum;j++)
 			for(int k=0;k<Voternum+3;k++)
+			{
 				table[j][k]=0;
-		
+				table_flow[j][k]=0;//table_flow的有效数据范围是table的子集
+			}
 		req_outfile<<"case "<<i<<endl;
 
 		
@@ -122,6 +137,7 @@ int main()
 		//删除上一个case的流需求
 		reqL.clear();
 		gv.reqL.clear();
+		gv_flow.reqL.clear();
 
 		if(i==0){
 			for(int j=0;j<Maxreq;j++)
@@ -138,10 +154,15 @@ int main()
 				Req* r = new Req(j,a,b,c);
 				reqL.push_back(r);
 				gv.reqL.push_back(r);
+				gv_flow.reqL.push_back(r);
 				Voter* flow_now = new Flow(j,0,a,b,c);
+				Voter* flow_now_flow =  new Flow(j,0,a,b,c);//Flow Voting use
 				flowL.push_back(flow_now);
 				voterL.push_back(flow_now);
 				candiL.push_back(flow_now);
+				flowL_flow.push_back(flow_now_flow);
+				voterL_flow.push_back(flow_now_flow);
+				candiL_flow.push_back(flow_now_flow);
 				req_outfile<<j<<" "<<a<<" "<<b<<" "<<c<<endl;
 			}
 			voterL.push_back(net_lb);
@@ -166,8 +187,11 @@ int main()
 				Req* r = new Req(j,a,b,c);
 				reqL.push_back(r);
 				gv.reqL.push_back(r);
+				gv_flow.reqL.push_back(r);
 				flowL[j]->modify(a,b,c);
-				candiL[j]->modify(a,b,c);
+				//candiL[j]->modify(a,b,c);
+				flowL_flow[j]->modify(a,b,c);
+				//candiL_flow[j]->modify(a,b,c);
 				req_outfile<<j<<" "<<a<<" "<<b<<" "<<c<<endl;
 			}
 			net_lb->modify(0,0,0);
@@ -178,6 +202,133 @@ int main()
 
 		//cout<<"init completed"<<endl;
 		
+	
+
+		//**************************************  Flow Voting  **************************************
+		//**************************************  Flow Voting  **************************************
+		//only flows' proposal can be voted for a winner
+		
+		//算最完美方案，所有的路都第一个走得到的方案
+		for(int j=0;j<Maxreq;j++)
+			gv_flow.cost_best[j] = gv.dijkstra(reqL[j]->src,reqL[j]->dst,reqL[j]->flow,flowL_flow[0]->adj);
+
+		//for(int j=0;j<Maxreq;j++)
+			//cout<<"gv.cost_best "<<j<<" : "<<gv.cost_best[j]<<endl;
+
+		//提方案
+		for(int j=0;j<candiL_flow.size();j++)
+			candiL_flow[j]->propose(gv_flow);
+		//cout<<"提出方案结束"<<endl;
+
+		//评价方案
+		for(int j=0;j<voterL_flow.size();j++)
+			voterL_flow[j]->evaluate(gv_flow,candiL_flow);
+		//cout<<"评价方案结束"<<endl;
+
+		//投票算法, 投票算法的输入是从1开始的，但是judge是从0开始的，所以需要调整一下
+		for(int j=0;j<voterL_flow.size();j++)
+			for(int k=0;k<candiL_flow.size();k++)
+			{
+				//该操作在evaluate时候就惩罚----不用if(voterL[j]->judge[k]==0) table[j+1][k+1]=10000;//如果是0，说明流没有摆在网络中
+				table_flow[j+1][k+1]=voterL_flow[j]->judge[k];
+			}
+		cout<<endl<<"voting uses ";
+		int choice_flow=1;//选择一种投票算法
+		int winner_flow=0;
+		Voting vv_flow(table_flow,ranking_flow,voterL_flow.size(),candiL_flow.size());
+		winner_flow=vv_flow.voting(choice_flow);
+		winner_flow=winner_flow-1;//将结果还是按照从0开始编号
+
+		if (choice_flow == 1)
+			cout << "schulze method : " << winner_flow << endl;
+		else if (choice_flow == 2)
+			cout << "comulative method: " << winner_flow << endl;
+		else if (choice_flow == 3)
+			cout << "copeland condorcet method: " << winner_flow << endl;
+		else
+			cout << "ranked pairs method: " << winner_flow << endl;
+
+		
+		// table show
+		for(int i=1;i<=voterL_flow.size();i++)
+		{
+			cout<<"flow ";
+			cout.setf(ios::right);
+			cout.width(3);
+			cout<<i-1<<" judge: ";
+			for(int j=1;j<=candiL_flow.size();j++){
+				cout.setf(ios::left);
+				cout.width(5);
+				cout<<table_flow[i][j]<<" ";
+			}
+			cout<<endl;
+		}
+		cout<<endl;
+		
+		// file record of table show
+		outfile<<endl;
+		for(int i=1;i<=voterL_flow.size();i++)
+		{
+			outfile<<"flow ";
+			outfile.setf(ios::right);
+			outfile.width(3);
+			outfile<<i-1<<" judge: ";
+			for(int j=1;j<=candiL_flow.size();j++){
+				outfile.setf(ios::left);
+				outfile.width(5);
+				outfile<<table_flow[i][j]<<" ";
+			}
+			outfile<<endl;
+		}
+		outfile<<endl;
+
+
+		//计算满意度
+		double happiness_flow=0;//一轮所有流的满意度和，越高越好,0<=满意度<=1
+		for(int j=1;j<=Maxreq;j++)
+			happiness_flow += gv_flow.cost_best[j-1]/table_flow[j][winner_flow+1];//最好抉择评分/当前抉择评分
+		happiness_sum_flow += happiness_flow;
+
+		//计算方案部署后当前总的cost，如果流没有被安排进网络，就增加惩罚cost
+		
+		//统计网络latency
+		double latencyVoting_flow=0;
+		latencyVoting_flow=judge_sum_function(gv_flow,candiL_flow,winner_flow);
+
+		cout << "winner = "<<winner_flow<<endl;
+		cout << "第" << i << "轮整体满意度： " << happiness_flow/Maxreq << endl;
+		cout << "多轮满意度：" << happiness_sum_flow/ ((i+1)*Maxreq) << endl;
+		cout << "多轮整体延时和: " << latencyVoting_flow << endl;
+
+		double maxUtil_Voting_flow=0;
+		for(int j=0;j<gp.m;j++)
+		{
+			int src=gv_flow.incL[j]->src;
+			int dst=gv_flow.incL[j]->dst;
+			double capacity=gv_flow.incL[j]->capacity;
+			if(maxUtil_Voting_flow<(flowL_flow[winner_flow]->adj[src][dst]/capacity))
+				maxUtil_Voting_flow=flowL_flow[winner_flow]->adj[src][dst]/capacity;
+		}
+		cout<<"最大链路利用率: "<<maxUtil_Voting_flow<<endl;
+
+		//文件记录
+		outfile<<"Case "<<i<<" Flow Voting Result"<<endl;
+		outfile << "winner = "<<winner_flow<<endl;
+		outfile << "第" << i << "轮整体满意度： " << happiness_flow/Maxreq << endl;
+		outfile << "多轮满意度：" << happiness_sum_flow/ ((i+1)*Maxreq) << endl;
+		outfile << "多轮整体延时和: " << latencyVoting_flow << endl;
+		outfile <<"最大链路利用率: "<<maxUtil_Voting_flow<<endl;
+
+		//胜利的方案部署
+		for(int j=0;j<candiL_flow.size();j++)
+			candiL_flow[j]->end_implement(gv_flow,winner_flow,candiL_flow);
+
+		cout<<endl;
+
+		//**************************************   End of Flow Voting    **************************************
+		//**************************************   End of Flow Voting    **************************************
+
+
 		//@@@@@@@@@@@@@@@@  Voting  @@@@@@@@@@@@@@@@@@@@@@
 		//@@@@@@@@@@@@@@@@  Voting  @@@@@@@@@@@@@@@@@@@@@@
 
