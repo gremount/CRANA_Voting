@@ -19,6 +19,9 @@
 using namespace std;
 
 
+#define KC 1000
+#define M2C 1000 //the number of candidates
+#define N2C 1000 //how many kinds of ranking
 
 
 #endif
