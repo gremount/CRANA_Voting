@@ -1,6 +1,6 @@
 #include "common.h"
-//M2 is the number of candidates
-//N2 is how many kinds of ranking
+//M2 is the number of voters
+//N2 is the number of candidates
 
 class Node2
 {
@@ -55,6 +55,8 @@ class Voting
 			else {cout<<"error"<<endl;return 0;}
 		}
 
+		//M2 is the number of voters
+		//N2 is the number of candidates
 		int Schulze_Voting()
 		{
 			int d[M2C + 1][M2C + 1] = { 0 };
@@ -65,7 +67,7 @@ class Voting
 			{
 				for (int i = 1; i <= N2 - 1; i++)
 					for (int h = i + 1; h <= N2; h++)
-						if (t[j][i] < t[j][h]) d[i][h]+=rank[j];//排名数字越小越好
+						if (t[j][i] < t[j][h]) d[i][h]+=rank[j];//数字越小越好p
 						else if(t[j][i] > t[j][h])d[h][i]+=rank[j];
 			}
 
@@ -271,15 +273,15 @@ class Voting
 			int big_win[M2C + 1] = { 0 };
 			int max_win = 0;//record the score of final winner
 			vector<int> winners;
-			for (int j = 1; j <= N2; j++)
+			for (int j = 1; j <= M2; j++)
 			{
-				for (int i = 1; i <= M2 - 1; i++)
-					for (int h = i + 1; h <= M2; h++)
+				for (int i = 1; i <= N2 - 1; i++)
+					for (int h = i + 1; h <= N2; h++)
 						if (t[i][j] <= t[h][j]) small_win[i][h]+=rank[j];//越小越好
 						else small_win[h][i]+=rank[j];
 			}
-			for (int i = 1; i <= M2; i++)
-				for (int j = 1; j <= M2; j++)
+			for (int i = 1; i <= N2; i++)
+				for (int j = 1; j <= N2; j++)
 				{
 					if (i == j) continue;
 					//胜利+1，平均+0，失败-1
@@ -291,9 +293,9 @@ class Voting
 
 			//find the NO.1 and if there is more than 1 person, return the random one
 			max_win = big_win[1];
-			for (int i = 2; i <= M2; i++)
+			for (int i = 2; i <= N2; i++)
 				if (big_win[i] >= max_win) max_win = big_win[i];
-			for (int i = 1; i <= M2; i++)
+			for (int i = 1; i <= N2; i++)
 				if (big_win[i] == max_win) winners.push_back(i);
 			if (winners.size() == 1) return winners[0];
 			else

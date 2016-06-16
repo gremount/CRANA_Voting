@@ -53,11 +53,12 @@ public:
 	vector<double> cost_LP;//记录每个req的LP部署结果
 
 	VGraph(){;}
+
 	VGraph(string address)
 	{
 		ifstream infile(address);
 		infile>>n>>m;
-		
+		//cout<<n<<" "<<m<<endl;
 
 		d.resize(n);
         p.resize(n);
@@ -70,18 +71,18 @@ public:
 		cost_LP.resize(Maxreq);
 
 		int a,b,c,d;
-		int temp=m/2;
-		for(int i=0;i<temp;i++)
+		
+		for(int i=0;i<m;i++)
 		{
 			infile>>a>>b>>c>>d;
-			Edge* e1=new Edge(2*i,a,b,c,d);
-			Edge* e2=new Edge(2*i+1,b,a,c,d);
-
-			incL.push_back(e1);incL.push_back(e2);
-			adjL[a].push_back(e1);adjL[b].push_back(e2);
-			adjRL[b].push_back(e1);adjRL[a].push_back(e2);
-			adj[a][b]=e1;adj[b][a]=e2;
+			Edge* e=new Edge(i,a,b,c,d);
+		
+			incL.push_back(e);
+			adjL[a].push_back(e);
+			adjRL[b].push_back(e);
+			adj[a][b]=e;
 		}
+		cout<<"voting graph init completed"<<endl;
 	}
 
 	//将一个case的所有req都记录在图里，方便所有的Flow调用
@@ -180,16 +181,15 @@ public:
 
 
 		int a,b,c,d;
-		int temp=m/2;
-		for(int i=0;i<temp;i++)
+		
+		for(int i=0;i<m;i++)
 		{
 			infile>>a>>b>>c>>d;
-			Edge* e1=new Edge(2*i,a,b,c,d);
-			Edge* e2=new Edge(2*i+1,b,a,c,d);
-
-			incL.push_back(e1);incL.push_back(e2);
-			adjL[a].push_back(e1);adjL[b].push_back(e2);
-			adjRL[b].push_back(e1);adjRL[a].push_back(e2);
+			Edge* e=new Edge(i,a,b,c,d);
+		
+			incL.push_back(e);
+			adjL[a].push_back(e);
+			adjRL[b].push_back(e);
 		}
 	}
 

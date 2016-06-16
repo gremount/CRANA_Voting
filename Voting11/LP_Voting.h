@@ -9,7 +9,11 @@
 //用在flow.h中，是voting方案的规划部分
 //这里为了避免非线性规划，当前case流互相之间的影响不考虑，也就是延时只和之前case的流有关
 
-double LP_Voting(VGraph *g,vector<Req*> &reqL,vector<Path*> &path_record, int id, vector<vector<double> > &adj)
+double LP_Voting(VGraph *g,
+	vector<Req*> &reqL,
+	vector<Path*> &path_record, 
+	int id, 
+	vector<vector<double> > &adj)
 {
 	IloEnv environment;
 	IloModel model(environment);
@@ -30,7 +34,7 @@ double LP_Voting(VGraph *g,vector<Req*> &reqL,vector<Path*> &path_record, int id
 	IloExpr temp(environment);
 	IloExprArray L(environment,g->m);
 
-	//L[i]:第i条边在该次流量部署后的流量
+	//L[i]:第i条边在该次流量部署后的流量  每个L[i]有K个变量
 	for(int i=0;i<g->m;i++)
 		L[i]=IloExpr(environment);
 	for(int i=0;i<g->m;i++)
@@ -40,7 +44,7 @@ double LP_Voting(VGraph *g,vector<Req*> &reqL,vector<Path*> &path_record, int id
 			L[i]+=x[d][i]*reqL[d]->flow;
 	}
 
-	//延时约束条件，分段线性
+	//延时约束条件，分段线性  该for循环处有 K*4*m
 	for(int i=0;i<g->m;i++)
 	{
 		double c=g->incL[i]->capacity;
@@ -50,7 +54,7 @@ double LP_Voting(VGraph *g,vector<Req*> &reqL,vector<Path*> &path_record, int id
 		model.add(D[i] >= 70*L[i]-178*c/3);
 	}
 
-	//maximize happiness
+	//maximize happiness  这里的goal有 m*K 个变量
 	for(int d=0;d<K;d++)
 	{
 		for(int i=0;i<g->m;i++)		
@@ -67,7 +71,7 @@ double LP_Voting(VGraph *g,vector<Req*> &reqL,vector<Path*> &path_record, int id
 
 	model.add(IloMinimize(environment, goal));
 
-	//约束1，流量约束
+	//约束1，流量约束   K*m个变量
 	for(int d=0;d < K;d++)
 		for(int i=0;i < g->n;i++)
 		{
@@ -85,7 +89,7 @@ double LP_Voting(VGraph *g,vector<Req*> &reqL,vector<Path*> &path_record, int id
 				model.add(constraint==0);
 		}
 
-	//约束2，容量约束
+	//约束2，容量约束    m*K 个变量
 	for(int i=0;i<g->m;i++)
 	{
 		IloExpr constraint(environment);
@@ -93,6 +97,9 @@ double LP_Voting(VGraph *g,vector<Req*> &reqL,vector<Path*> &path_record, int id
 			constraint += reqL[d]->flow * x[d][i];
 		model.add(constraint <= (g->incL[i]->capacity - adj[g->incL[i]->src][g->incL[i]->dst]));
 	}
+	
+	//约束中变量数总和   m*K（约束1） + m*K（约束2） + m*K （目标）+ 4*m*K （延时约束条件）= 7*m*K
+	//延时约束条件是该规划最耗时的部分
 
 	//计算模型
 	solver.setOut(environment.getNullStream());

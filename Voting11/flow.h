@@ -85,7 +85,7 @@ public:
 	//流部署 自己提出的方案,除掉dijkstra算出的路
 	void begin_implement(VGraph &g)
 	{
-		for(int i=0;i<Maxreq;i++)
+		for(int i=0;i<g.reqL.size();i++)
 		{
 			if(i==id) continue;
 			int edge_num=path_record[i]->pathL.size();
@@ -107,7 +107,7 @@ public:
 		double temp;
 		for(int i=0;i<candiL.size();i++)
 		{
-			if(i>Maxreq && candiL[i]->te==-1)  
+			if(i>g.reqL.size() && candiL[i]->te==-1)  
 			{
 				 judge[i]=Maxpath*flow;
 				 continue;
