@@ -22,7 +22,7 @@ const int Maxflow=5;//流的大小可变范围
 const int Begin_num=10;//流的大小起始范围
 */
 
-
+/*
 //graph_all
 const int Inf=99999;
 const int N=20;//所有的点数
@@ -34,7 +34,7 @@ const int Maxpath=N-1;//可能的最长路径: N-1
 const int caseN=10;//case总数
 const int Maxflow=30;//流的大小可变范围
 const int Begin_num=1;//流的大小起始范围
-
+*/
 
 /*
 //graph_Compuserve
@@ -50,7 +50,7 @@ const int Maxflow=10;//流的大小可变范围
 const int Begin_num=1;//流的大小起始范围
 */
 
-/*
+
 //graph_ATT
 const int Inf=99999;
 const int N=25;//所有的点数
@@ -62,29 +62,60 @@ const int Maxpath=N-1;//可能的最长路径: N-1
 const int caseN=8;//case总数
 const int Maxflow=15;//流的大小可变范围
 const int Begin_num=5;//流的大小起始范围
-*/
+
 
 //如果改图，需要修改： 上面的参数 + 图输入3处 + req输入的部分
 
 int main()
 {
 	srand((unsigned)time(NULL));
-	VGraph gv("graph_all.txt");//Voting用的图
-	PGraph gp("graph_all.txt");//LP用的图
-	VGraph gv_flow("graph_all.txt"); //Flow Voting用的图
+	string graph_address="graph_ATT.txt";
+
+	VGraph gv(graph_address);//Voting用的图
+	PGraph gp(graph_address);//LP用的图
+	VGraph gv_flow(graph_address); //Flow Voting用的图
 	vector<Voter*> flowL;//记录所有的流实例
 	vector<Voter*> voterL;//记录所有的投票者
 	vector<Voter*> candiL;//记录所有的候选者
-	int voting_choice=2;
+	int voting_choice=1;
 
 	//收集每一轮投票的结果
 	vector<double> app_happiness, voting_happiness, network_happiness;
 	vector<double> app_delay, voting_delay, network_delay;
 	vector<double> app_te, voting_te, network_te;
+	vector<double> app_load, voting_load, network_load;
 
-	ofstream outfile("result.txt");//最后一个case的结果
+	//记录当前时间
+	time_t tt = time(NULL);//这句返回的只是一个时间cuo
+ 	tm* t= localtime(&tt);
+
+	string s="result";
+	stringstream ss1;
+	ss1<<t->tm_year+1900;
+	s.append(ss1.str());
+
+	stringstream ss2;
+	ss2<<t->tm_mon+1;
+	s.append(ss2.str());
+ 	
+ 	stringstream ss3;
+	ss3<<t->tm_mday;
+	s.append(ss3.str());
+	
+	stringstream ss4;
+	ss4<<t->tm_hour;
+	s.append(ss4.str());
+	
+	stringstream ss5;
+	ss5<<t->tm_min;
+	s.append(ss5.str());
+	s.append(".txt");
+
+	cout<<"current output file : "<<s<<endl;
+
+	ofstream outfile(s);//最后一个case的结果
 	ofstream req_outfile("req_outfile.txt");
-	outfile<<"graph_ATT网络拓扑 caseN: "<<caseN<<endl;
+	outfile<<graph_address<<"网络拓扑 caseN: "<<caseN<<endl;
 	outfile<<"flow Range: "<<Begin_num<<"--"<<Maxflow+Begin_num-1<<endl<<endl;
 	
 	vector<Req*> reqL;
@@ -307,10 +338,12 @@ int main()
 		cout << "多轮整体延时和: " << latencyVoting_flow << endl;
 
 		double maxUtil_Voting_flow=0;
+		double loadNUM_flow=0;//统计网络负载
 		for(int j=0;j<gv_flow.m;j++)
 		{
 			int src=gv_flow.incL[j]->src;
 			int dst=gv_flow.incL[j]->dst;
+			loadNUM_flow+=flowL_flow[winner_flow]->adj[src][dst];
 			double capacity=gv_flow.incL[j]->capacity;
 			if(maxUtil_Voting_flow<(flowL_flow[winner_flow]->adj[src][dst]/capacity))
 				maxUtil_Voting_flow=flowL_flow[winner_flow]->adj[src][dst]/capacity;
@@ -324,10 +357,12 @@ int main()
 		outfile << "多轮满意度：" << happiness_sum_flow/ ((i+1)*Maxreq) << endl;
 		outfile << "多轮整体延时和: " << latencyVoting_flow << endl;
 		outfile <<"最大链路利用率: "<<maxUtil_Voting_flow<<endl;
+		outfile <<"网络负载"<<loadNUM_flow<<endl;
 
 		app_happiness.push_back(happiness_sum_flow/ ((i+1)*Maxreq));
 		app_delay.push_back(latencyVoting_flow);
 		app_te.push_back(maxUtil_Voting_flow);
+		app_load.push_back(loadNUM_flow);
 
 		//胜利的方案部署
 		for(int j=0;j<candiL_flow.size();j++)
@@ -443,6 +478,15 @@ int main()
 		maxUtil_Voting=voterL[Maxreq]->judge[winner];
 		cout<<"最大链路利用率: "<<maxUtil_Voting<<endl;
 
+		double loadNUM_voting=0;
+		for(int j=0;j<gv.m;j++)
+		{
+			int src=gv.incL[j]->src;
+			int dst=gv.incL[j]->dst;
+			loadNUM_voting+=candiL[winner]->adj[src][dst];
+		}
+
+
 		//文件记录
 		outfile<<"Case "<<i<<" Voting Result"<<endl;
 		outfile << "winner = "<<winner<<endl;
@@ -450,10 +494,12 @@ int main()
 		outfile << "多轮满意度：" << happiness_sum / ((i+1)*Maxreq) << endl;
 		outfile << "多轮整体延时和: " << latencyVoting << endl;
 		outfile <<"最大链路利用率: "<<maxUtil_Voting<<endl;
+		outfile <<"网络负载"<<loadNUM_voting<<endl;
 
 		voting_happiness.push_back(happiness_sum / ((i+1)*Maxreq));
 		voting_delay.push_back(latencyVoting);
 		voting_te.push_back(maxUtil_Voting);
+		voting_load.push_back(loadNUM_voting);
 
 		//胜利的方案部署
 		for(int j=0;j<candiL.size();j++)
@@ -503,16 +549,26 @@ int main()
 		cout << "多轮整体延时和: " << latency_LP << endl;
 		cout<<"最大链路利用率: "<<result_LP<<endl;
 		
+		double loadNUM_network=0;
+		for(int j=0;j<gp.m;j++)
+		{
+			int src=gp.incL[j]->src;
+			int dst=gp.incL[j]->dst;
+			loadNUM_network+=gp.adj[src][dst];
+		}
+
 		//文件记录
 		outfile<<"Case "<<i<<" LP Result"<<endl;
 		outfile<<"单轮满意度： "<<judge_LP/Maxreq<<endl;
 		outfile<<"多轮满意度： "<<judge_sum_LP/(Maxreq*(i+1))<<endl;
 		outfile << "多轮整体延时和: " << latency_LP << endl;
 		outfile<<"最大链路利用率: "<<result_LP<<endl;
+		outfile <<"网络负载"<<loadNUM_network<<endl;
 
 		network_happiness.push_back(judge_sum_LP/(Maxreq*(i+1)));
 		network_delay.push_back(latency_LP);
 		network_te.push_back(result_LP);
+		network_load.push_back(loadNUM_network);
 
 		/*
 		cout<<"单轮最大剩余链路利用率: "<<result_LP<<endl;
@@ -602,6 +658,29 @@ int main()
 		outfile<<network_te[i]<<",";
 	}
 	outfile<<endl;
+
+	//load results
+	outfile<<endl;
+	outfile<<"load results"<<endl;
+	outfile<<"app_load=";
+	for(int i=0;i<caseN;i++)
+	{
+		outfile<<app_load[i]<<",";
+	}
+	outfile<<endl;
+	outfile<<"voting_load=";
+	for(int i=0;i<caseN;i++)
+	{
+		outfile<<voting_load[i]<<",";
+	}
+	outfile<<endl;
+	outfile<<"network_load=";
+	for(int i=0;i<caseN;i++)
+	{
+		outfile<<network_load[i]<<",";
+	}
+	outfile<<endl;
+
 	getchar();
 	return 0;
 }
