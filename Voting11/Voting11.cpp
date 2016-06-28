@@ -56,11 +56,11 @@ const int Begin_num=1;//流的大小起始范围
 const int Inf=99999;
 const int N=25;//所有的点数
 const int M=112;//包含正反向边
-const int Maxreq=21;//一个case的流需求数量
+const int Maxreq=100;//一个case的流需求数量
 const int Voternum_MAX=100;//flow+network
 const int Maxpath=N-1;//可能的最长路径: N-1
 
-const int caseN=8;//case总数
+const int caseN=100;//case总数
 const int Maxflow=15;//流的大小可变范围
 const int Begin_num=5;//流的大小起始范围
 
@@ -72,8 +72,8 @@ int main()
 	clock_t start_time=clock();// 记录开始时间
 	srand((unsigned)time(NULL));
 	string graph_address="graph_ATT_big.txt";
-	int voting_choice=1;
-	string address="_20_40.txt";
+	int voting_choice=2;
+	string address="_20_60.txt";
 	int case_num=100;
 	
 	ofstream outfile("result.txt");//最后一个case的结果
@@ -120,6 +120,7 @@ int main()
 	//一个case是一个流量矩阵
 	for(int icase=0;icase<case_num;icase++)
 	{
+		//if(icase!=98)continue;
 		outfile<<"******************************  case "<<icase<<"  begin: *********************"<<endl;
 
 		VGraph gv(graph_address);//Voting用的图
@@ -196,12 +197,12 @@ int main()
 
 				cnt++;
 			}
-		ranking[flowL.size()]=5;//给网络投票者更多的票数
+		ranking[flowL.size()]=flowL.size();//给网络投票者更多的票数
 
-		Voter* net_lb = new Network_LB(flowL.size(),1);// Maxreq是投票者id, 1 表示网络投票者
+		Voter* net_lb = new Network_LB(flowL.size(),1);// 1 表示网络投票者
 	
 
-		//Maxreq+1是投票者id，2表示中立投票者
+		//2表示中立投票者
 		
 		for(int i=0;i<10;i++)
 		{
@@ -422,7 +423,6 @@ int main()
 		cout<<endl;
 		
 		// file record of table show
-		/*
 		outfile<<endl;
 		for(int i=0;i<=voterL.size();i++)
 		{
@@ -451,7 +451,6 @@ int main()
 			outfile<<endl;
 		}
 		outfile<<endl;
-		*/
 
 		//计算满意度
 		double happiness=0;//一轮所有流的满意度和，越高越好,0<=满意度<=1

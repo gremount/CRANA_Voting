@@ -34,7 +34,7 @@ class Voting
 		double t[M2C+1][N2C+1];
 		int rank[N2C+1];
 		int M2, N2;
-		int beat_record[N2C+1];
+		double beat_record[N2C+1];
 		Voting(double table[][N2C+1], int ranking[],int m2,int n2)
 		{
 			M2 = m2;
@@ -139,22 +139,31 @@ class Voting
 				for(int j=1;j<=N2;j++)
 					if(t[i][j]==0) t[i][j]=1;
 
-			for(int j=1;j<=N2;j++)
+			for(int j=1;j<=M2;j++)
 			{
-				for(int i=1;i<=M2;i++)
-					sum+=1/t[i][j];
-				for(int i=1;i<=M2;i++)
-					small_score[i][j]=(1/t[i][j])/sum;
+				for(int i=1;i<=N2;i++)
+					sum+=1/t[j][i];
+				for(int i=1;i<=N2;i++)
+					small_score[j][i]=rank[j]*(1/t[j][i])/sum;
 			}
-			for(int i=1;i<=M2;i++)
-				for(int j=1;j<=N;j++)
-					big_score[i]+=small_score[i][j]*rank[j];
+
+			for(int i=1;i<=N2;i++)
+				for(int j=1;j<=M2;j++)
+					big_score[i]+=small_score[j][i];
+
+			cout<<"beat num: ";
+			for(int i=1;i<=N2;i++)
+			{
+				beat_record[i]=big_score[i];
+				cout<<big_score[i]<<" ";
+			}
+			cout<<endl;
 
 			//find the NO.1 and if there is more than 1 person, return the random one
 			max_score = big_score[1];
-			for (int i = 2; i <= M2; i++)
+			for (int i = 2; i <= N2; i++)
 				if (big_score[i] >= max_score) max_score = big_score[i];
-			for (int i = 1; i <= M2; i++)
+			for (int i = 1; i <= N2; i++)
 				if (big_score[i] == max_score) winners.push_back(i);
 			if (winners.size() == 1) return winners[0];
 			else
@@ -277,9 +286,10 @@ class Voting
 			{
 				for (int i = 1; i <= N2 - 1; i++)
 					for (int h = i + 1; h <= N2; h++)
-						if (t[i][j] <= t[h][j]) small_win[i][h]+=rank[j];//越小越好
-						else small_win[h][i]+=rank[j];
+						if (t[j][i] < t[j][h]) small_win[i][h]+=rank[j];//越小越好
+						else if (t[j][i] > t[j][h]) small_win[h][i]+=rank[j];
 			}
+			cout<<"condorcet voting"<<endl;
 			for (int i = 1; i <= N2; i++)
 				for (int j = 1; j <= N2; j++)
 				{
@@ -290,6 +300,14 @@ class Voting
 					else if(small_win[i][j]<small_win[j][i])
 						big_win[i] = big_win[i] - 1;
 				}
+			cout<<"condorcet voting 2"<<endl;
+			cout<<"beat num: ";
+			for(int i=1;i<=N2;i++)
+			{
+				beat_record[i]=big_win[i];
+				cout<<big_win[i]<<" ";
+			}
+			cout<<endl;
 
 			//find the NO.1 and if there is more than 1 person, return the random one
 			max_win = big_win[1];
