@@ -77,7 +77,7 @@ int main()
 	vector<Voter*> flowL;//记录所有的流实例
 	vector<Voter*> voterL;//记录所有的投票者
 	vector<Voter*> candiL;//记录所有的候选者
-	int voting_choice=1;
+	int voting_choice=2;
 
 	//收集每一轮投票的结果
 	vector<double> app_happiness, voting_happiness, network_happiness;
@@ -117,7 +117,8 @@ int main()
 	ofstream req_outfile("req_outfile.txt");
 	outfile<<graph_address<<"网络拓扑 caseN: "<<caseN<<endl;
 	outfile<<"flow Range: "<<Begin_num<<"--"<<Maxflow+Begin_num-1<<endl<<endl;
-	
+	outfile<<"current output file : "<<s<<endl;
+
 	vector<Req*> reqL;
 	double table[M2C+1][N2C+1] = {0};
 	int ranking[N2C+1]={0};//记录一种排序的投票人数
@@ -595,43 +596,37 @@ int main()
 
 	}//一个case结束
 
-	//happiness results
+	//happiness results: 三行结果分别是app voting network的满意度
 	outfile<<endl;
-	outfile<<"happiness results"<<endl;
-	outfile<<"app_happiness=";
+	outfile<<"happiness results: app voting network"<<endl;
 	for(int i=0;i<caseN;i++)
 	{
 		outfile<<app_happiness[i]<<",";
 	}
 	outfile<<endl;
-	outfile<<"voting_happiness=";
 	for(int i=0;i<caseN;i++)
 	{
 		outfile<<voting_happiness[i]<<",";
 	}
 	outfile<<endl;
-	outfile<<"network_happiness=";
 	for(int i=0;i<caseN;i++)
 	{
 		outfile<<network_happiness[i]<<",";
 	}
 
-	//delay results
+	//delay results 
 	outfile<<endl;
-	outfile<<"delay results"<<endl;
-	outfile<<"app_delay=";
+	outfile<<"delay results: app voting network"<<endl;
 	for(int i=0;i<caseN;i++)
 	{
 		outfile<<app_delay[i]<<",";
 	}
 	outfile<<endl;
-	outfile<<"voting_delay=";
 	for(int i=0;i<caseN;i++)
 	{
 		outfile<<voting_delay[i]<<",";
 	}
 	outfile<<endl;
-	outfile<<"network_delay=";
 	for(int i=0;i<caseN;i++)
 	{
 		outfile<<network_delay[i]<<",";
@@ -639,20 +634,17 @@ int main()
 
 	//te results
 	outfile<<endl;
-	outfile<<"te results"<<endl;
-	outfile<<"app_te=";
+	outfile<<"te results: app voting network"<<endl;
 	for(int i=0;i<caseN;i++)
 	{
 		outfile<<app_te[i]<<",";
 	}
 	outfile<<endl;
-	outfile<<"voting_te=";
 	for(int i=0;i<caseN;i++)
 	{
 		outfile<<voting_te[i]<<",";
 	}
 	outfile<<endl;
-	outfile<<"network_te=";
 	for(int i=0;i<caseN;i++)
 	{
 		outfile<<network_te[i]<<",";
@@ -661,20 +653,17 @@ int main()
 
 	//load results
 	outfile<<endl;
-	outfile<<"load results"<<endl;
-	outfile<<"app_load=";
+	outfile<<"load results: app voting network"<<endl;
 	for(int i=0;i<caseN;i++)
 	{
 		outfile<<app_load[i]<<",";
 	}
 	outfile<<endl;
-	outfile<<"voting_load=";
 	for(int i=0;i<caseN;i++)
 	{
 		outfile<<voting_load[i]<<",";
 	}
 	outfile<<endl;
-	outfile<<"network_load=";
 	for(int i=0;i<caseN;i++)
 	{
 		outfile<<network_load[i]<<",";

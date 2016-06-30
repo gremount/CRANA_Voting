@@ -28,3 +28,7 @@ H. Voting7
 
 I. Voting10
 流的目标是延时小，网络目标是最大链路利用率小，加入网络决策者，中立决策者，基本完成网络和应用的合作
+
+J. Voting11
+用Load Scale Factor 来测试 Voting10
+(load scale factor 出自论文On seflish routing in Internet-like environtments ) 
