@@ -22,7 +22,7 @@ const int Maxflow=5;//流的大小可变范围
 const int Begin_num=10;//流的大小起始范围
 */
 
-/*
+
 //graph_all
 const int Inf=99999;
 const int N=20;//所有的点数
@@ -34,7 +34,7 @@ const int Maxpath=N-1;//可能的最长路径: N-1
 const int caseN=10;//case总数
 const int Maxflow=30;//流的大小可变范围
 const int Begin_num=1;//流的大小起始范围
-*/
+
 
 /*
 //graph_Compuserve
@@ -50,7 +50,7 @@ const int Maxflow=10;//流的大小可变范围
 const int Begin_num=1;//流的大小起始范围
 */
 
-
+/*
 //graph_ATT
 const int Inf=99999;
 const int N=25;//所有的点数
@@ -62,14 +62,14 @@ const int Maxpath=N-1;//可能的最长路径: N-1
 const int caseN=8;//case总数
 const int Maxflow=15;//流的大小可变范围
 const int Begin_num=5;//流的大小起始范围
-
+*/
 
 //如果改图，需要修改： 上面的参数 + 图输入3处 + req输入的部分
 
 int main()
 {
 	srand((unsigned)time(NULL));
-	string graph_address="graph_ATT.txt";
+	string graph_address="graph_all.txt";
 
 	VGraph gv(graph_address);//Voting用的图
 	PGraph gp(graph_address);//LP用的图
@@ -77,7 +77,7 @@ int main()
 	vector<Voter*> flowL;//记录所有的流实例
 	vector<Voter*> voterL;//记录所有的投票者
 	vector<Voter*> candiL;//记录所有的候选者
-	int voting_choice=2;
+	int voting_choice=1;
 
 	//收集每一轮投票的结果
 	vector<double> app_happiness, voting_happiness, network_happiness;

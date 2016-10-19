@@ -1,5 +1,5 @@
-#ifndef LP_H
-#define LP_H
+#ifndef network_delay_H
+#define network_delay_H
 
 #include "common.h"
 #include "graph.h"
@@ -9,7 +9,7 @@
 //不允许分流的规划,因为这里有x[d]=IloIntVarArray(environment,g->m,0,1);
 //使得x[d][i]是0,1变量
 
-double LP(PGraph *g,vector<Req*> &reqL)
+double network_delay(PGraph *g,vector<Req*> &reqL)
 {
 	IloEnv environment;
 	IloModel model(environment);
@@ -24,16 +24,47 @@ double LP(PGraph *g,vector<Req*> &reqL)
 		x[d]=IloIntVarArray(environment,g->m,0,1);
 	
 
-	//优化目标 最小化->最大链路利用率 0<=z<=1
-	IloNumVar z(environment,0,1);//如果不限制z的范围，z就可能超过1
+	IloNumVarArray D(environment,g->m,0,Inf);
+
+	//优化目标
+	IloExpr goal(environment);
+	IloExpr temp(environment);
+	IloExprArray L(environment,g->m);
+
+	//L[i]:第i条边在该次流量部署后的流量
+	for(int i=0;i<g->m;i++)
+		L[i]=IloExpr(environment);
 	for(int i=0;i<g->m;i++)
 	{
-		IloExpr load(environment);
+		L[i]+=g->adj[g->incL[i]->src][g->incL[i]->dst];
 		for(int d=0;d<K;d++)
-			load += x[d][i] * reqL[d]->flow;
-		model.add((load + g->adj[g->incL[i]->src][g->incL[i]->dst]) <= z * g->incL[i]->capacity);
+			L[i]+=x[d][i]*reqL[d]->flow;
 	}
-	model.add(IloMinimize(environment, z));
+
+	//延时约束条件，分段线性
+	for(int i=0;i<g->m;i++)
+	{
+		double c=g->incL[i]->capacity;
+		model.add(D[i] >= L[i]);
+		model.add(D[i] >= 3*L[i]-2*c/3);
+		model.add(D[i] >= 10*L[i]-16*c/3);
+		model.add(D[i] >= 70*L[i]-178*c/3);
+	}
+
+	//maximize happiness
+	for(int d=0;d<K;d++)
+	{
+		for(int i=0;i<g->m;i++)		
+		{
+			int src=g->incL[i]->src, dst=g->incL[i]->dst;
+			temp += x[d][i] * reqL[d]->flow * D[i];
+		}
+		goal += temp;
+	}
+	//虽然这里计算temp的方法是估算，但是和排队延时公式拥有相同的走势
+
+
+	model.add(IloMinimize(environment, goal));
 
 	//约束1，流量约束
 	for(int d=0;d < K;d++)

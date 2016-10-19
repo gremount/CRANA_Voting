@@ -40,7 +40,6 @@ double LP_Voting(VGraph *g,vector<Req*> &reqL,vector<Path*> &path_record, int id
 			L[i]+=x[d][i]*reqL[d]->flow;
 	}
 
-	//原方案
 	//延时约束条件，分段线性
 	for(int i=0;i<g->m;i++)
 	{
@@ -50,19 +49,7 @@ double LP_Voting(VGraph *g,vector<Req*> &reqL,vector<Path*> &path_record, int id
 		model.add(D[i] >= 10*L[i]-16*c/3);
 		model.add(D[i] >= 70*L[i]-178*c/3);
 	}
-	
-	/*
-	//新方案
-	//延时约束条件，分段线性
-	for(int i=0;i<g->m;i++)
-	{
-		double c=g->incL[i]->capacity;
-		model.add(D[i]>=L[i]/(c-1.0));   // [1,1/3]
-		model.add(D[i]>=3.0*L[i]/(c-1.0)-(2.0/3.0));  //[1/3,2/3]
-		model.add(D[i]>=10.0*L[i]/(c-1.0)-(14.0/3.0)); // [2/3,9/10]
-		model.add(D[i]>=70.0*L[i]/(c-1.0)-(163.0/3.0));  //[9/10,1]
-	}
-	*/
+
 	//maximize happiness
 	for(int d=0;d<K;d++)
 	{
@@ -75,7 +62,7 @@ double LP_Voting(VGraph *g,vector<Req*> &reqL,vector<Path*> &path_record, int id
 	}
 	//虽然这里计算temp的方法是估算，计算g->cost_best的方法是准确计算，计算方式是不同的，
 	//数值上差距是比较大的，但是两者拥有相同的走势，只差一个倍数
-	//所以相当于goal的值放大或者缩小了一个倍数，但是差距特点还是保持原样的
+	//所以相当于goal的值放大了一个倍数，但是差距特点还是保持原样的
 
 
 	model.add(IloMinimize(environment, goal));
