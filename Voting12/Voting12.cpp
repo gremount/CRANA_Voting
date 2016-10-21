@@ -62,7 +62,9 @@ int main()
 {
 	srand((unsigned)time(NULL));
 	VGraph gv("graph_all.txt");//Voting用的图
-	PGraph gp("graph_all.txt");//LP用的图
+	TENetworkGraph gn_te("graph_all.txt");//TE全局优化的图
+	DelayNetworkGraph gn_delay("graph_all.txt");//延时全局优化的图
+
 	vector<Flow*> flowL;//记录所有的流实例
 	ofstream outfile("result.txt");//最后一个case的结果
 	ofstream req_outfile("req_outfile.txt");
@@ -70,12 +72,14 @@ int main()
 	outfile<<"graph_ATT网络拓扑 caseN: "<<caseN<<endl;
 	outfile<<"flow Range: "<<Begin_num<<"--"<<Maxflow+Begin_num-1<<endl<<endl;
 
-	double judge_LP=0,judge_sum_LP=0;
-	
-	vector<Req*> reqL;
-	double table[M2C+1][N2C+1] = {0};
+	double judge_sum_teLP=0;//te网络的多轮满意度
+	double judge_sum_delayLP=0;//delay网络的多轮满意度
+	double happiness_sum=0;//voting的多轮满意度
+
+	vector<Req*> reqL;//流需求
+	double table[M2C+1][N2C+1] = {0};//投票用的输入
 	int ranking[N2C+1]={0};//记录一种排序的投票人数
-	double happiness_sum=0;
+	
 	
 	for(int j=1;j<=Maxreq;j++)
 		ranking[j]=1;//每种投票结果有1个voter,如果为2就说明该方案有得到两个voter的票
@@ -234,7 +238,7 @@ int main()
 		cout << "多轮整体延时和: " << latencyVoting << endl;
 		
 		double maxUtil_Voting=0;
-		for(int j=0;j<gp.m;j++)
+		for(int j=0;j<gv.m;j++)
 		{
 			int src=gv.incL[j]->src;
 			int dst=gv.incL[j]->dst;
@@ -261,58 +265,90 @@ int main()
 		//@@@@@@@@@@@@@@@@@End of Voting@@@@@@@@@@@@@@@@@@@@@@@@@
 		//@@@@@@@@@@@@@@@@@End of Voting@@@@@@@@@@@@@@@@@@@@@@@@@
 
-		//分段规划部分
-		cout<<endl<<"			LP result			"<<endl;
+		//@@@@@@@@@@@@@@@@@Begin of network_te@@@@@@@@@@@@@@@@@@@@@@@@@
+		//@@@@@@@@@@@@@@@@@Begin of network_te@@@@@@@@@@@@@@@@@@@@@@@@@
+
+		//TE全局优化规划部分
+		cout<<endl<<"			network_te result			"<<endl;
 		
 		//最优部署计算
 		for(int j=0;j<Maxreq;j++)
-			gp.cost_best[j] =gp.dijkstra(reqL[j]->src,reqL[j]->dst,reqL[j]->flow);
+			gn_te.cost_best[j] =gn_te.dijkstra(reqL[j]->src,reqL[j]->dst,reqL[j]->flow);
 
 		//线性规划部署
-		double result_LP=0;
-		result_LP=network_delay(&gp,reqL);
+		double result_network_te=0;
+		result_network_te=network_te(&gn_te,reqL);
 		
+
 		//计算满意度
-		if(result_LP==Inf)judge_LP=0;
+		double judge_teLP=0;//单轮满意度统计
+		if(result_network_te==Inf)judge_teLP=0;
 		else
 		{
-			judge_LP=0;
+			judge_teLP=0;
 			//for(int i=0;i<reqN;i++)
 			//	cout<<g.cost_best[i]<<" "<<g.cost_LP[i]<<endl;
 			for(int j=0;j<Maxreq;j++)
-				judge_LP += gp.cost_best[j]/gp.cost_LP[j];
+				judge_teLP += gn_te.cost_best[j]/gn_te.cost_LP[j];
 		}
-		judge_sum_LP += judge_LP;
-		cout<<"单轮满意度： "<<judge_LP/Maxreq<<endl;
-		cout<<"多轮满意度： "<<judge_sum_LP/(Maxreq*(i+1))<<endl;
+		judge_sum_teLP += judge_teLP;
+		cout<<"单轮满意度： "<<judge_teLP/Maxreq<<endl;
+		cout<<"多轮满意度： "<<judge_sum_teLP/(Maxreq*(i+1))<<endl;
 
-		double latency_LP=0;
-		latency_LP=judge_sum_LP_function(gp,flowL);
-		cout << "多轮整体延时和: " << latency_LP << endl;
-		//cout<<"最大链路利用率: "<<result_LP<<endl;
+		double latency_teLP=0;
+		latency_teLP=delay_TENetworkGraph(gn_te,flowL);
+		cout << "多轮整体延时和: " << latency_teLP << endl;
+		cout<<"最大链路利用率: "<<result_network_te<<endl;
 		
-		/*
-		cout<<"单轮最大剩余链路利用率: "<<result_LP<<endl;
-		double maxUtil_LP=0;
-		for(int j=0;j<gp.m;j++)
+		//@@@@@@@@@@@@@@@@@End of network_te@@@@@@@@@@@@@@@@@@@@@@@@@
+		//@@@@@@@@@@@@@@@@@End of network_te@@@@@@@@@@@@@@@@@@@@@@@@@
+		
+		//@@@@@@@@@@@@@@@@@Begin of network_delay@@@@@@@@@@@@@@@@@@@@@@@@@
+		//@@@@@@@@@@@@@@@@@Begin of network_delay@@@@@@@@@@@@@@@@@@@@@@@@@
+
+		//Delay全局优化规划部分
+		cout<<endl<<"			network_delay result			"<<endl;
+		
+		//最优部署计算
+		for(int j=0;j<Maxreq;j++)
+			gn_delay.cost_best[j] =gn_delay.dijkstra(reqL[j]->src,reqL[j]->dst,reqL[j]->flow);
+
+		//线性规划部署
+		double result_network_delay=0;//近似延时
+		result_network_delay=network_delay(&gn_delay,reqL);
+		
+		//计算满意度
+		double judge_delayLP=0;//单轮满意度统计
+		if(result_network_delay==Inf)judge_delayLP=0;
+		else
 		{
-			int src=gp.incL[j]->src;
-			int dst=gp.incL[j]->dst;
-			float capacity=gp.incL[j]->capacity;
-			if(maxUtil_LP<(gp.adj[src][dst]/capacity))
-				maxUtil_LP=gp.adj[src][dst]/capacity;
+			judge_delayLP=0;
+			//for(int i=0;i<reqN;i++)
+			//	cout<<g.cost_best[i]<<" "<<g.cost_LP[i]<<endl;
+			for(int j=0;j<Maxreq;j++)
+				judge_delayLP += gn_delay.cost_best[j]/gn_delay.cost_LP[j];
 		}
-		*/
-		
-		/*
-		if(i==(caseN-1)){
-			outfile << "LP result"<<endl;
-			outfile<<"单轮满意度： "<<judge_LP/Maxreq<<endl;
-			outfile<<"多轮满意度： "<<judge_sum_LP/(Maxreq*(i+1))<<endl;
-			outfile<<"多轮整体代价和: "<<result_sum_LP<<endl;
+		judge_sum_delayLP += judge_delayLP;
+		cout<<"单轮满意度： "<<judge_delayLP/Maxreq<<endl;
+		cout<<"多轮满意度： "<<judge_sum_delayLP/(Maxreq*(i+1))<<endl;
+
+		double latency_delayLP=0;
+		latency_delayLP=delay_DelayNetworkGraph(gn_delay,flowL);
+		cout << "多轮整体延时和: " << latency_delayLP << endl;
+
+		double maxUtil_DelayNetworkGraph=0;
+		for(int j=0;j<gn_delay.m;j++)
+		{
+			int src=gn_delay.incL[j]->src;
+			int dst=gn_delay.incL[j]->dst;
+			double capacity=gn_delay.incL[j]->capacity;
+			if(maxUtil_DelayNetworkGraph<(gn_delay.adj[src][dst]/capacity))
+				maxUtil_DelayNetworkGraph=gn_delay.adj[src][dst]/capacity;
 		}
-		*/
-		
+		cout<<"最大链路利用率: "<<maxUtil_DelayNetworkGraph<<endl;
+
+		//@@@@@@@@@@@@@@@@@End of network_delay@@@@@@@@@@@@@@@@@@@@@@@@@
+		//@@@@@@@@@@@@@@@@@End of network_delay@@@@@@@@@@@@@@@@@@@@@@@@@
 
 	}//一个case结束
 	getchar();

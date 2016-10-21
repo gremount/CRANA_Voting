@@ -9,7 +9,7 @@
 //不允许分流的规划,因为这里有x[d]=IloIntVarArray(environment,g->m,0,1);
 //使得x[d][i]是0,1变量
 
-double network_delay(PGraph *g,vector<Req*> &reqL)
+double network_delay(DelayNetworkGraph *g,vector<Req*> &reqL)
 {
 	IloEnv environment;
 	IloModel model(environment);

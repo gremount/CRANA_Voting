@@ -219,8 +219,24 @@ double judge_sum_function(VGraph &g, vector<Flow*> &flowL, int winner)
 }
 
 
-//LP统计网络latency
-double judge_sum_LP_function(PGraph &g, vector<Flow*> &flowL)
+//TE全局优化后统计网络latency
+double delay_TENetworkGraph(TENetworkGraph &g, vector<Flow*> &flowL)
+{
+	double judge_sum_LP=0;
+	for(int i=0;i<M;i++)
+	{
+		int src,dst;
+		double latencyFunc;
+		src=g.incL[i]->src;dst=g.incL[i]->dst;
+		if(g.adj[src][dst]==0) continue;
+		latencyFunc = (double)g.adj[src][dst]/(1+ g.incL[i]->capacity - g.adj[src][dst]);
+		judge_sum_LP += latencyFunc;
+	}
+	return judge_sum_LP;
+}
+
+//Delay全局优化后统计网络latency
+double delay_DelayNetworkGraph(DelayNetworkGraph &g, vector<Flow*> &flowL)
 {
 	double judge_sum_LP=0;
 	for(int i=0;i<M;i++)
