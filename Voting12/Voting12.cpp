@@ -3,7 +3,7 @@
 #include"graph.h"
 #include"voting.h"
 #include "res.h"
-#include "LP.h"
+#include "network_te.h"
 #include "network_delay.h"
 
 /*
@@ -18,7 +18,6 @@ const int caseN=2;//case总数
 const int Maxflow=5;//流的大小可变范围
 const int Begin_num=10;//流的大小起始范围
 */
-
 
 //graph_all
 const int Inf=99999;
@@ -57,7 +56,6 @@ const int caseN=6;//case总数
 const int Maxflow=15;//流的大小可变范围
 const int Begin_num=5;//流的大小起始范围
 */
-
 //如果改图，需要修改： 上面的参数 + 图输入 + req输入的部分
 
 int main()
@@ -185,6 +183,7 @@ int main()
 
 		
 		// table show
+		/*
 		for(int i=1;i<=Maxreq;i++)
 		{
 			cout<<"flow ";
@@ -199,13 +198,24 @@ int main()
 			cout<<endl;
 		}
 		cout<<endl;
-		
+		*/
 
 		//计算满意度
 		double happiness=0;//一轮所有流的满意度和，越高越好,0<=满意度<=1
 		for(int j=1;j<=Maxreq;j++)
 			happiness += gv.cost_best[j-1]/table[j][winner];//最好抉择评分/当前抉择评分
 		happiness_sum += happiness;
+
+		//计算各个应用方案的平均满意度的平均
+		double happiness_apps=0;
+		for(int app=1;app<=Maxreq;app++)
+		{
+			for(int j=1;j<=Maxreq;j++)
+			{
+				happiness_apps+=gv.cost_best[j-1]/table[j][app];
+			}
+		}
+		happiness_apps=happiness_apps/Maxreq/Maxreq;
 
 		//计算方案部署后当前总的cost，如果流没有被安排进网络，就增加惩罚cost
 		
@@ -219,6 +229,7 @@ int main()
 				latencyVoting += Maxpath * reqL[j]->flow;
 			}
 		cout << "第" << i << "轮整体满意度： " << happiness/Maxreq << endl;
+		cout << "第" << i << "轮APP方案的平均满意度的平均： " << happiness_apps << endl;
 		cout << "多轮满意度：" << happiness_sum / ((i+1)*Maxreq) << endl;
 		cout << "多轮整体延时和: " << latencyVoting << endl;
 		

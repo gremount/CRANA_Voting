@@ -1,5 +1,5 @@
-#ifndef LP_H
-#define LP_H
+#ifndef NETWORK_TE_H
+#define NETWORK_TE_H
 
 #include "common.h"
 #include "graph.h"
@@ -9,7 +9,7 @@
 //不允许分流的规划,因为这里有x[d]=IloIntVarArray(environment,g->m,0,1);
 //使得x[d][i]是0,1变量
 
-double LP(PGraph *g,vector<Req*> &reqL)
+double network_te(PGraph *g,vector<Req*> &reqL)
 {
 	IloEnv environment;
 	IloModel model(environment);
