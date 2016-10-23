@@ -72,7 +72,7 @@ public:
 				int src,dst;
 				src=path_record[id]->pathL[j]->src;
 				dst=path_record[id]->pathL[j]->dst;
-				adj[src][dst] += g.reqL[id]->flow;
+				adj[src][dst] += 2*g.reqL[id]->flow;
 			}
 		}
 
@@ -94,14 +94,17 @@ public:
 	{
 		for(int i=0;i<Maxreq;i++)
 		{
-			if(i==id) continue;
+			//if(i==id) continue;
 			int edge_num=path_record[i]->pathL.size();
 			for(int j=0;j<edge_num;j++)
 			{
 				int src,dst;
 				src=path_record[i]->pathL[j]->src;
 				dst=path_record[i]->pathL[j]->dst;
-				adj[src][dst] += g.reqL[i]->flow;
+				if(i!=id)
+					adj[src][dst] += g.reqL[i]->flow;
+				else
+					adj[src][dst] -= g.reqL[i]->flow;
 			}
 		}
 	}
