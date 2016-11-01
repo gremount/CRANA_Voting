@@ -72,7 +72,7 @@ public:
 				int src,dst;
 				src=path_record[id]->pathL[j]->src;
 				dst=path_record[id]->pathL[j]->dst;
-				adj[src][dst] += 2*g.reqL[id]->flow;
+				adj[src][dst] += 5*g.reqL[id]->flow;//假设有2倍的流量要部署，这样的决策更自私，想让其他应用不来占用该流的路径
 			}
 		}
 
@@ -104,7 +104,7 @@ public:
 				if(i!=id)
 					adj[src][dst] += g.reqL[i]->flow;
 				else
-					adj[src][dst] -= g.reqL[i]->flow;
+					adj[src][dst] -= 4*g.reqL[i]->flow;//去掉APP在propose()里假想的流量
 			}
 		}
 	}

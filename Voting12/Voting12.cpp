@@ -18,7 +18,7 @@ const int caseN=2;//case总数
 const int Maxflow=5;//流的大小可变范围
 const int Begin_num=10;//流的大小起始范围
 */
-/*
+
 //graph_all
 const int Inf=99999;
 const int N=20;//所有的点数
@@ -29,7 +29,7 @@ const int Maxpath=N-1;//可能的最长路径: N-1
 const int caseN=10;//case总数
 const int Maxflow=30;//流的大小可变范围
 const int Begin_num=1;//流的大小起始范围
-*/
+
 
 /*
 //graph_Compuserve
@@ -44,7 +44,7 @@ const int Maxflow=10;//流的大小可变范围
 const int Begin_num=1;//流的大小起始范围
 */
 
-
+/*
 //graph_ATT
 const int Inf=99999;
 const int N=25;//所有的点数
@@ -55,13 +55,13 @@ const int Maxpath=N-1;//可能的最长路径: N-1
 const int caseN=6;//case总数
 const int Maxflow=15;//流的大小可变范围
 const int Begin_num=5;//流的大小起始范围
-
+*/
 //如果改图，需要修改： 上面的参数 + 图输入 + req输入的部分
 
 int main()
 {
 	srand((unsigned)time(NULL));
-	string address="graph_ATT.txt";
+	string address="graph_all.txt";
 
 	VGraph gv(address);//Voting用的图
 	TENetworkGraph gn_te(address);//TE全局优化的图
