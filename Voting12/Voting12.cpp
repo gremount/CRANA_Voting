@@ -19,6 +19,7 @@ const int Maxflow=5;//流的大小可变范围
 const int Begin_num=10;//流的大小起始范围
 */
 
+
 //graph_all
 const int Inf=99999;
 const int N=20;//所有的点数
@@ -74,8 +75,8 @@ int main()
 	outfile<<"graph_ATT网络拓扑 caseN: "<<caseN<<endl;
 	outfile<<"flow Range: "<<Begin_num<<"--"<<Maxflow+Begin_num-1<<endl<<endl;
 
-	double judge_sum_teLP=0;//te网络的多轮满意度
-	double judge_sum_delayLP=0;//delay网络的多轮满意度
+	double happiness_sum_teLP=0;//te网络的多轮满意度
+	double happiness_sum_delayLP=0;//delay网络的多轮满意度
 	double happiness_sum=0;//voting的多轮满意度
 
 	vector<Req*> reqL;//流需求
@@ -169,8 +170,8 @@ int main()
 		for(int j=0;j<Maxreq;j++)
 			for(int k=0;k<Maxreq;k++)
 			{
-				if(flowL[j]->judge[k]==0) table[j+1][k+1]=10000;//如果是0，说明流没有摆在网络中
-				else table[j+1][k+1]=flowL[j]->judge[k];
+				if(flowL[j]->judge[k]==0) table[j][k]=10000;//如果是0，说明流没有摆在网络中
+				else table[j][k]=flowL[j]->judge[k];
 			}
 		cout<<endl<<"voting uses ";
 		int choice=1;//选择一种投票算法
@@ -208,34 +209,29 @@ int main()
 
 		//计算满意度
 		double happiness=0;//一轮所有流的满意度和，越高越好,0<=满意度<=1
-		for(int j=1;j<=Maxreq;j++)
-			happiness += gv.cost_best[j-1]/table[j][winner];//最好抉择评分/当前抉择评分
+		for(int j=0;j<Maxreq;j++)
+			happiness += gv.cost_best[j]/table[j][winner];//最好抉择评分/当前抉择评分
 		happiness_sum += happiness;
 
-		//计算各个应用方案的平均满意度的平均
-		double happiness_apps=0;
-		for(int app=1;app<=Maxreq;app++)
-		{
-			for(int j=1;j<=Maxreq;j++)
-			{
-				happiness_apps+=gv.cost_best[j-1]/table[j][app];
-			}
-		}
-		happiness_apps=happiness_apps/Maxreq/Maxreq;
+		double s2_voting=0;
+		double happiness_avg=happiness_sum/Maxreq;
+		for(int j=0;j<Maxreq;j++)
+			s2_voting+=(gv.cost_best[j]/table[j][winner]-happiness_avg) * (gv.cost_best[j]/table[j][winner]-happiness_avg);
+		s2_voting=s2_voting/Maxreq;
 
 		//计算方案部署后当前总的cost，如果流没有被安排进网络，就增加惩罚cost
 		
 		//统计网络latency
 		double latencyVoting=0;
-		latencyVoting=judge_sum_function(gv,flowL,winner-1);
+		latencyVoting=judge_sum_function(gv,flowL,winner);
 
 		for(int j=0;j<Maxreq;j++)
-			if(table[j+1][winner]==10000) {
+			if(table[j][winner]==10000) {
 				cout<<"触发惩罚机制"<<endl;
 				latencyVoting += Maxpath * reqL[j]->flow;
 			}
 		cout << "第" << i << "轮整体满意度： " << happiness/Maxreq << endl;
-		cout << "第" << i << "轮APP方案的平均满意度的平均： " << happiness_apps << endl;
+		cout << "第" << i << "轮满意度满意度方差： " << s2_voting << endl;
 		cout << "多轮满意度：" << happiness_sum / ((i+1)*Maxreq) << endl;
 		cout << "多轮整体延时和: " << latencyVoting << endl;
 		
@@ -245,8 +241,8 @@ int main()
 			int src=gv.incL[j]->src;
 			int dst=gv.incL[j]->dst;
 			double capacity=gv.incL[j]->capacity;
-			if(maxUtil_Voting<(flowL[winner-1]->adj[src][dst]/capacity))
-				maxUtil_Voting=flowL[winner-1]->adj[src][dst]/capacity;
+			if(maxUtil_Voting<(flowL[winner]->adj[src][dst]/capacity))
+				maxUtil_Voting=flowL[winner]->adj[src][dst]/capacity;
 		}
 		cout<<"最大链路利用率: "<<maxUtil_Voting<<endl;
 
@@ -258,7 +254,7 @@ int main()
 				for(int k2=0;k2<N;k2++)
 				{
 					//cout<<j<<" "<<k1<<" "<<k2<<endl;
-					flowL[j]->adj[k1][k2]=flowL[winner-1]->adj[k1][k2];
+					flowL[j]->adj[k1][k2]=flowL[winner]->adj[k1][k2];
 				}
 		}
 		
@@ -283,19 +279,19 @@ int main()
 		
 
 		//计算满意度
-		double judge_teLP=0;//单轮满意度统计
-		if(result_network_te==Inf)judge_teLP=0;
+		double happiness_teLP=0;//单轮满意度统计
+		if(result_network_te==Inf)happiness_teLP=0;
 		else
 		{
-			judge_teLP=0;
+			happiness_teLP=0;
 			//for(int i=0;i<reqN;i++)
 			//	cout<<g.cost_best[i]<<" "<<g.cost_LP[i]<<endl;
 			for(int j=0;j<Maxreq;j++)
-				judge_teLP += gn_te.cost_best[j]/gn_te.cost_LP[j];
+				happiness_teLP += gn_te.cost_best[j]/gn_te.cost_LP[j];
 		}
-		judge_sum_teLP += judge_teLP;
-		cout<<"单轮满意度： "<<judge_teLP/Maxreq<<endl;
-		cout<<"多轮满意度： "<<judge_sum_teLP/(Maxreq*(i+1))<<endl;
+		happiness_sum_teLP += happiness_teLP;
+		cout<<"单轮满意度： "<<happiness_teLP/Maxreq<<endl;
+		cout<<"多轮满意度： "<<happiness_sum_teLP/(Maxreq*(i+1))<<endl;
 
 		double latency_teLP=0;
 		latency_teLP=delay_TENetworkGraph(gn_te,flowL);
@@ -320,19 +316,27 @@ int main()
 		result_network_delay=network_delay(&gn_delay,reqL);
 		
 		//计算满意度
-		double judge_delayLP=0;//单轮满意度统计
-		if(result_network_delay==Inf)judge_delayLP=0;
+		double happiness_delayLP=0;//单轮满意度统计
+		if(result_network_delay==Inf)happiness_delayLP=0;
 		else
 		{
-			judge_delayLP=0;
+			happiness_delayLP=0;
 			//for(int i=0;i<reqN;i++)
 			//	cout<<g.cost_best[i]<<" "<<g.cost_LP[i]<<endl;
 			for(int j=0;j<Maxreq;j++)
-				judge_delayLP += gn_delay.cost_best[j]/gn_delay.cost_LP[j];
+				happiness_delayLP += gn_delay.cost_best[j]/gn_delay.cost_LP[j];
 		}
-		judge_sum_delayLP += judge_delayLP;
-		cout<<"单轮满意度： "<<judge_delayLP/Maxreq<<endl;
-		cout<<"多轮满意度： "<<judge_sum_delayLP/(Maxreq*(i+1))<<endl;
+		happiness_sum_delayLP += happiness_delayLP;
+
+		double s2_delay=0;
+		double happiness_avg_delay=happiness_sum_delayLP/Maxreq;
+		for(int j=0;j<Maxreq;j++)
+			s2_delay+=(gn_delay.cost_best[j]/gn_delay.cost_LP[j]-happiness_avg_delay) * (gn_delay.cost_best[j]/gn_delay.cost_LP[j]-happiness_avg_delay);
+		s2_delay=s2_delay/Maxreq;
+
+		cout<<"单轮满意度： "<<happiness_delayLP/Maxreq<<endl;
+		cout<<"多轮满意度： "<<happiness_sum_delayLP/(Maxreq*(i+1))<<endl;
+		cout << "第" << i << "轮满意度满意度方差： " << s2_delay << endl;
 
 		double latency_delayLP=0;
 		latency_delayLP=delay_DelayNetworkGraph(gn_delay,flowL);
