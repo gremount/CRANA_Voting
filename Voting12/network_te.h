@@ -69,26 +69,32 @@ double network_te(TENetworkGraph *g,vector<Req*> &reqL)
 	{
 		obj=solver.getObjValue();
 
-		//展示流量所走的路径，并且修改各条link的capacity
-		
-		double latency=0;
+		//先部署
 		for(int d=0;d<K;d++)
 		{
-			//cout<<"flow "<<d+1<<" : "<<endl;
-			latency=0;
 			for(int i=0;i<g->m;i++)
 			{
 				if(solver.getValue(x[d][i])>0.5)
-				{
-					//cout<<"from node "<<g->incL[i]->src<<" to node "<<
-						//g->incL[i]->dst<< " has flow "<<
-						//solver.getValue(x[d][i])*reqL[d]->flow<<endl;
 					g->adj[g->incL[i]->src][g->incL[i]->dst] += reqL[d]->flow;
-					latency += reqL[d]->flow/
-						(1 + g->incL[i]->capacity - g->adj[g->incL[i]->src][g->incL[i]->dst]);
+			}
+		}
+
+		//再计算延时
+		double latency=0;
+		for(int d=0;d<K;d++)
+		{
+			latency=0;
+			for(int i=0;i<g->m;i++)
+			{
+				if(solver.getValue(x[d][i])>0.5){
+					if(g->incL[i]->capacity - g->adj[g->incL[i]->src][g->incL[i]->dst]==0)
+						latency += reqL[d]->flow/
+							(Rinf+g->incL[i]->capacity - g->adj[g->incL[i]->src][g->incL[i]->dst]);
+					else
+						latency += reqL[d]->flow/
+							(g->incL[i]->capacity - g->adj[g->incL[i]->src][g->incL[i]->dst]);
 				}
 			}
-			//cout<<distance<<endl;
 			g->cost_LP[d] = latency;
 		}
 	}

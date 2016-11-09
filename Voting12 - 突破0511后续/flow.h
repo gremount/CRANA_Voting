@@ -5,9 +5,9 @@
 #include"common.h"
 #include "res.h"
 #include "LP_Voting.h"
-#include "voter.h"
+#include "player.h"
 
-class Flow: public Voter
+class Flow: public Player
 {
 public:
 	//int id;//第id个流需求
@@ -23,7 +23,7 @@ public:
 	vector<int> p;
 	//初始化，只初始化一次，之后其他需求来的时候，
 	//只修改之前参数，相当于投票的基础设施只建立一次，剩下的是维护
-	Flow(int id2, int id_kind2, int a, int b, int c):Voter(id2, id_kind2)
+	Flow(int id2, int id_kind2, int a, int b, int c):Player(id2, id_kind2)
 	{
 		src=a;dst=b;flow=c;
 		d.resize(N);
@@ -100,7 +100,7 @@ public:
 	}
 	
 	//流评价所有方案
-	void evaluate(VGraph &g, vector<Voter*> &candiL)
+	void evaluate(VGraph &g, vector<Player*> &candiL)
 	{
 		//流评价所有方案
 		int edge_num=0;//temp记录路径延时和
@@ -121,7 +121,7 @@ public:
 				int capacity=g.adj[src][dst]->capacity;
 				
 				temp+=flow/((double)capacity - candiL[i]->adj[src][dst] + 1);
-				//cout<<"evaluate---"<<temp<<" "<<flow<<" "<<capacity<<" "<<voterL[i]->adj[src][dst]<<endl;
+				
 			}
 			judge[i]=temp;
 			if(judge[i]==0) judge[i]=Maxpath*flow;//没有路径可以安排，就要增加惩罚
@@ -129,7 +129,7 @@ public:
 	}
 
 	//部署 获胜的方案
-	void end_implement(VGraph &g,int winner, vector<Voter*> &candiL)
+	void end_implement(VGraph &g,int winner, vector<Player*> &candiL)
 	{
 		//Flow记录的图负载信息更新
 		if(id==winner) return;
@@ -199,7 +199,7 @@ public:
 };
 
 //Voting统计网络latency
-double judge_sum_function(VGraph &g, vector<Voter*> &candiL, int winner)
+double judge_sum_function(VGraph &g, vector<Player*> &candiL, int winner)
 {
 	double latencyVoting=0;
 	for(int i=0;i<g.incL.size();i++)

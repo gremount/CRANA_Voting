@@ -6,9 +6,11 @@
 #include "network_te.h"
 #include "network_delay.h"
 
+const int Inf=9999;
+const int Rinf=0.001;
+
 /*
-//t3
-const int Inf=99999;
+//graph_t3
 const int N=3;//所有的点数
 const int M=6;//包含正反向边
 const int Maxreq=3;//一个case的流需求数量
@@ -19,9 +21,8 @@ const int Maxflow=5;//流的大小可变范围
 const int Begin_num=10;//流的大小起始范围
 */
 
-
+/*
 //graph_all
-const int Inf=99999;
 const int N=20;//所有的点数
 const int M=380;//包含正反向边
 const int Maxreq=10;//一个case的流需求数量
@@ -30,11 +31,10 @@ const int Maxpath=N-1;//可能的最长路径: N-1
 const int caseN=10;//case总数
 const int Maxflow=30;//流的大小可变范围
 const int Begin_num=1;//流的大小起始范围
-
+*/
 
 /*
 //graph_Compuserve
-const int Inf=99999;
 const int N=11;//所有的点数
 const int M=28;//包含正反向边
 const int Maxreq=10;//一个case的流需求数量
@@ -45,9 +45,8 @@ const int Maxflow=10;//流的大小可变范围
 const int Begin_num=1;//流的大小起始范围
 */
 
-/*
+
 //graph_ATT
-const int Inf=99999;
 const int N=25;//所有的点数
 const int M=112;//包含正反向边
 const int Maxreq=10;//一个case的流需求数量
@@ -56,13 +55,14 @@ const int Maxpath=N-1;//可能的最长路径: N-1
 const int caseN=6;//case总数
 const int Maxflow=15;//流的大小可变范围
 const int Begin_num=5;//流的大小起始范围
-*/
+
+
 //如果改图，需要修改： 上面的参数 + 图输入 + req输入的部分
 
 int main()
 {
 	srand((unsigned)time(NULL));
-	string address="graph_all.txt";
+	string address="graph_ATT.txt";
 
 	VGraph gv(address);//Voting用的图
 	TENetworkGraph gn_te(address);//TE全局优化的图
@@ -178,7 +178,7 @@ int main()
 		int winner=0;
 		Voting vv(table,ranking,Maxreq,Maxreq);
 		winner=vv.voting(choice);
-		
+
 		if (choice == 1)
 			cout << "schulze method : " << winner << endl;
 		else if (choice == 2)
@@ -190,14 +190,13 @@ int main()
 
 		
 		// table show
-		/*
-		for(int i=1;i<=Maxreq;i++)
+		for(int i=0;i<Maxreq;i++)
 		{
 			cout<<"flow ";
 			cout.setf(ios::right);
 			cout.width(3);
 			cout<<i<<" judge: ";
-			for(int j=1;j<=Maxreq;j++){
+			for(int j=0;j<Maxreq;j++){
 				cout.setf(ios::left);
 				cout.width(5);
 				cout<<table[i][j]<<" ";
@@ -205,22 +204,52 @@ int main()
 			cout<<endl;
 		}
 		cout<<endl;
-		*/
 
-		//计算满意度
+		//计算投票winner满意度
 		double happiness=0;//一轮所有流的满意度和，越高越好,0<=满意度<=1
 		for(int j=0;j<Maxreq;j++)
 			happiness += gv.cost_best[j]/table[j][winner];//最好抉择评分/当前抉择评分
 		happiness_sum += happiness;
 
+		//计算投票winner的应用满意度方差
 		double s2_voting=0;
-		double happiness_avg=happiness_sum/Maxreq;
+		double happiness_avg=happiness/Maxreq;
 		for(int j=0;j<Maxreq;j++)
 			s2_voting+=(gv.cost_best[j]/table[j][winner]-happiness_avg) * (gv.cost_best[j]/table[j][winner]-happiness_avg);
 		s2_voting=s2_voting/Maxreq;
 
-		//计算方案部署后当前总的cost，如果流没有被安排进网络，就增加惩罚cost
+		//****************************   最高满意度方案 评价
+		//计算 最高满意度 方案
+		double happinessVotingMax=0;
+		double happinessVotingTemp=0;
+		int happinessVotingLoc=0;
+		for(int k=0;k<Maxreq;k++)
+		{
+			happinessVotingTemp=0;
+			for(int j=0;j<Maxreq;j++)
+				happinessVotingTemp+= gv.cost_best[j]/table[j][k];//最好抉择评分/当前抉择评分
+			if(happinessVotingMax<happinessVotingTemp/Maxreq){
+				happinessVotingMax=happinessVotingTemp/Maxreq;
+				happinessVotingLoc=k;
+			}
+		}
+
+		//计算 最高满意度方案 的 应用满意度方差
+		double s2VotingMax=0;
+		//最高满意度方案的应用满意度的平均值
+		double happinessVotingMaxAvg=happinessVotingMax/Maxreq;
+		for(int j=0;j<Maxreq;j++)
+			s2VotingMax+=(gv.cost_best[j]/table[j][happinessVotingLoc]-happinessVotingMaxAvg) * (gv.cost_best[j]/table[j][happinessVotingLoc]-happinessVotingMaxAvg);
+		s2VotingMax=s2VotingMax/Maxreq;
 		
+		cout <<"最高满意度方案的结果"<<endl;
+		cout << "第" << i << "轮整体满意度： " << happinessVotingMax << endl;
+		cout << "第" << i << "轮满意度满意度方差： " << s2VotingMax << endl;
+		cout <<endl;
+
+		
+
+
 		//统计网络latency
 		double latencyVoting=0;
 		latencyVoting=judge_sum_function(gv,flowL,winner);
@@ -230,9 +259,10 @@ int main()
 				cout<<"触发惩罚机制"<<endl;
 				latencyVoting += Maxpath * reqL[j]->flow;
 			}
+		cout <<"Voting Winner 方案的结果"<<endl;
 		cout << "第" << i << "轮整体满意度： " << happiness/Maxreq << endl;
-		cout << "第" << i << "轮满意度满意度方差： " << s2_voting << endl;
 		cout << "多轮满意度：" << happiness_sum / ((i+1)*Maxreq) << endl;
+		cout << "第" << i << "轮满意度满意度方差： " << s2_voting << endl;
 		cout << "多轮整体延时和: " << latencyVoting << endl;
 		
 		double maxUtil_Voting=0;
@@ -329,7 +359,7 @@ int main()
 		happiness_sum_delayLP += happiness_delayLP;
 
 		double s2_delay=0;
-		double happiness_avg_delay=happiness_sum_delayLP/Maxreq;
+		double happiness_avg_delay=happiness_delayLP/Maxreq;
 		for(int j=0;j<Maxreq;j++)
 			s2_delay+=(gn_delay.cost_best[j]/gn_delay.cost_LP[j]-happiness_avg_delay) * (gn_delay.cost_best[j]/gn_delay.cost_LP[j]-happiness_avg_delay);
 		s2_delay=s2_delay/Maxreq;

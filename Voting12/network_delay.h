@@ -59,7 +59,7 @@ double network_delay(DelayNetworkGraph *g,vector<Req*> &reqL)
 			int src=g->incL[i]->src, dst=g->incL[i]->dst;
 			temp += x[d][i] * reqL[d]->flow * D[i];
 		}
-		goal += temp;
+		goal += temp/g->cost_best[reqL[d]->id];
 	}
 	//虽然这里计算temp的方法是估算，但是和排队延时公式拥有相同的走势
 
@@ -102,24 +102,35 @@ double network_delay(DelayNetworkGraph *g,vector<Req*> &reqL)
 
 		//展示流量所走的路径，并且修改各条link的capacity
 		
-		double latency=0;
+		//先部署
 		for(int d=0;d<K;d++)
 		{
-			//cout<<"flow "<<d+1<<" : "<<endl;
-			latency=0;
 			for(int i=0;i<g->m;i++)
 			{
 				if(solver.getValue(x[d][i])>0.5)
 				{
-					//cout<<"from node "<<g->incL[i]->src<<" to node "<<
-						//g->incL[i]->dst<< " has flow "<<
-						//solver.getValue(x[d][i])*reqL[d]->flow<<endl;
+					//cout<<"from node "<<g->incL[i]->src<<" to node "<<g->incL[i]->dst<< " has flow "<<solver.getValue(x[d][i])*reqL[d]->flow<<endl;
 					g->adj[g->incL[i]->src][g->incL[i]->dst] += reqL[d]->flow;
-					latency += reqL[d]->flow/
-						(1 + g->incL[i]->capacity - g->adj[g->incL[i]->src][g->incL[i]->dst]);
 				}
 			}
-			//cout<<distance<<endl;
+		}
+
+		//再计算延时
+		double latency=0;
+		for(int d=0;d<K;d++)
+		{
+			latency=0;
+			for(int i=0;i<g->m;i++)
+			{
+				if(solver.getValue(x[d][i])>0.5){
+					if(g->incL[i]->capacity - g->adj[g->incL[i]->src][g->incL[i]->dst]==0)
+						latency += reqL[d]->flow/
+						(Rinf+g->incL[i]->capacity - g->adj[g->incL[i]->src][g->incL[i]->dst]);
+					else
+						latency += reqL[d]->flow/
+						(g->incL[i]->capacity - g->adj[g->incL[i]->src][g->incL[i]->dst]);
+				}
+			}
 			g->cost_LP[d] = latency;
 		}
 	}

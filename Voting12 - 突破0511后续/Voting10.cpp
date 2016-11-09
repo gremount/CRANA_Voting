@@ -5,7 +5,7 @@
 #include "res.h"
 #include "LP.h"
 #include "network.h"
-#include "voter.h"
+#include "player.h"
 #include "neutral.h"
 
 /*
@@ -71,7 +71,7 @@ int main()
 	srand((unsigned)time(NULL));
 	VGraph gv("graph_all.txt");//Voting用的图
 	PGraph gp("graph_all.txt");//LP用的图
-	vector<Voter*> flowL;//记录所有的流实例
+	vector<Voter*> appL;//记录所有的流实例
 	vector<Voter*> voterL;//记录所有的投票者
 	vector<Voter*> candiL;//记录所有的候选者
 
@@ -139,7 +139,7 @@ int main()
 				reqL.push_back(r);
 				gv.reqL.push_back(r);
 				Voter* flow_now = new Flow(j,0,a,b,c);
-				flowL.push_back(flow_now);
+				appL.push_back(flow_now);
 				voterL.push_back(flow_now);
 				candiL.push_back(flow_now);
 				req_outfile<<j<<" "<<a<<" "<<b<<" "<<c<<endl;
@@ -166,7 +166,7 @@ int main()
 				Req* r = new Req(j,a,b,c);
 				reqL.push_back(r);
 				gv.reqL.push_back(r);
-				flowL[j]->modify(a,b,c);
+				appL[j]->modify(a,b,c);
 				candiL[j]->modify(a,b,c);
 				req_outfile<<j<<" "<<a<<" "<<b<<" "<<c<<endl;
 			}
@@ -181,9 +181,9 @@ int main()
 		//@@@@@@@@@@@@@@@@  Voting  @@@@@@@@@@@@@@@@@@@@@@
 		//@@@@@@@@@@@@@@@@  Voting  @@@@@@@@@@@@@@@@@@@@@@
 
-		//算最完美方案，所有的路都第一个走得到的方案
+		//算最完美方案，所有的流都第一个走得到的方案
 		for(int j=0;j<Maxreq;j++)
-			gv.cost_best[j] = gv.dijkstra(reqL[j]->src,reqL[j]->dst,reqL[j]->flow,flowL[0]->adj);
+			gv.cost_best[j] = gv.dijkstra(reqL[j]->src,reqL[j]->dst,reqL[j]->flow,appL[0]->adj);
 
 		//for(int j=0;j<Maxreq;j++)
 			//cout<<"gv.cost_best "<<j<<" : "<<gv.cost_best[j]<<endl;

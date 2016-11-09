@@ -53,34 +53,38 @@ public:
 		//对自己的流先算dijkstra
 		int loc=dst;
 		double dist=0;
-		dist=dijkstra(src,dst,flow,g);
-		if(dist==Inf){cout<<"*********** no path *********"<<endl;}
-		//没有路径可以安排，在evaluate里就要增加惩罚
-		else{
-			//将路径记录下来
-			Path* path = new Path();
-			while(p[loc]!=-1){
-				path->pathL.push_back(g.adj[p[loc]][loc]);
-				loc=p[loc];
-			}
-			path_record[id]=path;
+		if(id!=0)
+		{
+			dist=dijkstra(src,dst,flow,g);
+			if(dist==Inf){cout<<"*********** no path *********"<<endl;}
+			//没有路径可以安排，在evaluate里就要增加惩罚
+			else{
+				//将路径记录下来
+				Path* path = new Path();
+				while(p[loc]!=-1){
+					path->pathL.push_back(g.adj[p[loc]][loc]);
+					loc=p[loc];
+				}
+				path_record[id]=path;
 
-			//部署这条路径
-			int edge_num=path->pathL.size();
-			for(int j=0;j<edge_num;j++)
-			{
-				int src,dst;
-				src=path_record[id]->pathL[j]->src;
-				dst=path_record[id]->pathL[j]->dst;
-				adj[src][dst] += 1*g.reqL[id]->flow;//假设有2倍的流量要部署，这样的决策更自私，想让其他应用不来占用该流的路径
+				//部署这条路径
+				int edge_num=path->pathL.size();
+				for(int j=0;j<edge_num;j++)
+				{
+					int src,dst;
+					src=path_record[id]->pathL[j]->src;
+					dst=path_record[id]->pathL[j]->dst;
+					adj[src][dst] += 1*g.reqL[id]->flow;//假设有2倍的流量要部署，这样的决策更自私，想让其他应用不来占用该流的路径
+				}
 			}
 		}
-
+		
 		//对其他的流用规划计算路径
 		vector<Req*> reqPL;
 		for(int i=0;i<g.reqL.size();i++)
 		{	
-			if(i==id) continue;
+			if(id==0 && i==id) reqPL.push_back(g.reqL[i]);
+			else if(i==id) continue;
 			else	  reqPL.push_back(g.reqL[i]);
 		}
 
@@ -101,7 +105,9 @@ public:
 				int src,dst;
 				src=path_record[i]->pathL[j]->src;
 				dst=path_record[i]->pathL[j]->dst;
-				if(i!=id)
+				if(id==0 && i==id)
+					adj[src][dst] += g.reqL[i]->flow;
+				else if(i!=id)
 					adj[src][dst] += g.reqL[i]->flow;
 				else
 					continue;
@@ -125,7 +131,10 @@ public:
 				int src=flowL[i]->path_record[id]->pathL[j]->src;
 				int dst=flowL[i]->path_record[id]->pathL[j]->dst;
 				int capacity=flowL[i]->path_record[id]->pathL[j]->capacity;
-				temp+=flow/(capacity-flowL[i]->adj[src][dst]+1);
+				if(capacity-flowL[i]->adj[src][dst]==0)
+					temp+=flow/(Rinf+capacity-flowL[i]->adj[src][dst]);
+				else
+					temp+=flow/(capacity-flowL[i]->adj[src][dst]);
 			}
 			judge[i]=temp;
 			//if(judge[i]==0) judge[i]=Maxpath*flow;//没有路径可以安排，就要增加惩罚
@@ -133,6 +142,7 @@ public:
 	}
 
 	//流部署 获胜的方案, 直接在main.cpp里实现也可以
+	/*
 	void end_implement(VGraph &g,int winner, vector<Flow*> &flowL)
 	{
 		//Flow记录的图负载信息更新
@@ -149,7 +159,7 @@ public:
 			}
 		}
 	}
-
+	*/
 	void Update(int s,int flow, VGraph &g){
 		double x;
         for (int i = 0; i < g.adjL[s].size();i++){
@@ -216,7 +226,11 @@ double judge_sum_function(VGraph &g, vector<Flow*> &flowL, int winner)
 		src=g.incL[i]->src;dst=g.incL[i]->dst;
 		if(flowL[winner]->adj[src][dst]==0) continue;//由于延时函数是1+x2/(c-x1)，所以即使没有流量，
 		//依然会在统计中算入延时，所以这里判断一下来消除这些误判
-		latencyTemp = (double)flowL[winner]->adj[src][dst]/(1+ g.incL[i]->capacity - flowL[winner]->adj[src][dst]);
+		if(g.incL[i]->capacity - flowL[winner]->adj[src][dst]==0)
+			latencyTemp = (double)flowL[winner]->adj[src][dst]/(Rinf+ g.incL[i]->capacity - flowL[winner]->adj[src][dst]);
+		else
+			latencyTemp = (double)flowL[winner]->adj[src][dst]/(g.incL[i]->capacity - flowL[winner]->adj[src][dst]);
+		//cout<<src<<" "<<dst<<" " <<flowL[winner]->adj[src][dst]<<endl;
 		latencyVoting += latencyTemp;
 	}
 	return latencyVoting;
@@ -233,7 +247,10 @@ double delay_TENetworkGraph(TENetworkGraph &g, vector<Flow*> &flowL)
 		double latencyFunc;
 		src=g.incL[i]->src;dst=g.incL[i]->dst;
 		if(g.adj[src][dst]==0) continue;
-		latencyFunc = (double)g.adj[src][dst]/(1+ g.incL[i]->capacity - g.adj[src][dst]);
+		if(g.incL[i]->capacity - g.adj[src][dst]==0)
+			latencyFunc = (double)g.adj[src][dst]/(Rinf+ g.incL[i]->capacity - g.adj[src][dst]);
+		else
+			latencyFunc = (double)g.adj[src][dst]/(g.incL[i]->capacity - g.adj[src][dst]);
 		judge_sum_LP += latencyFunc;
 	}
 	return judge_sum_LP;
@@ -249,7 +266,10 @@ double delay_DelayNetworkGraph(DelayNetworkGraph &g, vector<Flow*> &flowL)
 		double latencyFunc;
 		src=g.incL[i]->src;dst=g.incL[i]->dst;
 		if(g.adj[src][dst]==0) continue;
-		latencyFunc = (double)g.adj[src][dst]/(1+ g.incL[i]->capacity - g.adj[src][dst]);
+		if(g.incL[i]->capacity - g.adj[src][dst]==0)
+			latencyFunc = (double)g.adj[src][dst]/(Rinf+ g.incL[i]->capacity - g.adj[src][dst]);
+		else
+			latencyFunc = (double)g.adj[src][dst]/(g.incL[i]->capacity - g.adj[src][dst]);
 		judge_sum_LP += latencyFunc;
 	}
 	return judge_sum_LP;

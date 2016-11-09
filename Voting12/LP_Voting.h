@@ -112,6 +112,7 @@ double LP_Voting(VGraph *g,vector<Req*> &reqL,vector<Path*> &path_record, int id
 			{
 				if(solver.getValue(x[d][i])>0.5)
 				{
+					//cout<<"from node "<<g->incL[i]->src<<" to node "<<g->incL[i]->dst<< " has flow "<<solver.getValue(x[d][i])*reqL[d]->flow<<endl;
 					path->pathL.push_back(g->incL[i]);
 					distance += g->incL[i]->weight;
 				}

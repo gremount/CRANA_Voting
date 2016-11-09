@@ -6,15 +6,15 @@
 #include "res.h"
 #include "LP_Voting.h"
 #include <ilcplex/ilocplex.h>
-#include "voter.h"
+#include "player.h"
 
-class Neutral: public Voter
+class Neutral: public Player
 {
 public:
 
 	//double te; //对最大链路利用率的约束参数，如果为10%，则要求提出的方案TE结果小于10%
 
-	Neutral(int id2, int id_kind2):Voter(id2, id_kind2)
+	Neutral(int id2, int id_kind2):Player(id2, id_kind2)
 	{
 		;
 	}
@@ -171,13 +171,13 @@ public:
 	}
 
 	//计算各个方案的最大链路利用率
-	void evaluate(VGraph &g, vector<Voter*> &voterL)
+	void evaluate(VGraph &g, vector<Player*> &PlayerL)
 	{
 		cout<<"Neutral don't have the right to vote!"<<endl;
 	}
 
 	//部署 获胜的方案
-	void end_implement(VGraph &g,int winner, vector<Voter*> &candiL)
+	void end_implement(VGraph &g,int winner, vector<Player*> &candiL)
 	{
 		//Flow记录的图负载信息更新
 		if(id==winner) return;
