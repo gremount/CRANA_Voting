@@ -1,5 +1,5 @@
-#ifndef LP_H
-#define LP_H
+#ifndef NETWORK_TE_H
+#define NETWORK_TE_H
 
 #include "common.h"
 #include "graph.h"
@@ -9,7 +9,7 @@
 //不允许分流的规划,因为这里有x[d]=IloIntVarArray(environment,g->m,0,1);
 //使得x[d][i]是0,1变量
 
-double LP(PGraph *g,vector<Req*> &reqL)
+double network_te(TENetworkGraph *g,vector<Req*> &reqL)
 {
 	IloEnv environment;
 	IloModel model(environment);
@@ -35,7 +35,7 @@ double LP(PGraph *g,vector<Req*> &reqL)
 	}
 	model.add(IloMinimize(environment, z));
 
-	//约束1，流量约束，保证是一条流
+	//约束1，流量约束
 	for(int d=0;d < K;d++)
 		for(int i=0;i < g->n;i++)
 		{
@@ -53,7 +53,7 @@ double LP(PGraph *g,vector<Req*> &reqL)
 				model.add(constraint==0);
 		}
 
-	//约束2，容量约束，保证流量的大小不超过链路的容量
+	//约束2，容量约束
 	for(int i=0;i<g->m;i++)
 	{
 		IloExpr constraint(environment);
@@ -69,32 +69,32 @@ double LP(PGraph *g,vector<Req*> &reqL)
 	{
 		obj=solver.getObjValue();
 
-		//展示流量所走的路径，并且修改各条link的capacity
-		
-		double latency=0;
+		//先部署
 		for(int d=0;d<K;d++)
 		{
 			for(int i=0;i<g->m;i++)
 			{
 				if(solver.getValue(x[d][i])>0.5)
-				{
 					g->adj[g->incL[i]->src][g->incL[i]->dst] += reqL[d]->flow;
-				}
 			}
 		}
 
+		//再计算延时
+		double latency=0;
 		for(int d=0;d<K;d++)
 		{
 			latency=0;
 			for(int i=0;i<g->m;i++)
 			{
-				if(solver.getValue(x[d][i])>0.5)
-				{
-					latency += reqL[d]->flow/
-						(1 + g->incL[i]->capacity - g->adj[g->incL[i]->src][g->incL[i]->dst]);
+				if(solver.getValue(x[d][i])>0.5){
+					if(g->incL[i]->capacity - g->adj[g->incL[i]->src][g->incL[i]->dst]==0)
+						latency += reqL[d]->flow/
+							(Rinf+g->incL[i]->capacity - g->adj[g->incL[i]->src][g->incL[i]->dst]);
+					else
+						latency += reqL[d]->flow/
+							(g->incL[i]->capacity - g->adj[g->incL[i]->src][g->incL[i]->dst]);
 				}
 			}
-			//cout<<distance<<endl;
 			g->cost_LP[d] = latency;
 		}
 	}

@@ -46,7 +46,7 @@ public:
 	vector<double> d;
 	vector<Edge*> incL;//边的列表
 	vector<vector<Edge*> > adjL,adjRL; //正向和反向邻接链表
-	vector<vector<Edge*> > adj;//邻接矩阵, 记录的是边，不是负载
+	vector<vector<Edge*> > adj;//邻接矩阵
 
 	vector<Req*> reqL;
 	vector<double> cost_best;//记录每个req的最佳部署结果
@@ -147,7 +147,7 @@ public:
 
 };
 
-class PGraph
+class TENetworkGraph
 {
 public:
 	int n,m;
@@ -161,8 +161,109 @@ public:
 	vector<double> cost_best;//记录每个req的最佳部署结果
 	vector<double> cost_LP;//记录每个req的LP部署结果
 
-	PGraph(){;}
-	PGraph(string address)
+	TENetworkGraph(){;}
+	TENetworkGraph(string address)
+	{
+		ifstream infile(address);
+		infile>>n>>m;
+		
+
+		d.resize(n);
+        p.resize(n);
+		adjL.resize(n);//点的编号从0开始
+		adjRL.resize(n);
+		cost_best.resize(Maxreq);
+		cost_LP.resize(Maxreq);
+		adj.resize(n);
+		for(int i=0;i<n;i++)
+			adj[i].resize(n);
+
+
+		int a,b,c,d;
+		int temp=m/2;
+		for(int i=0;i<temp;i++)
+		{
+			infile>>a>>b>>c>>d;
+			Edge* e1=new Edge(2*i,a,b,c,d);
+			Edge* e2=new Edge(2*i+1,b,a,c,d);
+
+			incL.push_back(e1);incL.push_back(e2);
+			adjL[a].push_back(e1);adjL[b].push_back(e2);
+			adjRL[b].push_back(e1);adjRL[a].push_back(e2);
+		}
+	}
+
+	void Update(int s,int flow){
+        for (int i = 0; i < adjL[s].size();i++){
+			int src=adjL[s][i]->src;
+			int dst=adjL[s][i]->dst;
+			double x=flow+adj[src][dst];
+			if(x > adjL[s][i]->capacity)continue;
+			if (d[s] + flow/(adjL[s][i]->capacity - x + 1) < d[dst]){
+                d[adjL[s][i]->dst] = d[s] + flow/(adjL[s][i]->capacity - x + 1);
+                p[adjL[s][i]->dst] = s;
+            }
+		}
+    }
+
+    int FindMin(){
+        set<int>::iterator it, iend;
+        iend = S.end();
+        double mine = Inf;
+        int min_node = -1;
+        for (it = S.begin(); it != iend; it++){
+            if(d[*it] < mine) {
+                mine = d[*it];
+                min_node = *it;
+            }
+        }
+        return min_node;
+    }
+
+    double dijkstra(int src, int dst, int flow){
+        S.clear();
+        V.clear();
+        for (int i = 0; i < n; i++)
+        {
+            S.insert(i);
+            d[i] = Inf;
+            p[i] = -2;
+        }
+        d[src] = 0; p[src] = -1;
+        Update(src,flow);
+        S.erase(src);
+        V.insert(src);
+        while (S.size() != 0)
+        {
+            int mind;
+            mind = FindMin();
+            if (mind == dst) return d[mind];
+			if (mind==-1) break;//没有路可达
+            Update(mind,flow);
+            S.erase(mind);
+            V.insert(mind);
+        }
+		return Inf;//没有路可达
+    }
+
+};
+
+class DelayNetworkGraph
+{
+public:
+	int n,m;
+	set<int> S, V;
+    vector<int> p;
+	vector<double> d;
+	vector<Edge*> incL;//边的列表
+	vector<vector<Edge*> > adjL,adjRL; //正向和反向邻接链表
+	
+	vector<vector<double> > adj;//该流维护的邻接矩阵，记录负载
+	vector<double> cost_best;//记录每个req的最佳部署结果
+	vector<double> cost_LP;//记录每个req的LP部署结果
+
+	DelayNetworkGraph(){;}
+	DelayNetworkGraph(string address)
 	{
 		ifstream infile(address);
 		infile>>n>>m;

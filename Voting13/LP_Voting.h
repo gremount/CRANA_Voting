@@ -62,7 +62,7 @@ double LP_Voting(VGraph *g,vector<Req*> &reqL,vector<Path*> &path_record, int id
 	}
 	//虽然这里计算temp的方法是估算，计算g->cost_best的方法是准确计算，计算方式是不同的，
 	//数值上差距是比较大的，但是两者拥有相同的走势，只差一个倍数
-	//所以相当于goal的值放大或者缩小了一个倍数，但是差距特点还是保持原样的
+	//所以相当于goal的值放大了一个倍数，但是差距特点还是保持原样的
 
 
 	model.add(IloMinimize(environment, goal));
@@ -112,6 +112,7 @@ double LP_Voting(VGraph *g,vector<Req*> &reqL,vector<Path*> &path_record, int id
 			{
 				if(solver.getValue(x[d][i])>0.5)
 				{
+					//cout<<"from node "<<g->incL[i]->src<<" to node "<<g->incL[i]->dst<< " has flow "<<solver.getValue(x[d][i])*reqL[d]->flow<<endl;
 					path->pathL.push_back(g->incL[i]);
 					distance += g->incL[i]->weight;
 				}

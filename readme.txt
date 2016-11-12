@@ -32,3 +32,6 @@ I. Voting10
 J. Voting11
 用Load Scale Factor 来测试 Voting10
 (load scale factor 出自论文On seflish routing in Internet-like environtments ) 
+
+K. Voting12
+APP-Voting算法的优化，更加严谨的对比方案，自动化实验
