@@ -1,5 +1,5 @@
 #include"common.h"
-#include"Flow.h"
+#include"app.h"
 #include"graph.h"
 #include"voting.h"
 #include "res.h"
@@ -8,7 +8,7 @@
 
 const int Inf=9999;
 const int Rinf=0.001;
-
+const int APPNUM=5;//应用数量
 /*
 //graph_t3
 const int N=3;//所有的点数
@@ -45,7 +45,7 @@ const int Maxflow=10;//流的大小可变范围
 const int Begin_num=1;//流的大小起始范围
 */
 
-/*
+
 //graph_ATT
 const int N=25;//所有的点数
 const int M=112;//包含正反向边
@@ -55,20 +55,21 @@ const int Maxpath=N-1;//可能的最长路径: N-1
 const int caseN=6;//case总数
 const int Maxflow=15;//流的大小可变范围
 const int Begin_num=5;//流的大小起始范围
-*/
+
 
 /*
 //graph_ATT_big
 const int N=25;//所有的点数
 const int M=112;//包含正反向边
-const int Maxreq=10;//一个case的流需求数量
+const int Maxreq=20;//一个case的流需求数量
 const int Maxpath=N-1;//可能的最长路径: N-1
+
 
 const int caseN=50;//case总数
 const int Maxflow=20;//流的大小可变范围
 const int Begin_num=5;//流的大小起始范围
 */
-
+/*
 //graph_all_big
 const int N=20;//所有的点数
 const int M=380;//包含正反向边
@@ -78,18 +79,18 @@ const int Maxpath=N-1;//可能的最长路径: N-1
 const int caseN=50;//case总数
 const int Maxflow=40;//流的大小可变范围
 const int Begin_num=5;//流的大小起始范围
-
+*/
 //如果改图，需要修改： 上面的参数 + 图输入 + req输入的部分
 
 int main()
 {
 	srand((unsigned)time(NULL));
-	string address="graph_all_big.txt";
+	string address="graph_ATT.txt";
 	ofstream outfile("result.txt");//实验结果
 	ofstream req_outfile("reqs.txt");//实验用的流需求
 	int testNum=1;//实验次数
 
-	outfile<<address<<"网络拓扑"<<"  testNum="<<testNum<<endl;
+	outfile<<address<<"网络拓扑"<<"  testNum="<<testNum<<" Maxreq="<<Maxreq<<endl;
 	outfile<<"caseN: "<<caseN<<endl;
 	outfile<<"flow Range: "<<Begin_num<<"--"<<Maxflow+Begin_num-1<<endl<<endl;
 
@@ -97,7 +98,9 @@ int main()
 	for(int test=0;test<testNum;test++)
 	{
 		outfile<<"*********************  test "<<test<<"*********************"<<endl;
-		vector<Flow*> flowL;//记录所有的流实例
+		vector<APP*> appL;//记录所有的APP
+		vector<Req*> reqL;//流需求
+
 		VGraph gv(address);//Voting用的图
 		TENetworkGraph gn_te(address);//TE全局优化的图
 		DelayNetworkGraph gn_delay(address);//延时全局优化的图
@@ -106,10 +109,12 @@ int main()
 		double happiness_sum_delayLP=0;//delay网络的多轮满意度
 		double happiness_sum=0;//voting的多轮满意度
 
-		vector<Req*> reqL;//流需求
 		double table[M2C+1][N2C+1] = {0};//投票用的输入
 		int ranking[N2C+1]={0};//记录一种排序的投票人数
-	
+		
+		for(int k=0;k<APPNUM;k++)
+			appL.push_back(new APP(k));
+
 		for(int j=1;j<=Maxreq;j++)
 			ranking[j]=1;//每种投票结果有1个voter,如果为2就说明该方案有得到两个voter的票
 
@@ -133,6 +138,7 @@ int main()
 	
 		vector<double> s2_DelayNetwork_Voting;//DelayNetwork的方差比上投票的结果
 
+		//每个case是一波流(同时到达的Maxreq条流)
 		for(int i=0;i<caseN;i++)
 		{
 			cout<<endl<<"*************************"<<" case "<<i<<"*************************"<<endl;
@@ -140,88 +146,76 @@ int main()
 			for(int j=0;j<Maxreq;j++)
 				for(int k=0;k<Maxreq;k++)
 					table[j][k]=0;
-		
-			req_outfile<<"case "<<i<<endl;
+			
+			reqL.clear();
+			gv.reqL.clear();
 
-		
+			for(int j=0;j<APPNUM;j++)
+				appL[j]->init();
+
 			//以下程序时防止每个case都会创建的Req导致的内存泄露
 			vector<Req*>::iterator it,iend;
 			iend=reqL.end();
 			for(it=reqL.begin();it!=iend;it++)	
 				delete(*it);
 		
-			reqL.clear();
-			gv.reqL.clear();
-
-			if(i==0){
-				for(int j=0;j<Maxreq;j++)
-				{
-					int a=0,b=0,c=0;
-					while(1){
-						c = Begin_num + rand()%Maxflow;
-						//if(c!=0) break;
-						a = rand()%N;
-						b = rand()%N;
-						if(a!=b && c!=0) break;
-					}
-					//a=0;b=1;c=10;
-					Req* r = new Req(j,a,b,c);
-					reqL.push_back(r);
-					gv.reqL.push_back(r);
-					Flow* flow_now = new Flow(j,a,b,c);
-					flowL.push_back(flow_now);
-					req_outfile<<j<<" "<<a<<" "<<b<<" "<<c<<endl;
+			//随机产生流量: (id app_id src dst flow)
+			req_outfile<<"case "<<i<<endl;
+			for(int j=0;j<Maxreq;j++)
+			{
+				int app_id=0,a=0,b=0,c=0;
+				while(1){
+					c = Begin_num + rand()%Maxflow;
+					a = rand()%N;
+					b = rand()%N;
+					app_id=rand()%APPNUM;
+					if(a!=b && c!=0) break;
 				}
+				//a=0;b=1;c=10;
+				Req* r = new Req(j,app_id,a,b,c);
+				reqL.push_back(r);
+				gv.reqL.push_back(r);
+				req_outfile<<j<<" "<<app_id<<" "<<a<<" "<<b<<" "<<c<<endl;
 			}
-			else{
-				for(int j=0;j<Maxreq;j++)
-				{
-					int a=0,b=0,c=0;
-					while(1){
-						c = Begin_num + rand()%Maxflow;
-						//if(c!=0) break;
-						a = rand()%N;
-						b = rand()%N;
-						if(a!=b && c!=0) break;
-					}
-					//a=0;b=1;c=10;
-					Req* r = new Req(j,a,b,c);
-					reqL.push_back(r);
-					gv.reqL.push_back(r);
-					flowL[j]->flow_modify(a,b,c);
-					req_outfile<<j<<" "<<a<<" "<<b<<" "<<c<<endl;
-				}
-			}
+			
 
 			//@@@@@@@@@@@@@@@@  Voting  @@@@@@@@@@@@@@@@@@@@@@
 			//@@@@@@@@@@@@@@@@  Voting  @@@@@@@@@@@@@@@@@@@@@@
 
 			//算最完美方案，所有的路都第一个走得到的方案
-			for(int j=0;j<Maxreq;j++)
-				gv.cost_best[j] = gv.dijkstra(reqL[j]->src,reqL[j]->dst,reqL[j]->flow,flowL[0]->adj);
+
+			for(int j=0;j<APPNUM;j++)
+			{
+				vector<Req*> reqPL_app;
+				for(int i=0;i<reqL.size();i++)
+				{	
+					if(j==reqL[i]->app_id) reqPL_app.push_back(reqL[i]);
+				}
+				gv.network_delay(reqPL_app,j);
+			}
 
 			//for(int j=0;j<Maxreq;j++)
 				//cout<<"gv.cost_best "<<j<<" : "<<gv.cost_best[j]<<endl;
 
 			//提方案
-			for(int j=0;j<Maxreq;j++)
-				flowL[j]->propose(gv,flowL);
+			for(int j=0;j<APPNUM;j++)
+				appL[j]->propose(gv,appL);
 
 			//评价方案
-			for(int j=0;j<Maxreq;j++)
-				flowL[j]->evaluate(gv,flowL);
+			for(int j=0;j<APPNUM;j++)
+				appL[j]->evaluate(gv,appL);
 
 			//投票算法
-			for(int j=0;j<Maxreq;j++)
-				for(int k=0;k<Maxreq;k++)
+			for(int j=0;j<APPNUM;j++)
+				for(int k=0;k<APPNUM;k++)
 				{
-					if(flowL[j]->judge[k]==0) table[j][k]=10000;//如果是0，说明流没有摆在网络中
-					else table[j][k]=flowL[j]->judge[k];
+					if(appL[j]->judge[k]==0) table[j][k]=10000;//如果是0，说明流没有摆在网络中
+					else table[j][k]=appL[j]->judge[k];
 				}
 			cout<<endl<<"voting uses ";
 			int choice=1;//选择一种投票算法
 			int winner=0;
-			Voting vv(table,ranking,Maxreq,Maxreq);
+			Voting vv(table,ranking,APPNUM,APPNUM);
 			winner=vv.voting(choice);
 
 			//****************************   最高满意度方案和最小满意度方差方案 评价
@@ -234,33 +228,33 @@ int main()
 			int s2Loc=0;
 			double s2Min_Happiness=0;//最小满意度方差方案的满意度
 		
-			for(int k=0;k<Maxreq;k++)
+			for(int k=0;k<APPNUM;k++)
 			{
 				happinessVotingTemp=0;
-				for(int j=0;j<Maxreq;j++)
+				for(int j=0;j<APPNUM;j++)
 					happinessVotingTemp+= gv.cost_best[j]/table[j][k];//最好抉择评分/当前抉择评分
-				if(happinessVotingMax<happinessVotingTemp/Maxreq){
-					happinessVotingMax=happinessVotingTemp/Maxreq;
+				if(happinessVotingMax<happinessVotingTemp/APPNUM){
+					happinessVotingMax=happinessVotingTemp/APPNUM;
 					happinessVotingLoc=k;
 				}
 			
 				s2Temp=0;
-				for(int j=0;j<Maxreq;j++)
-					s2Temp+= (gv.cost_best[j]/table[j][k]-happinessVotingTemp/Maxreq) * (gv.cost_best[j]/table[j][k]-happinessVotingTemp/Maxreq);
-				if(s2Min>s2Temp/Maxreq){
-					s2Min=s2Temp/Maxreq;
+				for(int j=0;j<APPNUM;j++)
+					s2Temp+= (gv.cost_best[j]/table[j][k]-happinessVotingTemp/APPNUM) * (gv.cost_best[j]/table[j][k]-happinessVotingTemp/APPNUM);
+				if(s2Min>s2Temp/APPNUM){
+					s2Min=s2Temp/APPNUM;
 					s2Loc=k;
-					s2Min_Happiness=happinessVotingTemp/Maxreq;
+					s2Min_Happiness=happinessVotingTemp/APPNUM;
 				}
 			}
 
 			//计算 最高满意度方案 的 应用满意度方差
 			double s2VotingMax=0;
 			//最高满意度方案的应用满意度的平均值
-			double happinessVotingMaxAvg=happinessVotingMax/Maxreq;
-			for(int j=0;j<Maxreq;j++)
+			double happinessVotingMaxAvg=happinessVotingMax/APPNUM;
+			for(int j=0;j<APPNUM;j++)
 				s2VotingMax+=(gv.cost_best[j]/table[j][happinessVotingLoc]-happinessVotingMaxAvg) * (gv.cost_best[j]/table[j][happinessVotingLoc]-happinessVotingMaxAvg);
-			s2VotingMax=s2VotingMax/Maxreq;
+			s2VotingMax=s2VotingMax/APPNUM;
 		
 			cout <<"最高满意度方案的结果"<<endl;
 			cout << "第" << i << "轮整体满意度： " << happinessVotingMax << endl;
@@ -288,13 +282,13 @@ int main()
 				*/
 		
 			// table show
-			for(int i=0;i<Maxreq;i++)
+			for(int i=0;i<APPNUM;i++)
 			{
-				cout<<"flow ";
+				cout<<"app ";
 				cout.setf(ios::right);
 				cout.width(3);
 				cout<<i<<" judge: ";
-				for(int j=0;j<Maxreq;j++){
+				for(int j=0;j<APPNUM;j++){
 					cout.setf(ios::left);
 					cout.width(5);
 					cout<<table[i][j]<<" ";
@@ -305,20 +299,20 @@ int main()
 
 			//计算投票winner满意度
 			double happiness=0;//一轮所有流的满意度和，越高越好,0<=满意度<=1
-			for(int j=0;j<Maxreq;j++)
+			for(int j=0;j<APPNUM;j++)
 				happiness += gv.cost_best[j]/table[j][winner];//最好抉择评分/当前抉择评分
 			happiness_sum += happiness;
 
 			//计算投票winner的应用满意度方差
 			double s2_voting=0;
 			double happiness_avg=happiness/Maxreq;
-			for(int j=0;j<Maxreq;j++)
+			for(int j=0;j<APPNUM;j++)
 				s2_voting+=(gv.cost_best[j]/table[j][winner]-happiness_avg) * (gv.cost_best[j]/table[j][winner]-happiness_avg);
 			s2_voting=s2_voting/Maxreq;
 
 			//统计网络latency
 			double latencyVoting=0;
-			latencyVoting=judge_sum_function(gv,flowL,winner);
+			latencyVoting=judge_sum_function(gv,appL,winner);
 
 			for(int j=0;j<Maxreq;j++)
 				if(table[j][winner]==10000) {
@@ -326,11 +320,11 @@ int main()
 					latencyVoting += Maxpath * reqL[j]->flow;
 				}
 			cout <<"Voting Winner 方案的结果"<<endl;
-			cout << "第" << i << "轮整体满意度： " << happiness/Maxreq << endl;
-			cout << "多轮满意度：" << happiness_sum / ((i+1)*Maxreq) << endl;
+			cout << "第" << i << "轮整体满意度： " << happiness/APPNUM << endl;
+			cout << "多轮满意度：" << happiness_sum / ((i+1)*APPNUM) << endl;
 			if(i==caseN-1){
 				outfile<<"多轮满意度"<<endl;
-				outfile << happiness_sum / ((i+1)*Maxreq) << endl;
+				outfile << happiness_sum / ((i+1)*APPNUM) << endl;
 			}
 			cout << "第" << i << "轮满意度满意度方差： " << s2_voting << endl;
 			cout << "多轮整体延时和: " << latencyVoting << endl;
@@ -341,8 +335,8 @@ int main()
 				int src=gv.incL[j]->src;
 				int dst=gv.incL[j]->dst;
 				double capacity=gv.incL[j]->capacity;
-				if(maxUtil_Voting<(flowL[winner]->adj[src][dst]/capacity))
-					maxUtil_Voting=flowL[winner]->adj[src][dst]/capacity;
+				if(maxUtil_Voting<(appL[winner]->adj[src][dst]/capacity))
+					maxUtil_Voting=appL[winner]->adj[src][dst]/capacity;
 			}
 			cout<<"最大链路利用率: "<<maxUtil_Voting<<endl;
 
@@ -353,18 +347,8 @@ int main()
 			delay_Voting.push_back(latencyVoting);
 			TE_Voting.push_back(maxUtil_Voting);
 		
-			//胜利的方案部署
-		
-			for(int j=0;j<Maxreq;j++)
-			{
-				for(int k1=0;k1<N;k1++)
-					for(int k2=0;k2<N;k2++)
-					{
-						//cout<<j<<" "<<k1<<" "<<k2<<endl;
-						flowL[j]->adj[k1][k2]=flowL[winner]->adj[k1][k2];
-					}
-			}
-		
+			//胜利的方案部署到所有应用的adj里
+			appL[winner]->end_implement(gv,appL);
 			cout<<endl;
 
 			//@@@@@@@@@@@@@@@@@End of Voting@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -402,7 +386,7 @@ int main()
 			if(i==caseN-1) outfile<<happiness_sum_teLP/(Maxreq*(i+1))<<endl;
 
 			double latency_teLP=0;
-			latency_teLP=delay_TENetworkGraph(gn_te,flowL);
+			latency_teLP=delay_TENetworkGraph(gn_te);
 			cout << "多轮整体延时和: " << latency_teLP << endl;
 			cout<<"最大链路利用率: "<<result_network_te<<endl;
 		
@@ -454,7 +438,7 @@ int main()
 			cout << "第" << i << "轮满意度满意度方差： " << s2_delay << endl;
 
 			double latency_delayLP=0;
-			latency_delayLP=delay_DelayNetworkGraph(gn_delay,flowL);
+			latency_delayLP=delay_DelayNetworkGraph(gn_delay);
 			cout << "多轮整体延时和: " << latency_delayLP << endl;
 
 			double maxUtil_DelayNetworkGraph=0;
@@ -530,8 +514,6 @@ int main()
 			outfile<<TE_DelayNetwork[i]<<",";
 		outfile<<endl;
 	}
-
-	
 	
 	getchar();
 	return 0;
