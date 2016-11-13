@@ -21,13 +21,18 @@ double LP(Graph *g,vector<Req*> &reqL)
 	IloArray<IloIntVarArray> x(environment, K);
 	for(int d=0;d<K;d++)
 		x[d]=IloIntVarArray(environment,g->m,0,1);
+	
 
-	//优化目标
-	IloExpr goal(environment);
+	//优化目标 最小化->最大链路利用率 0<=z<=1
+	IloNumVar z(environment,0,1);//如果不限制z的范围，z就可能超过1
 	for(int i=0;i<g->m;i++)
+	{
+		IloExpr load(environment);
 		for(int d=0;d<K;d++)
-			goal += x[d][i] * reqL[d]->flow * g->incL[i]->weight;
-	model.add(IloMinimize(environment, goal));
+			load += x[d][i] * reqL[d]->flow;
+		model.add(load<= z * g->incL[i]->capacity);
+	}
+	model.add(IloMinimize(environment, z));
 
 	//约束1，流量约束
 	for(int d=0;d < K;d++)
@@ -53,36 +58,28 @@ double LP(Graph *g,vector<Req*> &reqL)
 		IloExpr constraint(environment);
 		for(int d=0;d<K;d++)
 			constraint += reqL[d]->flow * x[d][i];
-		model.add(constraint<=g->incL[i]->capacity);
+		model.add(constraint <= g->incL[i]->capacity );
 	}
 
 	//计算模型
 	solver.setOut(environment.getNullStream());
-	double obj=INF;
+	double obj=100;
 	if(solver.solve())
 	{
 		obj=solver.getObjValue();
 
-		//展示流量所走的路径，并且修改各条link的capacity
-		
-		int distance=0;
+		//先部署
 		for(int d=0;d<K;d++)
 		{
-			cout<<"flow "<<d+1<<" : "<<endl;
-			distance=0;
 			for(int i=0;i<g->m;i++)
 			{
-				if(solver.getValue(x[d][i]>0))
+				if(solver.getValue(x[d][i])>0.5)
 				{
-					cout<<"from node "<<g->incL[i]->src<<" to node "<<
-						g->incL[i]->dst<< " has flow "<<
-						solver.getValue(x[d][i])*reqL[d]->flow<<endl;
-					g->incL[i]->capacity -= reqL[d]->flow;
-					distance += g->incL[i]->weight;
+					cout<<d<<" : "<<g->incL[i]->src<<" "<<g->incL[i]->dst<<endl;
 				}
 			}
-			g->cost_LP.push_back(distance * reqL[d]->flow);
 		}
+
 	}
 	else
 		cout<<"Error: Unfeasible solve"<<endl;

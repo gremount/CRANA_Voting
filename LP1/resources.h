@@ -31,13 +31,8 @@ class Graph
 {
 public:
 	int n,m;
-	set<int> S, V;
-    vector<int> d, p;
 	vector<Edge*> incL;//边的列表
 	vector<vector<Edge*> > adjL,adjRL; //正向和反向邻接矩阵
-	
-	vector<int> cost_best;//记录每个req的最佳部署结果
-	vector<int> cost_LP;//记录每个req的LP部署结果
 
 	Graph(){;}
 	Graph(string address)
@@ -46,8 +41,6 @@ public:
 		infile>>n>>m;
 		m=m*2;
 
-		d.resize(n);
-        p.resize(n);
 		adjL.resize(n);//点的编号从0开始
 		adjRL.resize(n);
 
@@ -64,55 +57,6 @@ public:
 			adjRL[b].push_back(e1);adjRL[a].push_back(e2);
 		}
 	}
-
-	void Update(int s,int flow){
-        for (int i = 0; i < adjL[s].size();i++){
-			if(flow>adjL[s][i]->capacity)continue;
-			if (d[s] + adjL[s][i]->weight < d[adjL[s][i]->dst]){
-                d[adjL[s][i]->dst] = d[s] + adjL[s][i]->weight;
-                p[adjL[s][i]->dst] = s;
-            }
-		}
-    }
-
-    int FindMin(){
-        set<int>::iterator it, iend;
-        iend = S.end();
-        int mine = INF;
-        int min_node = -1;
-        for (it = S.begin(); it != iend; it++){
-            if(d[*it] < mine) {
-                mine = d[*it];
-                min_node = *it;
-            }
-        }
-        return min_node;
-    }
-
-    int dijkstra(int src, int dst, int flow){
-        S.clear();
-        V.clear();
-        for (int i = 0; i < n; i++)
-        {
-            S.insert(i);
-            d[i] = INF;
-            p[i] = -2;
-        }
-        d[src] = 0; p[src] = -1;
-        Update(src,flow);
-        S.erase(src);
-        V.insert(src);
-        while (S.size() != 0)
-        {
-            int mind;
-            mind = FindMin();
-            if (mind == dst) return d[mind];
-            Update(mind,flow);
-            S.erase(mind);
-            V.insert(mind);
-        }
-    }
-
 };
 
 #endif

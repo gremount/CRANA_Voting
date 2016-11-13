@@ -3,7 +3,7 @@
 
 #include"common.h"
 #include "res.h"
-
+#include <ilcplex/ilocplex.h>
 class Edge
 {
 public:
@@ -19,10 +19,11 @@ public:
 class Req
 {
 public:
-	int id, src, dst, flow;
-	Req(int id2, int a, int b, int c)
+	int id, app_id, src, dst, flow;
+	Req(int id2, int app_id2, int a, int b, int c)
 	{
 		id=id2;
+		app_id=app_id2;
 		src=a;
 		dst=b;
 		flow=c;
@@ -46,11 +47,11 @@ public:
 	vector<double> d;
 	vector<Edge*> incL;//边的列表
 	vector<vector<Edge*> > adjL,adjRL; //正向和反向邻接链表
-	vector<vector<Edge*> > adj;//邻接矩阵
+	vector<vector<double> > adj;//记录负载
 
 	vector<Req*> reqL;
-	vector<double> cost_best;//记录每个req的最佳部署结果
-	vector<double> cost_LP;//记录每个req的LP部署结果
+	vector<double> cost_best;//记录每个APP的最佳部署结果
+	//vector<double> cost_LP;//记录每个APP的LP部署结果
 
 	VGraph(){;}
 	VGraph(string address)
@@ -66,8 +67,8 @@ public:
 		adj.resize(n);
 		for(int i=0;i<n;i++)
 			adj[i].resize(n);
-		cost_best.resize(Maxreq);
-		cost_LP.resize(Maxreq);
+		cost_best.resize(APPNUM);
+		//cost_LP.resize(APPNUM);
 
 		int a,b,c,d;
 		int temp=m/2;
@@ -80,7 +81,6 @@ public:
 			incL.push_back(e1);incL.push_back(e2);
 			adjL[a].push_back(e1);adjL[b].push_back(e2);
 			adjRL[b].push_back(e1);adjRL[a].push_back(e2);
-			adj[a][b]=e1;adj[b][a]=e2;
 		}
 	}
 
@@ -144,6 +144,150 @@ public:
         }
 		return Inf;//没有路可达
     }
+
+	double network_delay(vector<Req*> &reqL,int app_id)
+	{
+		IloEnv environment;
+		IloModel model(environment);
+		IloCplex solver(model);
+	
+		int K;//一个case里的req数量
+		K=reqL.size();
+	
+		//变量
+		IloArray<IloIntVarArray> x(environment, K);
+		for(int d=0;d<K;d++)
+			x[d]=IloIntVarArray(environment,m,0,1);
+	
+
+		IloNumVarArray D(environment,m,0,Inf);
+
+		//优化目标
+		IloExpr goal(environment);
+		IloExpr temp(environment);
+		IloExprArray L(environment,m);
+
+		//L[i]:第i条边在该次流量部署后的流量
+		for(int i=0;i<m;i++)
+			L[i]=IloExpr(environment);
+		for(int i=0;i<m;i++)
+		{
+			L[i]+=adj[incL[i]->src][incL[i]->dst];
+			for(int d=0;d<K;d++)
+				L[i]+=x[d][i]*reqL[d]->flow;
+		}
+
+		//延时约束条件，分段线性
+		for(int i=0;i<m;i++)
+		{
+			double c=incL[i]->capacity;
+			model.add(D[i] >= L[i]);
+			model.add(D[i] >= 3*L[i]-2*c/3);
+			model.add(D[i] >= 10*L[i]-16*c/3);
+			model.add(D[i] >= 70*L[i]-178*c/3);
+		}
+
+		//maximize happiness
+		for(int d=0;d<K;d++)
+		{
+			for(int i=0;i<m;i++)		
+			{
+				int src=incL[i]->src, dst=incL[i]->dst;
+				temp += x[d][i] * reqL[d]->flow * D[i];
+			}
+			goal += temp;
+		}
+		//虽然这里计算temp的方法是估算，但是和排队延时公式拥有相同的走势
+		model.add(IloMinimize(environment, goal));
+
+		//约束1，流量约束
+		for(int d=0;d < K;d++)
+			for(int i=0;i < n;i++)
+			{
+				IloExpr constraint(environment);
+				for(int k=0;k<adjL[i].size();k++)
+					constraint += x[d][adjL[i][k]->id];
+				for(int k=0;k<adjRL[i].size();k++)
+					constraint -= x[d][adjRL[i][k]->id];
+		
+				if(i==reqL[d]->src)
+					model.add(constraint==1);
+				else if(i==reqL[d]->dst)
+					model.add(constraint==-1);
+				else
+					model.add(constraint==0);
+			}
+
+		//约束2，容量约束
+		for(int i=0;i<m;i++)
+		{
+			IloExpr constraint(environment);
+			for(int d=0;d<K;d++)
+				constraint += reqL[d]->flow * x[d][i];
+			model.add(constraint <= (incL[i]->capacity - adj[incL[i]->src][incL[i]->dst]));
+		}
+
+		//计算模型
+		solver.setOut(environment.getNullStream());
+		double obj=Inf;
+		if(solver.solve())
+		{
+			obj=solver.getObjValue();
+
+			//展示流量所走的路径，并且修改各条link的capacity
+		
+			//先部署，方便计算延时
+			for(int d=0;d<K;d++)
+			{
+				for(int i=0;i<m;i++)
+				{
+					if(solver.getValue(x[d][i])>0.5)
+					{
+						adj[incL[i]->src][incL[i]->dst] += reqL[d]->flow;
+					}
+				}
+			}
+
+			//再计算延时
+			double latency=0;
+			cost_best[app_id]=0;
+			for(int d=0;d<K;d++)
+			{
+				latency=0;
+				for(int i=0;i<m;i++)
+				{
+					if(solver.getValue(x[d][i])>0.5){
+						if(incL[i]->capacity - adj[incL[i]->src][incL[i]->dst]==0)
+							latency += reqL[d]->flow/
+							(Rinf+incL[i]->capacity - adj[incL[i]->src][incL[i]->dst]);
+						else
+							latency += reqL[d]->flow/
+							(incL[i]->capacity - adj[incL[i]->src][incL[i]->dst]);
+					}
+				}
+				cost_best[app_id] += latency;
+			}
+
+			//再撤销，方便下一个应用计算最优方案
+			for(int d=0;d<K;d++)
+			{
+				for(int i=0;i<m;i++)
+				{
+					if(solver.getValue(x[d][i])>0.5)
+					{
+						adj[incL[i]->src][incL[i]->dst] -= reqL[d]->flow;
+					}
+				}
+			}
+		}
+
+
+		else
+			cout<<"Error: Unfeasible solve"<<endl;
+
+		environment.end();
+		return obj;
+	}
 
 };
 
