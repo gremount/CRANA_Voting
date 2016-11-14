@@ -117,6 +117,8 @@ double network_delay(DelayNetworkGraph *g,vector<Req*> &reqL)
 
 		//‘Ÿº∆À„—” ±
 		double latency=0;
+		for(int i=0;i<APPNUM;i++)
+			g->cost_LP[i]=0;
 		for(int d=0;d<K;d++)
 		{
 			latency=0;
@@ -131,7 +133,7 @@ double network_delay(DelayNetworkGraph *g,vector<Req*> &reqL)
 						(g->incL[i]->capacity - g->adj[g->incL[i]->src][g->incL[i]->dst]);
 				}
 			}
-			g->cost_LP[d] = latency;
+			g->cost_LP[reqL[d]->app_id] += latency;
 		}
 	}
 	else

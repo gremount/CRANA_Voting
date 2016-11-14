@@ -9,11 +9,12 @@
 const int Inf=9999;
 const int Rinf=0.001;
 const int APPNUM=5;//应用数量
+
 /*
 //graph_t3
 const int N=3;//所有的点数
 const int M=6;//包含正反向边
-const int Maxreq=3;//一个case的流需求数量
+const int Maxreq=2;//一个case的流需求数量
 const int Maxpath=N-1;//可能的最长路径: N-1
 
 const int caseN=2;//case总数
@@ -45,7 +46,7 @@ const int Maxflow=10;//流的大小可变范围
 const int Begin_num=1;//流的大小起始范围
 */
 
-
+/*
 //graph_ATT
 const int N=25;//所有的点数
 const int M=112;//包含正反向边
@@ -55,25 +56,24 @@ const int Maxpath=N-1;//可能的最长路径: N-1
 const int caseN=6;//case总数
 const int Maxflow=15;//流的大小可变范围
 const int Begin_num=5;//流的大小起始范围
+*/
 
-
-/*
 //graph_ATT_big
 const int N=25;//所有的点数
 const int M=112;//包含正反向边
 const int Maxreq=20;//一个case的流需求数量
 const int Maxpath=N-1;//可能的最长路径: N-1
 
-
 const int caseN=50;//case总数
 const int Maxflow=20;//流的大小可变范围
 const int Begin_num=5;//流的大小起始范围
-*/
+
+
 /*
 //graph_all_big
 const int N=20;//所有的点数
 const int M=380;//包含正反向边
-const int Maxreq=10;//一个case的流需求数量
+const int Maxreq=20;//一个case的流需求数量
 const int Maxpath=N-1;//可能的最长路径: N-1
 
 const int caseN=50;//case总数
@@ -85,16 +85,17 @@ const int Begin_num=5;//流的大小起始范围
 int main()
 {
 	srand((unsigned)time(NULL));
-	string address="graph_ATT.txt";
+	string address="graph_ATT_big.txt";
 	ofstream outfile("result.txt");//实验结果
 	ofstream req_outfile("reqs.txt");//实验用的流需求
 	int testNum=1;//实验次数
 
-	outfile<<address<<"网络拓扑"<<"  testNum="<<testNum<<" Maxreq="<<Maxreq<<endl;
+	outfile<<address<<"网络拓扑"<<"  testNum="<<testNum<<endl;
+	outfile<<"APPNUM="<<APPNUM<<endl;
+	outfile<<"Maxreq="<<Maxreq<<endl;
 	outfile<<"caseN: "<<caseN<<endl;
 	outfile<<"flow Range: "<<Begin_num<<"--"<<Maxflow+Begin_num-1<<endl<<endl;
 
-	
 	for(int test=0;test<testNum;test++)
 	{
 		outfile<<"*********************  test "<<test<<"*********************"<<endl;
@@ -171,7 +172,7 @@ int main()
 					app_id=rand()%APPNUM;
 					if(a!=b && c!=0) break;
 				}
-				//a=0;b=1;c=10;
+				//app_id=j;a=0;b=2;c=10;
 				Req* r = new Req(j,app_id,a,b,c);
 				reqL.push_back(r);
 				gv.reqL.push_back(r);
@@ -198,8 +199,10 @@ int main()
 				//cout<<"gv.cost_best "<<j<<" : "<<gv.cost_best[j]<<endl;
 
 			//提方案
-			for(int j=0;j<APPNUM;j++)
+			for(int j=0;j<APPNUM;j++){
+				cout<<"app "<<j<<" proposal"<<endl;
 				appL[j]->propose(gv,appL);
+			}
 
 			//评价方案
 			for(int j=0;j<APPNUM;j++)
@@ -252,8 +255,10 @@ int main()
 			double s2VotingMax=0;
 			//最高满意度方案的应用满意度的平均值
 			double happinessVotingMaxAvg=happinessVotingMax/APPNUM;
-			for(int j=0;j<APPNUM;j++)
+			for(int j=0;j<APPNUM;j++){
+				if(gv.cost_best[j]==0)continue;//没有流量需求的APP就没有满意度的区别
 				s2VotingMax+=(gv.cost_best[j]/table[j][happinessVotingLoc]-happinessVotingMaxAvg) * (gv.cost_best[j]/table[j][happinessVotingLoc]-happinessVotingMaxAvg);
+			}
 			s2VotingMax=s2VotingMax/APPNUM;
 		
 			cout <<"最高满意度方案的结果"<<endl;
@@ -305,20 +310,26 @@ int main()
 
 			//计算投票winner的应用满意度方差
 			double s2_voting=0;
-			double happiness_avg=happiness/Maxreq;
+			double happiness_avg=happiness/APPNUM;
 			for(int j=0;j<APPNUM;j++)
+			{
+				if(gv.cost_best[j]==0) continue;
 				s2_voting+=(gv.cost_best[j]/table[j][winner]-happiness_avg) * (gv.cost_best[j]/table[j][winner]-happiness_avg);
-			s2_voting=s2_voting/Maxreq;
+			}
+			s2_voting=s2_voting/APPNUM;
 
 			//统计网络latency
 			double latencyVoting=0;
 			latencyVoting=judge_sum_function(gv,appL,winner);
 
+			/*
 			for(int j=0;j<Maxreq;j++)
 				if(table[j][winner]==10000) {
 					cout<<"触发惩罚机制"<<endl;
 					latencyVoting += Maxpath * reqL[j]->flow;
 				}
+				*/
+
 			cout <<"Voting Winner 方案的结果"<<endl;
 			cout << "第" << i << "轮整体满意度： " << happiness/APPNUM << endl;
 			cout << "多轮满意度：" << happiness_sum / ((i+1)*APPNUM) << endl;
@@ -341,8 +352,8 @@ int main()
 			cout<<"最大链路利用率: "<<maxUtil_Voting<<endl;
 
 			//记录结果，方便输出
-			oneCaseHappiness_Voting.push_back(happiness/Maxreq);
-			multiCaseHappiness_Voting.push_back(happiness_sum / ((i+1)*Maxreq));
+			oneCaseHappiness_Voting.push_back(happiness/APPNUM);
+			multiCaseHappiness_Voting.push_back(happiness_sum / ((i+1)*APPNUM));
 			oneCaseS2_Voting.push_back(s2_voting);
 			delay_Voting.push_back(latencyVoting);
 			TE_Voting.push_back(maxUtil_Voting);
@@ -421,20 +432,26 @@ int main()
 				happiness_delayLP=0;
 				//for(int i=0;i<reqN;i++)
 				//	cout<<g.cost_best[i]<<" "<<g.cost_LP[i]<<endl;
-				for(int j=0;j<Maxreq;j++)
-					happiness_delayLP += gn_delay.cost_best[j]/gn_delay.cost_LP[j];
+				for(int j=0;j<APPNUM;j++)
+				{
+					if(gv.cost_best[j]==0)continue;
+					happiness_delayLP += gv.cost_best[j]/gn_delay.cost_LP[j];
+				}
 			}
 			happiness_sum_delayLP += happiness_delayLP;
 
 			double s2_delay=0;
-			double happiness_avg_delay=happiness_delayLP/Maxreq;
-			for(int j=0;j<Maxreq;j++)
-				s2_delay+=(gn_delay.cost_best[j]/gn_delay.cost_LP[j]-happiness_avg_delay) * (gn_delay.cost_best[j]/gn_delay.cost_LP[j]-happiness_avg_delay);
-			s2_delay=s2_delay/Maxreq;
+			double happiness_avg_delay=happiness_delayLP/APPNUM;
+			for(int j=0;j<APPNUM;j++)
+			{
+				if(gv.cost_best[j]==0) continue;
+				s2_delay+=(gv.cost_best[j]/gn_delay.cost_LP[j]-happiness_avg_delay) * (gv.cost_best[j]/gn_delay.cost_LP[j]-happiness_avg_delay);
+			}
+			s2_delay=s2_delay/APPNUM;
 
-			cout<<"单轮满意度： "<<happiness_delayLP/Maxreq<<endl;
-			cout<<"多轮满意度： "<<happiness_sum_delayLP/(Maxreq*(i+1))<<endl;
-			if(i==caseN-1) outfile<<happiness_sum_delayLP/(Maxreq*(i+1))<<endl;
+			cout<<"单轮满意度： "<<happiness_delayLP/APPNUM<<endl;
+			cout<<"多轮满意度： "<<happiness_sum_delayLP/(APPNUM*(i+1))<<endl;
+			if(i==caseN-1) outfile<<happiness_sum_delayLP/(APPNUM*(i+1))<<endl;
 			cout << "第" << i << "轮满意度满意度方差： " << s2_delay << endl;
 
 			double latency_delayLP=0;
@@ -451,15 +468,19 @@ int main()
 					maxUtil_DelayNetworkGraph=gn_delay.adj[src][dst]/capacity;
 			}
 			cout<<"最大链路利用率: "<<maxUtil_DelayNetworkGraph<<endl;
-			cout<<endl<<"Delay联合优化方差/投票方差="<<s2_delay/s2_voting<<endl;
+			double s2_cmp=0;
+			if(s2_voting==0 && s2_delay==0) s2_cmp=1;
+			else if(s2_voting==0 && s2_delay!=0) s2_cmp=10;//自己凭直觉假设的
+			else s2_cmp=s2_delay/s2_voting;
+			cout<<endl<<"Delay联合优化方差/投票方差="<<s2_cmp<<endl;
 
-		   oneCaseHappiness_DelayNetwork.push_back(happiness_delayLP/Maxreq);
-		   multiCaseHappines_DelayNetwork.push_back(happiness_sum_delayLP/(Maxreq*(i+1)));
+		   oneCaseHappiness_DelayNetwork.push_back(happiness_delayLP/APPNUM);
+		   multiCaseHappines_DelayNetwork.push_back(happiness_sum_delayLP/(APPNUM*(i+1)));
 		   oneCaseS2_DelayNetwork.push_back(s2_delay);
 		   delay_DelayNetwork.push_back(latency_delayLP);
 		   TE_DelayNetwork.push_back(maxUtil_DelayNetworkGraph);
 
-		   s2_DelayNetwork_Voting.push_back(s2_delay/s2_voting);
+		   s2_DelayNetwork_Voting.push_back(s2_cmp);
 
 			//@@@@@@@@@@@@@@@@@End of network_delay@@@@@@@@@@@@@@@@@@@@@@@@@
 			//@@@@@@@@@@@@@@@@@End of network_delay@@@@@@@@@@@@@@@@@@@@@@@@@
