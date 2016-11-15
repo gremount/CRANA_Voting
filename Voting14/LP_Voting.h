@@ -1,15 +1,15 @@
-#ifndef network_delay_H
-#define network_delay_H
+#ifndef LP_VOTING_H
+#define LP_VOTING_H
 
 #include "common.h"
 #include "graph.h"
 #include "res.h"
 #include <ilcplex/ilocplex.h>
 
-//不允许分流的规划,因为这里有x[d]=IloIntVarArray(environment,g->m,0,1);
-//使得x[d][i]是0,1变量
+//用在flow.h中，是voting方案的规划部分
+//这里为了避免非线性规划，当前case流互相之间的影响不考虑，也就是延时只和之前case的流有关
 
-double network_delay(DelayNetworkGraph *g,vector<Req*> &reqL)
+double LP_Voting(VGraph *g,vector<Req*> &reqL,vector<Path*> &path_record, int id, vector<vector<double> > &adj)
 {
 	IloEnv environment;
 	IloModel model(environment);
@@ -22,6 +22,7 @@ double network_delay(DelayNetworkGraph *g,vector<Req*> &reqL)
 	IloArray<IloIntVarArray> x(environment, K);
 	for(int d=0;d<K;d++)
 		x[d]=IloIntVarArray(environment,g->m,0,1);
+
 	IloNumVarArray D(environment,g->m,0,Inf);
 
 	//优化目标
@@ -34,7 +35,7 @@ double network_delay(DelayNetworkGraph *g,vector<Req*> &reqL)
 		L[i]=IloExpr(environment);
 	for(int i=0;i<g->m;i++)
 	{
-		L[i]+=g->adj[g->incL[i]->src][g->incL[i]->dst];
+		L[i]+=adj[g->incL[i]->src][g->incL[i]->dst];
 		for(int d=0;d<K;d++)
 			L[i]+=x[d][i]*reqL[d]->flow;
 	}
@@ -57,10 +58,9 @@ double network_delay(DelayNetworkGraph *g,vector<Req*> &reqL)
 			int src=g->incL[i]->src, dst=g->incL[i]->dst;
 			temp += x[d][i] * reqL[d]->flow * D[i];
 		}
-		goal += temp/g->cost_best[reqL[d]->id];
+		goal += temp;
 	}
-	//虽然这里计算temp的方法是估算，但是和排队延时公式拥有相同的走势
-
+	//虽然这里计算temp的方法是估算
 
 	model.add(IloMinimize(environment, goal));
 
@@ -88,7 +88,7 @@ double network_delay(DelayNetworkGraph *g,vector<Req*> &reqL)
 		IloExpr constraint(environment);
 		for(int d=0;d<K;d++)
 			constraint += reqL[d]->flow * x[d][i];
-		model.add(constraint <= (g->incL[i]->capacity - g->adj[g->incL[i]->src][g->incL[i]->dst]));
+		model.add(constraint <= (g->incL[i]->capacity - adj[g->incL[i]->src][g->incL[i]->dst]));
 	}
 
 	//计算模型
@@ -98,40 +98,24 @@ double network_delay(DelayNetworkGraph *g,vector<Req*> &reqL)
 	{
 		obj=solver.getObjValue();
 
-		//展示流量所走的路径，并且修改各条link的capacity
+		//路径记录
 		
-		//先部署
+		int distance=0;
 		for(int d=0;d<K;d++)
 		{
+			distance=0;
+			Path* path=new Path();
 			for(int i=0;i<g->m;i++)
 			{
 				if(solver.getValue(x[d][i])>0.5)
 				{
 					//cout<<"from node "<<g->incL[i]->src<<" to node "<<g->incL[i]->dst<< " has flow "<<solver.getValue(x[d][i])*reqL[d]->flow<<endl;
-					g->adj[g->incL[i]->src][g->incL[i]->dst] += reqL[d]->flow;
+					path->pathL.push_back(g->incL[i]);
+					distance += g->incL[i]->weight;
 				}
 			}
-		}
-
-		//再计算延时
-		double latency=0;
-		for(int i=0;i<APPNUM;i++)
-			g->cost_LP[i]=0;
-		for(int d=0;d<K;d++)
-		{
-			latency=0;
-			for(int i=0;i<g->m;i++)
-			{
-				if(solver.getValue(x[d][i])>0.5){
-					if(g->incL[i]->capacity - g->adj[g->incL[i]->src][g->incL[i]->dst]==0)
-						latency += reqL[d]->flow/
-						(Rinf+g->incL[i]->capacity - g->adj[g->incL[i]->src][g->incL[i]->dst]);
-					else
-						latency += reqL[d]->flow/
-						(g->incL[i]->capacity - g->adj[g->incL[i]->src][g->incL[i]->dst]);
-				}
-			}
-			g->cost_LP[reqL[d]->app_id] += latency;
+			if(distance==0){cout<<endl<<endl<<"error !!!!!!!!!!!!!!!!!"<<endl<<endl;continue;}
+			path_record[reqL[d]->id]=path;
 		}
 	}
 	else

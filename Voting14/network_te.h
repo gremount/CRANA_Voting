@@ -1,5 +1,5 @@
-#ifndef LP_H
-#define LP_H
+#ifndef NETWORK_TE_H
+#define NETWORK_TE_H
 
 #include "common.h"
 #include "graph.h"
@@ -9,7 +9,7 @@
 //不允许分流的规划,因为这里有x[d]=IloIntVarArray(environment,g->m,0,1);
 //使得x[d][i]是0,1变量
 
-double LP(PGraph *g,vector<Req*> &reqL)
+double network_te(TENetworkGraph *g,vector<Req*> &reqL)
 {
 	IloEnv environment;
 	IloModel model(environment);
@@ -24,21 +24,16 @@ double LP(PGraph *g,vector<Req*> &reqL)
 		x[d]=IloIntVarArray(environment,g->m,0,1);
 	
 
-	//优化目标 最小化->能量消耗
-	IloExpr energy(environment);//网络的能量消耗
-	
+	//优化目标 最小化->最大链路利用率 0<=z<=1
+	IloNumVar z(environment,0,1);//如果不限制z的范围，z就可能超过1
 	for(int i=0;i<g->m;i++)
 	{
 		IloExpr load(environment);
-		IloIntVarArray temp(environment,K,0,1);
-		for(int d=0;d<K;d++){
+		for(int d=0;d<K;d++)
 			load += x[d][i] * reqL[d]->flow;
-			//if(g->adj[g->incL[i]->src][g->incL[i]->dst]!=0) temp[d]=1; 
-			temp[d] = x[d][i];
-		}
-		energy += (load + g->adj[g->incL[i]->src][g->incL[i]->dst])*(load + g->adj[g->incL[i]->src][g->incL[i]->dst]) + IloMax(temp) * STARTUP;
+		model.add((load + g->adj[g->incL[i]->src][g->incL[i]->dst]) <= z * g->incL[i]->capacity);
 	}
-	model.add(IloMinimize(environment, energy));
+	model.add(IloMinimize(environment, z));
 
 	//约束1，流量约束
 	for(int d=0;d < K;d++)
@@ -74,33 +69,33 @@ double LP(PGraph *g,vector<Req*> &reqL)
 	{
 		obj=solver.getObjValue();
 
-		//展示流量所走的路径，并且修改各条link的capacity
-		
-		
+		//先部署
 		for(int d=0;d<K;d++)
 		{
 			for(int i=0;i<g->m;i++)
 			{
 				if(solver.getValue(x[d][i])>0.5)
-				{
 					g->adj[g->incL[i]->src][g->incL[i]->dst] += reqL[d]->flow;
-				}
 			}
 		}
+
+		//再计算延时
+		double latency=0;
 		for(int d=0;d<K;d++)
 		{
-			int temp_bw=Inf;
+			latency=0;
 			for(int i=0;i<g->m;i++)
 			{
-				if(solver.getValue(x[d][i])>0.5)
-				{
-					int src=g->incL[i]->src, dst=g->incL[i]->dst;
-					if(temp_bw > g->incL[i]->capacity - g->adj[src][dst])
-						temp_bw = g->incL[i]->capacity - g->adj[src][dst];
+				if(solver.getValue(x[d][i])>0.5){
+					if(g->incL[i]->capacity - g->adj[g->incL[i]->src][g->incL[i]->dst]==0)
+						latency += reqL[d]->flow/
+							(Rinf+g->incL[i]->capacity - g->adj[g->incL[i]->src][g->incL[i]->dst]);
+					else
+						latency += reqL[d]->flow/
+							(g->incL[i]->capacity - g->adj[g->incL[i]->src][g->incL[i]->dst]);
 				}
 			}
-			//cout<<"d"<<d<<" :"<<temp_bw<<" "<<reqL[d]->flow<<endl;
-			g->cost_LP[d] = temp_bw * reqL[d]->flow;
+			g->cost_LP[d] = latency;
 		}
 	}
 	else
