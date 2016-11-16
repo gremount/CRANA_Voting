@@ -6,6 +6,7 @@
 #include "res.h"
 #include "LP_Voting.h"
 
+
 class APP
 {
 public:
@@ -92,10 +93,7 @@ public:
 					int src=appL[k]->path_record[i]->pathL[j]->src;
 					int dst=appL[k]->path_record[i]->pathL[j]->dst;
 					int capacity=appL[k]->path_record[i]->pathL[j]->capacity;
-					if(capacity-appL[k]->adj[src][dst]==0)
-						temp+=g.reqL[i]->flow/(Rinf+capacity-appL[k]->adj[src][dst]);
-					else
-						temp+=g.reqL[i]->flow/(capacity-appL[k]->adj[src][dst]);
+					temp+=g.reqL[i]->flow*linearCal(appL[k]->adj[src][dst],capacity);
 				}
 				judge[k]+=temp;
 			}
@@ -119,63 +117,6 @@ public:
 	}
 };//APP类的结束位置
 
-//Voting统计网络latency
-double judge_sum_function(VGraph &g, vector<APP*> &appL, int winner)
-{
-	double latencyVoting=0;
-	for(int i=0;i<M;i++)
-	{
-		int src,dst;
-		double latencyTemp;
-		src=g.incL[i]->src;dst=g.incL[i]->dst;
-		
-		if(g.incL[i]->capacity - appL[winner]->adj[src][dst]==0)
-			latencyTemp = (double)appL[winner]->adj[src][dst]/(Rinf+ g.incL[i]->capacity - appL[winner]->adj[src][dst]);
-		else
-			latencyTemp = (double)appL[winner]->adj[src][dst]/(g.incL[i]->capacity - appL[winner]->adj[src][dst]);
-		//cout<<src<<" "<<dst<<" " <<appL[winner]->adj[src][dst]<<endl;
-		latencyVoting += latencyTemp;
-	}
-	return latencyVoting;
-}
 
-
-//TE全局优化后统计网络latency
-double delay_TENetworkGraph(TENetworkGraph &g)
-{
-	double judge_sum_LP=0;
-	for(int i=0;i<M;i++)
-	{
-		int src,dst;
-		double latencyFunc;
-		src=g.incL[i]->src;dst=g.incL[i]->dst;
-		if(g.adj[src][dst]==0) continue;
-		if(g.incL[i]->capacity - g.adj[src][dst]==0)
-			latencyFunc = (double)g.adj[src][dst]/(Rinf+ g.incL[i]->capacity - g.adj[src][dst]);
-		else
-			latencyFunc = (double)g.adj[src][dst]/(g.incL[i]->capacity - g.adj[src][dst]);
-		judge_sum_LP += latencyFunc;
-	}
-	return judge_sum_LP;
-}
-
-//Delay全局优化后统计网络latency
-double delay_DelayNetworkGraph(DelayNetworkGraph &g)
-{
-	double judge_sum_LP=0;
-	for(int i=0;i<M;i++)
-	{
-		int src,dst;
-		double latencyFunc;
-		src=g.incL[i]->src;dst=g.incL[i]->dst;
-		if(g.adj[src][dst]==0) continue;
-		if(g.incL[i]->capacity - g.adj[src][dst]==0)
-			latencyFunc = (double)g.adj[src][dst]/(Rinf+ g.incL[i]->capacity - g.adj[src][dst]);
-		else
-			latencyFunc = (double)g.adj[src][dst]/(g.incL[i]->capacity - g.adj[src][dst]);
-		judge_sum_LP += latencyFunc;
-	}
-	return judge_sum_LP;
-}
 
 #endif

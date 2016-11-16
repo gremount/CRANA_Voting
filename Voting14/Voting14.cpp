@@ -5,6 +5,7 @@
 #include "res.h"
 #include "network_te.h"
 #include "network_delay.h"
+#include "calculate_delay.h"
 
 const int Inf=9999;
 const int Rinf=0.001;
@@ -58,29 +59,29 @@ const int Maxflow=10;//流的大小可变范围
 const int Begin_num=1;//流的大小起始范围
 */
 
-/*
+
 //graph_ATT
 const int N=25;//所有的点数
 const int M=112;//包含正反向边
-const int Maxreq=10;//一个case的流需求数量
+const int Maxreq=20;//一个case的流需求数量
 const int Maxpath=N-1;//可能的最长路径: N-1
 
-const int caseN=6;//case总数
+const int caseN=1;//case总数
 const int Maxflow=15;//流的大小可变范围
 const int Begin_num=5;//流的大小起始范围
-*/
 
 
+/*
 //graph_ATT_big
 const int N=25;//所有的点数
 const int M=112;//包含正反向边
 const int Maxreq=20;//一个case的流需求数量
 const int Maxpath=N-1;//可能的最长路径: N-1
 
-const int caseN=50;//case总数
+const int caseN=1;//case总数
 const int Maxflow=20;//流的大小可变范围
 const int Begin_num=5;//流的大小起始范围
-
+*/
 
 /*
 //graph_all_big
@@ -101,7 +102,7 @@ int main()
 	string address="graph_ATT.txt";
 	ofstream outfile("result.txt");//实验结果
 	ofstream req_outfile("reqs.txt");//实验用的流需求
-	int testNum=1;//实验次数
+	int testNum=10;//实验次数
 
 	outfile<<address<<"网络拓扑"<<"  testNum="<<testNum<<endl;
 	outfile<<"APPNUM="<<APPNUM<<endl;
@@ -109,9 +110,30 @@ int main()
 	outfile<<"caseN: "<<caseN<<endl;
 	outfile<<"flow Range: "<<Begin_num<<"--"<<Maxflow+Begin_num-1<<endl<<endl;
 
+	//统计所有case结果
+	vector<double> oneCaseHappiness_Voting;//Voting结果的单轮满意度
+	vector<double> multiCaseHappiness_Voting;//Voting结果的多轮满意度
+	vector<double> oneCaseS2_Voting;//Voting结果的单轮满意度方差
+	vector<double> delay_Voting;//Voting结果的延时
+	vector<double> TE_Voting;////Voting结果的最大链路利用率
+
+	vector<double> oneCaseHappiness_TENetwork;//以TE为目标集中优化结果的单轮满意度
+	vector<double> multiCaseHappiness_TENetwork;
+	vector<double> delay_TENetwork;
+	vector<double> TE_TENetwork;
+
+	vector<double> oneCaseHappiness_DelayNetwork;//以Delay为目标集中优化结果的单轮满意度
+	vector<double> multiCaseHappines_DelayNetwork;
+	vector<double> oneCaseS2_DelayNetwork;
+	vector<double> delay_DelayNetwork;
+	vector<double> TE_DelayNetwork;
+	
+	vector<double> s2_DelayNetwork_Voting;//DelayNetwork的方差比上投票的结果
+
 	for(int test=0;test<testNum;test++)
 	{
-		outfile<<"*********************  test "<<test<<"*********************"<<endl;
+		//outfile<<"*********************  test "<<test<<"*********************"<<endl;
+		cout <<"*********************  test "<<test<<"*********************"<<endl;
 		vector<APP*> appL;//记录所有的APP
 		vector<Req*> reqL;//流需求
 
@@ -132,25 +154,7 @@ int main()
 		for(int j=1;j<=Maxreq;j++)
 			ranking[j]=1;//每种投票结果有1个voter,如果为2就说明该方案有得到两个voter的票
 
-		//统计所有case结果
-		vector<double> oneCaseHappiness_Voting;//Voting结果的单轮满意度
-		vector<double> multiCaseHappiness_Voting;//Voting结果的多轮满意度
-		vector<double> oneCaseS2_Voting;//Voting结果的单轮满意度方差
-		vector<double> delay_Voting;//Voting结果的延时
-		vector<double> TE_Voting;////Voting结果的最大链路利用率
-
-		vector<double> oneCaseHappiness_TENetwork;//以TE为目标集中优化结果的单轮满意度
-		vector<double> multiCaseHappiness_TENetwork;
-		vector<double> delay_TENetwork;
-		vector<double> TE_TENetwork;
-
-		vector<double> oneCaseHappiness_DelayNetwork;//以Delay为目标集中优化结果的单轮满意度
-		vector<double> multiCaseHappines_DelayNetwork;
-		vector<double> oneCaseS2_DelayNetwork;
-		vector<double> delay_DelayNetwork;
-		vector<double> TE_DelayNetwork;
-	
-		vector<double> s2_DelayNetwork_Voting;//DelayNetwork的方差比上投票的结果
+		
 
 		//每个case是一波流(同时到达的Maxreq条流)
 		for(int i=0;i<caseN;i++)
@@ -339,21 +343,8 @@ int main()
 			double latencyVoting=0;
 			latencyVoting=judge_sum_function(gv,appL,winner);
 
-			/*
-			for(int j=0;j<Maxreq;j++)
-				if(table[j][winner]==10000) {
-					cout<<"触发惩罚机制"<<endl;
-					latencyVoting += Maxpath * reqL[j]->flow;
-				}
-				*/
-
 			cout <<"Voting Winner 方案的结果"<<endl;
 			cout << "第" << i << "轮整体满意度： " << happiness/APPNUM << endl;
-			cout << "多轮满意度：" << happiness_sum / ((i+1)*APPNUM) << endl;
-			if(i==caseN-1){
-				outfile<<"多轮满意度"<<endl;
-				outfile << happiness_sum / ((i+1)*APPNUM) << endl;
-			}
 			cout << "第" << i << "轮满意度满意度方差： " << s2_voting << endl;
 			cout << "多轮整体延时和: " << latencyVoting << endl;
 		
@@ -410,9 +401,7 @@ int main()
 			}
 			happiness_sum_teLP += happiness_teLP;
 			cout<<"单轮满意度： "<<happiness_teLP/Maxreq<<endl;
-			cout<<"多轮满意度： "<<happiness_sum_teLP/(Maxreq*(i+1))<<endl;
-			if(i==caseN-1) outfile<<happiness_sum_teLP/(Maxreq*(i+1))<<endl;
-
+			
 			double latency_teLP=0;
 			latency_teLP=delay_TENetworkGraph(gn_te);
 			cout << "多轮整体延时和: " << latency_teLP << endl;
@@ -433,9 +422,9 @@ int main()
 			//Delay全局优化规划部分
 			cout<<endl<<"			network_delay result			"<<endl;
 		
-			//最优部署计算
-			for(int j=0;j<Maxreq;j++)
-				gn_delay.cost_best[j] =gn_delay.dijkstra(reqL[j]->src,reqL[j]->dst,reqL[j]->flow);
+			//最优部署计算-->直接用voting的最优结果即可
+			//for(int j=0;j<Maxreq;j++)
+				//gn_delay.cost_best[j] =gn_delay.dijkstra(reqL[j]->src,reqL[j]->dst,reqL[j]->flow);
 
 			//线性规划部署
 			double result_network_delay=0;//近似延时
@@ -467,8 +456,6 @@ int main()
 			s2_delay=s2_delay/APPNUM;
 
 			cout<<"单轮满意度： "<<happiness_delayLP/APPNUM<<endl;
-			cout<<"多轮满意度： "<<happiness_sum_delayLP/(APPNUM*(i+1))<<endl;
-			if(i==caseN-1) outfile<<happiness_sum_delayLP/(APPNUM*(i+1))<<endl;
 			cout << "第" << i << "轮满意度满意度方差： " << s2_delay << endl;
 
 			double latency_delayLP=0;
@@ -489,6 +476,8 @@ int main()
 			if(s2_voting==0 && s2_delay==0) s2_cmp=1;
 			else if(s2_voting==0 && s2_delay!=0) s2_cmp=10;//自己凭直觉假设的
 			else s2_cmp=s2_delay/s2_voting;
+
+			//if(s2_cmp>10) s2_cmp=10;
 			cout<<endl<<"Delay联合优化方差/投票方差="<<s2_cmp<<endl;
 
 		   oneCaseHappiness_DelayNetwork.push_back(happiness_delayLP/APPNUM);
@@ -503,55 +492,55 @@ int main()
 			//@@@@@@@@@@@@@@@@@End of network_delay@@@@@@@@@@@@@@@@@@@@@@@@@
 
 		}//一个case结束
+	}//一个test结束
 
-		outfile<<endl;
+	outfile<<endl;
 
-		//以下输出顺序和CRANA_Voting表格中相同
-		//单轮满意度 APP-Voting TENetwork DelayNetwork
-		outfile<<"单轮满意度 APP-Voting TENetwork DelayNetwork"<<endl;
-		for(int i=0;i<caseN;i++)
-			outfile<<oneCaseHappiness_Voting[i]<<",";
-		outfile<<endl;
-		for(int i=0;i<caseN;i++)
-			outfile<<oneCaseHappiness_TENetwork[i]<<",";
-		outfile<<endl;
-		for(int i=0;i<caseN;i++)
-			outfile<<oneCaseHappiness_DelayNetwork[i]<<",";
-		outfile<<endl;
-		//单轮满意度方差 APP-Voting DelayNetwork DelayNetwork/APP_Voting
-		outfile<<"单轮满意度方差 APP-Voting DelayNetwork DelayNetwork/APP_Voting"<<endl;
-		for(int i=0;i<caseN;i++)
-			outfile<<oneCaseS2_Voting[i]<<",";
-		outfile<<endl;
-		for(int i=0;i<caseN;i++)
-			outfile<<oneCaseS2_DelayNetwork[i]<<",";
-		outfile<<endl;
-		for(int i=0;i<caseN;i++)
-			outfile<<oneCaseS2_DelayNetwork[i]/oneCaseS2_Voting[i]<<",";
-		outfile<<endl;
-		//网络总延时 APP-Voting TENetwork DelayNetwork
-		outfile<<"网络总延时 APP-Voting TENetwork DelayNetwork"<<endl;
-		for(int i=0;i<caseN;i++)
-			outfile<<delay_Voting[i]<<",";
-		outfile<<endl;
-		for(int i=0;i<caseN;i++)
-			outfile<<delay_TENetwork[i]<<",";
-		outfile<<endl;
-		for(int i=0;i<caseN;i++)
-			outfile<<delay_DelayNetwork[i]<<",";
-		outfile<<endl;
-		//最大链路利用率 APP-Voting TENetwork DelayNetwork
-		outfile<<"最大链路利用率 APP-Voting TENetwork DelayNetwork"<<endl;
-		for(int i=0;i<caseN;i++)
-			outfile<<TE_Voting[i]<<",";
-		outfile<<endl;
-		for(int i=0;i<caseN;i++)
-			outfile<<TE_TENetwork[i]<<",";
-		outfile<<endl;
-		for(int i=0;i<caseN;i++)
-			outfile<<TE_DelayNetwork[i]<<",";
-		outfile<<endl;
-	}
+	//以下输出顺序和CRANA_Voting表格中相同
+	//单轮满意度 APP-Voting TENetwork DelayNetwork
+	outfile<<"单轮满意度 APP-Voting TENetwork DelayNetwork"<<endl;
+	for(int i=0;i<testNum;i++)
+		outfile<<oneCaseHappiness_Voting[i]<<",";
+	outfile<<endl;
+	for(int i=0;i<testNum;i++)
+		outfile<<oneCaseHappiness_TENetwork[i]<<",";
+	outfile<<endl;
+	for(int i=0;i<testNum;i++)
+		outfile<<oneCaseHappiness_DelayNetwork[i]<<",";
+	outfile<<endl;
+	//单轮满意度方差 APP-Voting DelayNetwork DelayNetwork/APP_Voting
+	outfile<<"单轮满意度方差 APP-Voting DelayNetwork DelayNetwork/APP_Voting"<<endl;
+	for(int i=0;i<testNum;i++)
+		outfile<<oneCaseS2_Voting[i]<<",";
+	outfile<<endl;
+	for(int i=0;i<testNum;i++)
+		outfile<<oneCaseS2_DelayNetwork[i]<<",";
+	outfile<<endl;
+	for(int i=0;i<testNum;i++)
+		outfile<<oneCaseS2_DelayNetwork[i]/oneCaseS2_Voting[i]<<",";
+	outfile<<endl;
+	//网络总延时 APP-Voting TENetwork DelayNetwork
+	outfile<<"网络总延时 APP-Voting TENetwork DelayNetwork"<<endl;
+	for(int i=0;i<testNum;i++)
+		outfile<<delay_Voting[i]<<",";
+	outfile<<endl;
+	for(int i=0;i<testNum;i++)
+		outfile<<delay_TENetwork[i]<<",";
+	outfile<<endl;
+	for(int i=0;i<testNum;i++)
+		outfile<<delay_DelayNetwork[i]<<",";
+	outfile<<endl;
+	//最大链路利用率 APP-Voting TENetwork DelayNetwork
+	outfile<<"最大链路利用率 APP-Voting TENetwork DelayNetwork"<<endl;
+	for(int i=0;i<testNum;i++)
+		outfile<<TE_Voting[i]<<",";
+	outfile<<endl;
+	for(int i=0;i<testNum;i++)
+		outfile<<TE_TENetwork[i]<<",";
+	outfile<<endl;
+	for(int i=0;i<testNum;i++)
+		outfile<<TE_DelayNetwork[i]<<",";
+	outfile<<endl;
 	
 	getchar();
 	return 0;

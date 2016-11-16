@@ -57,7 +57,7 @@ double network_delay(DelayNetworkGraph *g,vector<Req*> &reqL)
 			int src=g->incL[i]->src, dst=g->incL[i]->dst;
 			temp += x[d][i] * reqL[d]->flow * D[i];
 		}
-		goal += temp/g->cost_best[reqL[d]->id];
+		goal += temp;
 	}
 	//虽然这里计算temp的方法是估算，但是和排队延时公式拥有相同的走势
 
@@ -88,7 +88,7 @@ double network_delay(DelayNetworkGraph *g,vector<Req*> &reqL)
 		IloExpr constraint(environment);
 		for(int d=0;d<K;d++)
 			constraint += reqL[d]->flow * x[d][i];
-		model.add(constraint <= (g->incL[i]->capacity - g->adj[g->incL[i]->src][g->incL[i]->dst]));
+		model.add(constraint <= g->incL[i]->capacity);
 	}
 
 	//计算模型
@@ -122,14 +122,8 @@ double network_delay(DelayNetworkGraph *g,vector<Req*> &reqL)
 			latency=0;
 			for(int i=0;i<g->m;i++)
 			{
-				if(solver.getValue(x[d][i])>0.5){
-					if(g->incL[i]->capacity - g->adj[g->incL[i]->src][g->incL[i]->dst]==0)
-						latency += reqL[d]->flow/
-						(Rinf+g->incL[i]->capacity - g->adj[g->incL[i]->src][g->incL[i]->dst]);
-					else
-						latency += reqL[d]->flow/
-						(g->incL[i]->capacity - g->adj[g->incL[i]->src][g->incL[i]->dst]);
-				}
+				if(solver.getValue(x[d][i])>0.5)
+					latency+=reqL[d]->flow*linearCal(g->adj[g->incL[i]->src][g->incL[i]->dst],g->incL[i]->capacity);
 			}
 			g->cost_LP[reqL[d]->app_id] += latency;
 		}

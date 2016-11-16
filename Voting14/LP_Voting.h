@@ -35,7 +35,8 @@ double LP_Voting(VGraph *g,vector<Req*> &reqL,vector<Path*> &path_record, int id
 		L[i]=IloExpr(environment);
 	for(int i=0;i<g->m;i++)
 	{
-		L[i]+=adj[g->incL[i]->src][g->incL[i]->dst];
+		//voting14没有了背景流的概念，因为一次实验只有一波流会部署
+		//L[i]+=adj[g->incL[i]->src][g->incL[i]->dst];
 		for(int d=0;d<K;d++)
 			L[i]+=x[d][i]*reqL[d]->flow;
 	}
@@ -88,7 +89,7 @@ double LP_Voting(VGraph *g,vector<Req*> &reqL,vector<Path*> &path_record, int id
 		IloExpr constraint(environment);
 		for(int d=0;d<K;d++)
 			constraint += reqL[d]->flow * x[d][i];
-		model.add(constraint <= (g->incL[i]->capacity - adj[g->incL[i]->src][g->incL[i]->dst]));
+		model.add(constraint <= g->incL[i]->capacity);
 	}
 
 	//计算模型

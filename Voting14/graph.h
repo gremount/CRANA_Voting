@@ -257,14 +257,8 @@ public:
 				latency=0;
 				for(int i=0;i<m;i++)
 				{
-					if(solver.getValue(x[d][i])>0.5){
-						if(incL[i]->capacity - adj[incL[i]->src][incL[i]->dst]==0)
-							latency += reqL[d]->flow/
-							(Rinf+incL[i]->capacity - adj[incL[i]->src][incL[i]->dst]);
-						else
-							latency += reqL[d]->flow/
-							(incL[i]->capacity - adj[incL[i]->src][incL[i]->dst]);
-					}
+					if(solver.getValue(x[d][i])>0.5)
+						latency+=reqL[d]->flow*linearCal(adj[incL[i]->src][incL[i]->dst],incL[i]->capacity);
 				}
 				cost_best[app_id] += latency;
 			}
