@@ -9,5 +9,6 @@ extern const int Maxreq;
 extern const int Maxflow;
 extern const int Maxpath;
 extern const int APPNUM;
+extern const int TESTNUM;
 
 #endif

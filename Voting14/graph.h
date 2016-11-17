@@ -159,45 +159,23 @@ public:
 		for(int d=0;d<K;d++)
 			x[d]=IloIntVarArray(environment,m,0,1);
 	
-
-		IloNumVarArray D(environment,m,0,Inf);
-
 		//优化目标
 		IloExpr goal(environment);
-		IloExpr temp(environment);
-		IloExprArray L(environment,m);
-
-		//L[i]:第i条边在该次流量部署后的流量
-		for(int i=0;i<m;i++)
-			L[i]=IloExpr(environment);
+		IloNumVarArray cost(environment,m,0.0,Inf);
+		
+		//约束+目标
 		for(int i=0;i<m;i++)
 		{
-			L[i]+=adj[incL[i]->src][incL[i]->dst];
+			IloNumExpr load(environment);
 			for(int d=0;d<K;d++)
-				L[i]+=x[d][i]*reqL[d]->flow;
-		}
-
-		//延时约束条件，分段线性
-		for(int i=0;i<m;i++)
-		{
+				load+=x[d][i]*reqL[d]->flow;
 			double c=incL[i]->capacity;
-			model.add(D[i] >= L[i]);
-			model.add(D[i] >= 3*L[i]-2*c/3);
-			model.add(D[i] >= 10*L[i]-16*c/3);
-			model.add(D[i] >= 70*L[i]-178*c/3);
+			model.add(cost[i] >= load);
+			model.add(cost[i] >= 3*load-2*c/3);
+			model.add(cost[i] >= 10*load-16*c/3);
+			model.add(cost[i] >= 70*load-178*c/3);
+			goal += cost[i];
 		}
-
-		//maximize happiness
-		for(int d=0;d<K;d++)
-		{
-			for(int i=0;i<m;i++)		
-			{
-				int src=incL[i]->src, dst=incL[i]->dst;
-				temp += x[d][i] * reqL[d]->flow * D[i];
-			}
-			goal += temp;
-		}
-		//虽然这里计算temp的方法是估算，但是和排队延时公式拥有相同的走势
 		model.add(IloMinimize(environment, goal));
 
 		//约束1，流量约束
