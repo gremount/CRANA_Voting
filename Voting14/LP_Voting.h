@@ -33,11 +33,11 @@ double LP_Voting(VGraph *g,vector<Req*> &reqL,vector<Path*> &path_record, int id
 		IloNumExpr load(environment);
 		for(int d=0;d<K;d++)
 			load+=x[d][i]*reqL[d]->flow;
-		double c=g->incL[i]->capacity;
-		model.add(cost[i] >= load);
-		model.add(cost[i] >= 3*load-2*c/3);
-		model.add(cost[i] >= 10*load-16*c/3);
-		model.add(cost[i] >= 70*load-178*c/3);
+		double capacity=g->incL[i]->capacity;
+		model.add(cost[i]>=load*load/(capacity-1.0));   // [0,1/3]
+		model.add(cost[i]>=3.0*load*load/(capacity-1.0)-(2.0/3.0));  //[1/3,2/3]
+		model.add(cost[i]>=10.0*load*load/(capacity-1.0)-(16.0/3.0)); // [2/3,9/10]
+		model.add(cost[i]>=70.0*load*load/(capacity-1.0)-(178.0/3.0));  //[9/10,1]
 		goal += cost[i];
 	}
 	model.add(IloMinimize(environment, goal));

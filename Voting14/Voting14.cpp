@@ -10,7 +10,7 @@
 const int Inf=9999;
 const int Rinf=0.001;
 const int APPNUM=5;//应用数量
-const int TESTNUM=10;//实验次数
+const int TESTNUM=5;//实验次数
 
 
 /*
@@ -41,7 +41,7 @@ const int Begin_num=10;//流的大小起始范围
 //graph_all
 const int N=20;//所有的点数
 const int M=380;//包含正反向边
-const int Maxreq=10;//一个case的流需求数量
+const int Maxreq=20;//一个case的流需求数量
 const int Maxpath=N-1;//可能的最长路径: N-1
 
 const int caseN=10;//case总数
@@ -60,7 +60,6 @@ const int caseN=6;//case总数
 const int Maxflow=10;//流的大小可变范围
 const int Begin_num=1;//流的大小起始范围
 */
-
 
 //graph_ATT
 const int N=25;//所有的点数

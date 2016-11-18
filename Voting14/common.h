@@ -21,13 +21,13 @@ using namespace std;
 #define M2C 100 //the number of candidates
 #define N2C 100 //how many kinds of ranking
 
-double linearCal(double x, double c)
+//ÏßĞÔÄâºÏ 1/(c-x)
+double linearCal(double load, double capacity)
 {
-	double util=x/c;
-	if(util<0.3333) return x*1;
-	else if(util<0.6667) return x*3;
-	else if(util<0.9) return x*10;
-	else return x*70;
+	double util=load/capacity;
+	if(util<0.3333) return load/capacity;
+	else if(util<0.6667) return 3*load/capacity - 2.0/3.0;
+	else if(util<0.9) return 10*load/capacity - 16.0/3.0;
+	else return 70*load/capacity - 178.0/3.0;
 }
-
 #endif
