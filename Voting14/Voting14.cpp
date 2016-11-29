@@ -10,7 +10,7 @@
 const int Inf=9999;
 const int Rinf=0.001;
 const int APPNUM=5;//应用数量
-const int TESTNUM=5;//实验次数
+const int TESTNUM=50;//实验次数
 
 
 /*
@@ -422,8 +422,8 @@ int main()
 			cout<<endl<<"			network_delay result			"<<endl;
 		
 			//最优部署计算-->直接用voting的最优结果即可
-			//for(int j=0;j<Maxreq;j++)
-				//gn_delay.cost_best[j] =gn_delay.dijkstra(reqL[j]->src,reqL[j]->dst,reqL[j]->flow);
+			for(int j=0;j<Maxreq;j++)
+				gn_delay.cost_best[j] =gv.cost_best[j];
 
 			//线性规划部署
 			double result_network_delay=0;//近似延时

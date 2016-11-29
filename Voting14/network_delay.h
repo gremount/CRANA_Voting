@@ -35,11 +35,13 @@ double network_delay(DelayNetworkGraph *g,vector<Req*> &reqL)
 		for(int d=0;d<K;d++)
 			load+=x[d][i]*reqL[d]->flow;
 		double capacity=g->incL[i]->capacity;
-		model.add(cost[i]>=load*load/(capacity-1.0));   // [0,1/3]
-		model.add(cost[i]>=3.0*load*load/(capacity-1.0)-(2.0/3.0));  //[1/3,2/3]
-		model.add(cost[i]>=10.0*load*load/(capacity-1.0)-(16.0/3.0)); // [2/3,9/10]
-		model.add(cost[i]>=70.0*load*load/(capacity-1.0)-(178.0/3.0));  //[9/10,1]
-		goal += cost[i];
+		model.add(cost[i]>=load/(capacity-1.0));   // [0,1/3]
+		model.add(cost[i]>=3.0*load/(capacity-1.0)-(2.0/3.0));  //[1/3,2/3]
+		model.add(cost[i]>=10.0*load/(capacity-1.0)-(16.0/3.0)); // [2/3,9/10]
+		model.add(cost[i]>=70.0*load/(capacity-1.0)-(178.0/3.0));  //[9/10,1]
+		for(int d=0;d<K;d++)
+			goal += cost[i]*x[d][i]*reqL[d]->flow/g->cost_best[reqL[d]->app_id];
+		//goal += cost[i];
 	}
 	model.add(IloMinimize(environment, goal));
 
