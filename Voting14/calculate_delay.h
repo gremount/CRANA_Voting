@@ -15,7 +15,7 @@ double judge_sum_function(VGraph &g, vector<APP*> &appL, int winner)
 		src=g.incL[i]->src;dst=g.incL[i]->dst;
 		double x=appL[winner]->adj[src][dst];
 		double capacity= g.incL[i]->capacity;
-		latency += linearCal(x,capacity);
+		latency += x*linearCal(x,capacity);
 	}
 	return latency;
 }
@@ -29,7 +29,8 @@ double delay_TENetworkGraph(TENetworkGraph &g)
 		int src,dst;
 		src=g.incL[i]->src;dst=g.incL[i]->dst;
 		double capacity=g.incL[i]->capacity;
-		latency += linearCal(g.adj[src][dst],capacity);
+		double x=g.adj[src][dst];
+		latency += x*linearCal(g.adj[src][dst],capacity);
 	}
 	return latency;
 }
@@ -43,7 +44,8 @@ double delay_DelayNetworkGraph(DelayNetworkGraph &g)
 		int src,dst;
 		src=g.incL[i]->src;dst=g.incL[i]->dst;
 		double capacity=g.incL[i]->capacity;
-		latency += linearCal(g.adj[src][dst],capacity);
+		double x=g.adj[src][dst];
+		latency += x*linearCal(g.adj[src][dst],capacity);
 	}
 	return latency;
 }

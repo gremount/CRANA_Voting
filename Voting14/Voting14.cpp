@@ -12,12 +12,11 @@ const int Rinf=0.001;
 const int APPNUM=5;//应用数量
 const int TESTNUM=50;//实验次数
 
-
 /*
 //graph_t3
 const int N=3;//所有的点数
 const int M=6;//包含正反向边
-const int Maxreq=2;//一个case的流需求数量
+const int Maxreq=3;//一个case的流需求数量
 const int Maxpath=N-1;//可能的最长路径: N-1
 
 const int caseN=2;//case总数
@@ -32,7 +31,7 @@ const int M=8;//包含正反向边
 const int Maxreq=3;//一个case的流需求数量
 const int Maxpath=N-1;//可能的最长路径: N-1
 
-const int caseN=2;//case总数
+const int caseN=1;//case总数
 const int Maxflow=5;//流的大小可变范围
 const int Begin_num=10;//流的大小起始范围
 */
@@ -60,6 +59,7 @@ const int caseN=6;//case总数
 const int Maxflow=10;//流的大小可变范围
 const int Begin_num=1;//流的大小起始范围
 */
+
 
 //graph_ATT
 const int N=25;//所有的点数
@@ -142,17 +142,17 @@ int main()
 		TENetworkGraph gn_te(address);//TE全局优化的图
 		DelayNetworkGraph gn_delay(address);//延时全局优化的图
 
+		double happiness_sum=0;//voting的多轮满意度
 		double happiness_sum_teLP=0;//te网络的多轮满意度
 		double happiness_sum_delayLP=0;//delay网络的多轮满意度
-		double happiness_sum=0;//voting的多轮满意度
-
+		
 		double table[M2C+1][N2C+1] = {0};//投票用的输入
 		int ranking[N2C+1]={0};//记录一种排序的投票人数
 		
 		for(int k=0;k<APPNUM;k++)
 			appL.push_back(new APP(k));
 
-		for(int j=1;j<=Maxreq;j++)
+		for(int j=0;j<Maxreq;j++)
 			ranking[j]=1;//每种投票结果有1个voter,如果为2就说明该方案有得到两个voter的票
 
 		//每个case是一波流(同时到达的Maxreq条流)
@@ -192,6 +192,8 @@ int main()
 				//if(j==0){app_id=j;a=0;b=3;c=5;}
 				//else if(j==1){app_id=j;a=1;b=3;c=5;}
 				//else if(j==2){app_id=j;a=0;b=1;c=5;}
+				
+				//app_id=j;//一个app一条流
 
 				Req* r = new Req(j,app_id,a,b,c);
 				reqL.push_back(r);
@@ -292,8 +294,9 @@ int main()
 			cout <<endl;
 
 			//****************************   END OF 最高满意度方案和最小满意度方差方案 评价  
-
-			winner=s2Loc;
+			//如果选择方差最小的方案对满意度损伤超过了30%，就采用schulze method的投票结果
+			if(happinessVotingMax-s2Min_Happiness<=0.3) winner=s2Loc;
+			
 			cout<<"crana voting method : " << winner << endl;
 			/*
 			if (choice == 1)
@@ -440,7 +443,7 @@ int main()
 				for(int j=0;j<APPNUM;j++)
 				{
 					if(gv.cost_best[j]==0)continue;
-					happiness_delayLP += gv.cost_best[j]/gn_delay.cost_LP[j];
+					happiness_delayLP += gn_delay.cost_best[j]/gn_delay.cost_LP[j];
 				}
 			}
 			happiness_sum_delayLP += happiness_delayLP;

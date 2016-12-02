@@ -55,7 +55,7 @@ public:
 		begin_implement(g);
 	}
 
-	//流部署 自己提出的方案,除掉dijkstra算出的路
+	//流部署 自己提出的方案
 	void begin_implement(VGraph &g)
 	{
 		for(int i=0;i<Maxreq;i++)

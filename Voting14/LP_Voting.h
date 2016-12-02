@@ -34,10 +34,10 @@ double LP_Voting(VGraph *g,vector<Req*> &reqL,vector<Path*> &path_record, int id
 		for(int d=0;d<K;d++)
 			load+=x[d][i]*reqL[d]->flow;
 		double capacity=g->incL[i]->capacity;
-		model.add(cost[i]>=load/(capacity-1.0));   // [0,1/3]
-		model.add(cost[i]>=3.0*load/(capacity-1.0)-(2.0/3.0));  //[1/3,2/3]
-		model.add(cost[i]>=10.0*load/(capacity-1.0)-(16.0/3.0)); // [2/3,9/10]
-		model.add(cost[i]>=70.0*load/(capacity-1.0)-(178.0/3.0));  //[9/10,1]
+		model.add(cost[i]>=load/(capacity));   // [0,1/3]
+		model.add(cost[i]>=3.0*load/(capacity)-(2.0/3.0));  //[1/3,2/3]
+		model.add(cost[i]>=10.0*load/(capacity)-(16.0/3.0)); // [2/3,9/10]
+		model.add(cost[i]>=70.0*load/(capacity)-(178.0/3.0));  //[9/10,1]
 		for(int d=0;d<K;d++)
 			goal += cost[i]*x[d][i]*reqL[d]->flow/g->cost_best[reqL[d]->app_id];
 			//goal += cost[i];
@@ -83,13 +83,14 @@ double LP_Voting(VGraph *g,vector<Req*> &reqL,vector<Path*> &path_record, int id
 		int distance=0;
 		for(int d=0;d<K;d++)
 		{
+			//cout<<"flow "<<reqL[d]->id<<endl;
 			distance=0;
 			Path* path=new Path();
 			for(int i=0;i<g->m;i++)
 			{
 				if(solver.getValue(x[d][i])>0.5)
 				{
-					//cout<<"from node "<<g->incL[i]->src<<" to node "<<g->incL[i]->dst<< " has flow "<<solver.getValue(x[d][i])*reqL[d]->flow<<endl;
+					//cout<<"from node "<<g->incL[i]->src<<" to node "<<g->incL[i]->dst<< " has flow "<<reqL[d]->flow<<" "<<solver.getValue(x[d][i])<<endl;
 					path->pathL.push_back(g->incL[i]);
 					distance += g->incL[i]->weight;
 				}

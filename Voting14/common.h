@@ -18,8 +18,8 @@
 using namespace std;
 
 #define KC 100
-#define M2C 100 //the number of candidates
-#define N2C 100 //how many kinds of ranking
+#define M2C 100 //the number of candidates 采用较大的值，能防止数组越界即可
+#define N2C 100 //how many kinds of ranking 采用较大的值，能防止数组越界即可
 
 //线性拟合 1/(c-x)
 double linearCal(double load, double capacity)
