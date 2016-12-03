@@ -10,7 +10,7 @@
 const int Inf=9999;
 const int Rinf=0.001;
 const int APPNUM=5;//应用数量
-const int TESTNUM=50;//实验次数
+const int TESTNUM=30;//实验次数
 
 /*
 //graph_t3

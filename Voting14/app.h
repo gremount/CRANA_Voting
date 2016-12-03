@@ -45,14 +45,24 @@ public:
 	{	
 		vector<Req*> reqPL_app;//对自己的流用规划计算路径
 		vector<Req*> reqPL_other;//对其他的流用规划计算路径
-		for(int i=0;i<g.reqL.size();i++)
-		{	
-			if(app_id==g.reqL[i]->app_id) reqPL_app.push_back(g.reqL[i]);
-			else	  reqPL_other.push_back(g.reqL[i]);
+		if(app_id==0)
+		{
+			for(int i=0;i<g.reqL.size();i++)
+				reqPL_other.push_back(g.reqL[i]);
+			LP_Voting(&g,reqPL_other,path_record,app_id,adj);
+			begin_implement(g);
 		}
-		LP_Voting(&g,reqPL_app,path_record,app_id,adj);
-		LP_Voting(&g,reqPL_other,path_record,app_id,adj);
-		begin_implement(g);
+		else
+		{
+			for(int i=0;i<g.reqL.size();i++)
+			{	
+				if(app_id==g.reqL[i]->app_id) reqPL_app.push_back(g.reqL[i]);
+				else	  reqPL_other.push_back(g.reqL[i]);
+			}
+			LP_Voting(&g,reqPL_app,path_record,app_id,adj);
+			LP_Voting(&g,reqPL_other,path_record,app_id,adj);
+			begin_implement(g);
+		}
 	}
 
 	//流部署 自己提出的方案
