@@ -14,6 +14,8 @@ double network_delay(DelayNetworkGraph *g,vector<Req*> &reqL)
 	IloEnv environment;
 	IloModel model(environment);
 	IloCplex solver(model);
+
+	solver.setParam(IloCplex::Param::Barrier::QCPConvergeTol, 1e-10);
 	
 	int K;//一个case里的req数量
 	K=reqL.size();
