@@ -3,7 +3,7 @@
 
 #include "common.h"
 #include "graph.h"
-#include "res.h"
+#include "ext.h"
 #include <ilcplex/ilocplex.h>
 
 //用在flow.h中，是voting方案的规划部分
@@ -94,7 +94,7 @@ double LP_Voting(VGraph *g,vector<Req*> &reqL,vector<Path*> &path_record, int id
 				{
 					//cout<<"from node "<<g->incL[i]->src<<" to node "<<g->incL[i]->dst<< " has flow "<<reqL[d]->flow<<" "<<solver.getValue(x[d][i])<<endl;
 					path->pathL.push_back(g->incL[i]);
-					distance += g->incL[i]->weight;
+					distance += 1;
 				}
 			}
 			if(distance==0){cout<<endl<<endl<<"error !!!!!!!!!!!!!!!!!"<<endl<<endl;continue;}

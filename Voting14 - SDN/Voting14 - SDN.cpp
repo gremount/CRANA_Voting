@@ -1,6 +1,6 @@
 #include"common.h"
 #include"app_voting.h"
-#include "res.h"
+#include "ext.h"
 
 const int Inf=9999;
 const int Rinf=0.001;

@@ -1,5 +1,5 @@
-#ifndef RES_H
-#define RES_H
+#ifndef EXT_H
+#define EXT_H
 
 extern const int Rinf;
 extern const int Inf;

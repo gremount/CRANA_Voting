@@ -2,8 +2,7 @@
 #define RESOURCES_H
 
 #include"common.h"
-#include "res.h"
-#include "calculate_delay.h"
+#include "ext.h"
 #include <ilcplex/ilocplex.h>
 
 class Edge
@@ -11,18 +10,26 @@ class Edge
 public:
 	int id;
 	int src,dst;
-	int weight,capacity;
+	double capacity;//链路带宽
+	double use;//sflow测得的当前带宽消耗
+	double latency;//floodlight测得的latency
 	Edge(){;}
-	Edge(int id2, int a, int b, int c, int d){
-	id=id2;src=a;dst=b;weight=c;capacity=d;
+	Edge(int a, int b, int c, double d, double e, double f){
+		id=a;
+		src=b;
+		dst=c;
+		capacity=d;
+		use=e;
+		latency=f;
 	}
 };
 
 class Req
 {
 public:
-	int id, app_id, src, dst, flow;
-	Req(int id2, int app_id2, int a, int b, int c)
+	int id, app_id, src, dst;
+	double flow;
+	Req(int id2, int app_id2, int a, int b, double c)
 	{
 		id=id2;
 		app_id=app_id2;
@@ -70,20 +77,22 @@ public:
 		adj.resize(n);
 		for(int i=0;i<n;i++)
 			adj[i].resize(n);
+		
 		cost_best.resize(APPNUM);
 		//cost_LP.resize(APPNUM);
 
-		int a,b,c,d;
-		int temp=m/2;
-		for(int i=0;i<temp;i++)
+		int a,b,c;
+		double d,e,f;
+		for(int i=0;i<m;i++)
 		{
-			infile>>a>>b>>c>>d;
-			Edge* e1=new Edge(2*i,a,b,c,d);
-			Edge* e2=new Edge(2*i+1,b,a,c,d);
-
-			incL.push_back(e1);incL.push_back(e2);
-			adjL[a].push_back(e1);adjL[b].push_back(e2);
-			adjRL[b].push_back(e1);adjRL[a].push_back(e2);
+			infile>>a>>b>>c;
+			infile>>d>>e>>f;
+			
+			Edge* ed=new Edge(a,b,c,d,e,f);
+			
+			incL.push_back(ed);
+			adjL[b].push_back(ed);
+			adjRL[c].push_back(ed);
 		}
 	}
 
@@ -148,6 +157,16 @@ public:
 		return Inf;//没有路可达
     }
 
+	//线性拟合 1/(c-x)
+	double linearCal(double load, double capacity)
+	{
+		double util=load/capacity;
+		if(util<0.3333) return load/capacity;
+		else if(util<0.6667) return 3*load/capacity - 2.0/3.0;
+		else if(util<0.9) return 10*load/capacity - 16.0/3.0;
+		else return 70*load/capacity - 178.0/3.0;
+	}
+
 	double network_delay(vector<Req*> &reqL,int app_id)
 	{
 		IloEnv environment;
@@ -206,7 +225,7 @@ public:
 			IloExpr constraint(environment);
 			for(int d=0;d<K;d++)
 				constraint += reqL[d]->flow * x[d][i];
-			model.add(constraint <= (incL[i]->capacity - adj[incL[i]->src][incL[i]->dst]));
+			model.add(constraint <= incL[i]->capacity);
 		}
 
 		//计算模型

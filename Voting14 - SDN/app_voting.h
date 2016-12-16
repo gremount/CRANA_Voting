@@ -5,13 +5,36 @@
 #include"app.h"
 #include"graph.h"
 #include"voting.h"
-#include "res.h"
-#include "calculate_delay.h"
-#include "app_voting.h"
+#include "ext.h"
+
+//线性拟合 1/(c-x)
+double linearCal(double load, double capacity)
+{
+	double util=load/capacity;
+	if(util<0.3333) return load/capacity;
+	else if(util<0.6667) return 3*load/capacity - 2.0/3.0;
+	else if(util<0.9) return 10*load/capacity - 16.0/3.0;
+	else return 70*load/capacity - 178.0/3.0;
+}
+
+//Voting统计网络latency
+double judge_sum_function(VGraph &g, vector<APP*> &appL, int winner)
+{
+	double latency=0;
+	for(int i=0;i<M;i++)
+	{
+		int src,dst;
+		src=g.incL[i]->src;dst=g.incL[i]->dst;
+		double x=appL[winner]->adj[src][dst];
+		double capacity= g.incL[i]->capacity;
+		latency += x*linearCal(x,capacity);
+	}
+	return latency;
+}
 
 void app_voting(string graph_address, string req_address, string path_address)
 {
-	VGraph gv(graph_address);
+	
 	
 	vector<APP*> appL;//记录所有的APP
 	vector<Req*> reqL;//流需求
@@ -25,16 +48,17 @@ void app_voting(string graph_address, string req_address, string path_address)
 	ifstream reqFile(req_address);
 	int reqNum=0;
 	reqFile>>reqNum;
-	int APPNUM=reqNum;
+	APPNUM=reqNum;
 	Maxreq=reqNum;
 
+	VGraph gv(graph_address);
+	
 	for(int k=0;k<APPNUM;k++)
 		appL.push_back(new APP(k));
 
 	for(int j=0;j<reqNum;j++)
 		ranking[j]=1;//每种投票结果有1个voter,如果为2就说明该方案有得到两个voter的票
 
-	
 	//初始化
 	for(int j=0;j<reqNum;j++)
 		for(int k=0;k<reqNum;k++)
@@ -45,12 +69,11 @@ void app_voting(string graph_address, string req_address, string path_address)
 
 	for(int j=0;j<APPNUM;j++)
 		appL[j]->init();
-		
-	
 
 	for(int j=0;j<reqNum;j++)
 	{
-		int app_id=0,a=0,b=0,c=0;
+		int app_id=0,a=0,b=0;
+		double c=0;
 		reqFile>>app_id>>a>>b>>c;
 		Req* r = new Req(j,app_id,a,b,c);
 		reqL.push_back(r);
@@ -177,7 +200,7 @@ void app_voting(string graph_address, string req_address, string path_address)
 	cout << "整体满意度： " << happiness/APPNUM << endl;
 	cout << "满意度满意度方差： " << s2_voting << endl;
 	cout << "多轮整体延时和: " << latencyVoting << endl;
-		
+	
 	double maxUtil_Voting=0;
 	for(int j=0;j<gv.m;j++)
 	{

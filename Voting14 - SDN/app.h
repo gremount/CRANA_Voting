@@ -3,9 +3,8 @@
 
 #include"graph.h"
 #include"common.h"
-#include "res.h"
+#include "ext.h"
 #include "LP_Voting.h"
-#include "calculate_delay.h"
 
 class APP
 {
@@ -123,6 +122,16 @@ public:
 				appL[k]->adj[src][dst]=appL[app_id]->adj[src][dst];
 			}
 		}
+	}
+
+	//线性拟合 1/(c-x)
+	double linearCal(double load, double capacity)
+	{
+		double util=load/capacity;
+		if(util<0.3333) return load/capacity;
+		else if(util<0.6667) return 3*load/capacity - 2.0/3.0;
+		else if(util<0.9) return 10*load/capacity - 16.0/3.0;
+		else return 70*load/capacity - 178.0/3.0;
 	}
 };//APP类的结束位置
 
