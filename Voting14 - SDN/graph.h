@@ -167,7 +167,7 @@ public:
 		else return 70*load/capacity - 178.0/3.0;
 	}
 
-	double network_delay(vector<Req*> &reqL,int app_id)
+	double network_delay_lp(vector<Req*> &reqL,int app_id)
 	{
 		IloEnv environment;
 		IloModel model(environment);

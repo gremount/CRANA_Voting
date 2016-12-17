@@ -1,6 +1,4 @@
-
 #include"app_voting.h"
-
 
 const int Inf=9999;
 const int Rinf=0.001;
@@ -19,7 +17,5 @@ int main()
 	string path_address="D:\\Eclipse Project 32_2\\floodlight\\inputFile\\path.txt";
 
 	app_voting(graph_address, req_address, path_address);
-
-	getchar();
 	return 0;
 }

@@ -47,7 +47,7 @@ public:
 		{
 			for(int i=0;i<g.reqL.size();i++)
 				reqPL_other.push_back(g.reqL[i]);
-			lp_voting(g,reqPL_other);
+			voting_lp(g,reqPL_other);
 			begin_implement(g);
 		}
 		else
@@ -57,8 +57,8 @@ public:
 				if(app_id==g.reqL[i]->app_id) reqPL_app.push_back(g.reqL[i]);
 				else	  reqPL_other.push_back(g.reqL[i]);
 			}
-			lp_voting(g,reqPL_app);
-			lp_voting(g,reqPL_other);
+			voting_lp(g,reqPL_app);
+			voting_lp(g,reqPL_other);
 			begin_implement(g);
 		}
 	}
@@ -134,7 +134,7 @@ public:
 		else return 70*load/capacity - 178.0/3.0;
 	}
 
-	double lp_voting(VGraph &g,vector<Req*> &reqL)
+	double voting_lp(VGraph &g,vector<Req*> &reqL)
 	{
 		IloEnv environment;
 		IloModel model(environment);

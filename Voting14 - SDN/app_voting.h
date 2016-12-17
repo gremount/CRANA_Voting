@@ -70,7 +70,7 @@ int selectMinS2Proposal(VGraph gv, double table[][M2C+1], int winner)
 		s2VotingMax+=(gv.cost_best[j]/table[j][happinessVotingLoc]-happinessVotingMaxAvg) * (gv.cost_best[j]/table[j][happinessVotingLoc]-happinessVotingMaxAvg);
 	}
 	s2VotingMax=s2VotingMax/APPNUM;
-		
+	/*
 	cout <<"最高满意度方案的结果"<<endl;
 	cout << "整体满意度： " << happinessVotingMax << endl;
 	cout << "满意度满意度方差： " << s2VotingMax << endl;
@@ -80,7 +80,7 @@ int selectMinS2Proposal(VGraph gv, double table[][M2C+1], int winner)
 	cout << "整体满意度： " << s2Min_Happiness << endl;
 	cout << "满意度满意度方差： " << s2Min << endl;
 	cout <<endl;
-
+	*/
 	//如果选择方差最小的方案对满意度损伤超过了30%，就采用schulze method的投票结果
 	if(happinessVotingMax-s2Min_Happiness<=0.3) return s2Loc;
 	else return winner;
@@ -139,7 +139,7 @@ void app_voting(string graph_address, string req_address, string path_address)
 		{	
 			if(j==reqL[i]->app_id) reqPL_app.push_back(reqL[i]);
 		}
-		gv.network_delay(reqPL_app,j);
+		gv.network_delay_lp(reqPL_app,j);
 	}
 
 	//for(int j=0;j<Maxreq;j++)
@@ -173,6 +173,28 @@ void app_voting(string graph_address, string req_address, string path_address)
 	winner=selectMinS2Proposal(gv, table, winner);
 	cout<<"crana winner = "<<winner<<endl;
 	
+	ofstream pathFile(path_address);
+	for(int i=0;i<Maxreq;i++)
+	{
+		pathFile<<i<<" ";
+		vector<int> realPath;
+		int src=reqL[i]->src;
+		Edge* empty_edge=new Edge(-1,-1,-1,-1,-1,-1);
+		while(src!=reqL[i]->dst)
+		{
+			for(int j=0;j<appL[winner]->path_record[i]->pathL.size();j++)
+				if(appL[winner]->path_record[i]->pathL[j]->src==src){
+					realPath.push_back(appL[winner]->path_record[i]->pathL[j]->id);
+					src=appL[winner]->path_record[i]->pathL[j]->dst;
+					appL[winner]->path_record[i]->pathL[j]=empty_edge;
+					break;
+				}
+		}
+		for(int j=0;j<realPath.size();j++)
+			pathFile<<realPath[j]<<" ";
+		pathFile<<endl;
+	}
+
 	//计算投票winner满意度
 	double happiness=0;//一轮所有流的满意度和，越高越好,0<=满意度<=1
 	for(int j=0;j<APPNUM;j++)
@@ -192,6 +214,7 @@ void app_voting(string graph_address, string req_address, string path_address)
 	double latencyVoting=0;
 	latencyVoting=judge_sum_function(gv,appL,winner);
 
+	/*
 	cout <<"Voting Winner 方案的结果"<<endl;
 	cout << "整体满意度： " << happiness/APPNUM << endl;
 	cout << "满意度满意度方差： " << s2_voting << endl;
@@ -207,10 +230,11 @@ void app_voting(string graph_address, string req_address, string path_address)
 			maxUtil_Voting=appL[winner]->adj[src][dst]/capacity;
 	}
 	cout<<"最大链路利用率: "<<maxUtil_Voting<<endl;
-
+	
 	//胜利的方案部署到所有应用的adj里
 	appL[winner]->end_implement(gv,appL);
 	cout<<endl;
+	*/
 }
 
 #endif
