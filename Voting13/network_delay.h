@@ -55,9 +55,9 @@ double network_delay(DelayNetworkGraph *g,vector<Req*> &reqL)
 		for(int i=0;i<g->m;i++)		
 		{
 			int src=g->incL[i]->src, dst=g->incL[i]->dst;
-			temp += x[d][i] * reqL[d]->flow * D[i];
+			temp += D[i];
 		}
-		goal += temp/g->cost_best[reqL[d]->id];
+		goal += temp;
 	}
 	//虽然这里计算temp的方法是估算，但是和排队延时公式拥有相同的走势
 

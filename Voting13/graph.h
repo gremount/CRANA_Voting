@@ -98,8 +98,8 @@ public:
 		for (int i = 0; i < adjL[s].size();i++){
 			x=adj[adjL[s][i]->src][adjL[s][i]->dst]+flow;
 			if(x > adjL[s][i]->capacity)continue;
-			if (d[s] + flow/(adjL[s][i]->capacity - x + 1) < d[adjL[s][i]->dst]){
-                d[adjL[s][i]->dst] = d[s] + flow/(adjL[s][i]->capacity - x + 1);
+			if (d[s] + flow/(adjL[s][i]->capacity - x) < d[adjL[s][i]->dst]){
+                d[adjL[s][i]->dst] = d[s] + flow/(adjL[s][i]->capacity - x);
                 p[adjL[s][i]->dst] = s;
             }
 		}
@@ -344,8 +344,8 @@ public:
 			int dst=adjL[s][i]->dst;
 			double x=flow+adj[src][dst];
 			if(x > adjL[s][i]->capacity)continue;
-			if (d[s] + flow/(adjL[s][i]->capacity - x + 1) < d[dst]){
-                d[adjL[s][i]->dst] = d[s] + flow/(adjL[s][i]->capacity - x + 1);
+			if (d[s] + flow/(adjL[s][i]->capacity - x) < d[dst]){
+                d[adjL[s][i]->dst] = d[s] + flow/(adjL[s][i]->capacity - x);
                 p[adjL[s][i]->dst] = s;
             }
 		}
@@ -445,8 +445,8 @@ public:
 			int dst=adjL[s][i]->dst;
 			double x=flow+adj[src][dst];
 			if(x > adjL[s][i]->capacity)continue;
-			if (d[s] + flow/(adjL[s][i]->capacity - x + 1) < d[dst]){
-                d[adjL[s][i]->dst] = d[s] + flow/(adjL[s][i]->capacity - x + 1);
+			if (d[s] + flow/(adjL[s][i]->capacity - x) < d[dst]){
+                d[adjL[s][i]->dst] = d[s] + flow/(adjL[s][i]->capacity - x);
                 p[adjL[s][i]->dst] = s;
             }
 		}
