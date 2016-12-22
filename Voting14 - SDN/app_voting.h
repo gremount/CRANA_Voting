@@ -219,7 +219,7 @@ void app_voting(string graph_address, string req_address, string path_address)
 	cout << "整体满意度： " << happiness/APPNUM << endl;
 	cout << "满意度满意度方差： " << s2_voting << endl;
 	cout << "多轮整体延时和: " << latencyVoting << endl;
-	
+	*/
 	double maxUtil_Voting=0;
 	for(int j=0;j<gv.m;j++)
 	{
@@ -229,12 +229,12 @@ void app_voting(string graph_address, string req_address, string path_address)
 		if(maxUtil_Voting<(appL[winner]->adj[src][dst]/capacity))
 			maxUtil_Voting=appL[winner]->adj[src][dst]/capacity;
 	}
-	cout<<"最大链路利用率: "<<maxUtil_Voting<<endl;
+	cout<<"max utilization rate = "<<maxUtil_Voting<<endl;
 	
 	//胜利的方案部署到所有应用的adj里
 	appL[winner]->end_implement(gv,appL);
 	cout<<endl;
-	*/
+	
 }
 
 #endif

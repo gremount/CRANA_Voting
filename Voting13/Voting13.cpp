@@ -98,7 +98,7 @@ const int Begin_num=5;//流的大小起始范围
 int main()
 {
 	srand((unsigned)time(NULL));
-	string address="graph_ATT.txt";
+	string address="graph_ATT_big.txt";
 	ofstream outfile("result.txt");//实验结果
 	ofstream req_outfile("reqs.txt");//实验用的流需求
 	int testNum=1;//实验次数

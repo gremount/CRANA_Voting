@@ -36,7 +36,7 @@ const int Maxflow=5;//流的大小可变范围
 const int Begin_num=10;//流的大小起始范围
 */
 
-
+/*
 //graph_all
 const int N=20;//所有的点数
 const int M=380;//包含正反向边
@@ -46,7 +46,7 @@ const int Maxpath=N-1;//可能的最长路径: N-1
 const int caseN=1;//case总数
 const int Maxflow=30;//流的大小可变范围
 const int Begin_num=1;//流的大小起始范围
-
+*/
 
 /*
 //graph_Compuserve
@@ -60,7 +60,7 @@ const int Maxflow=10;//流的大小可变范围
 const int Begin_num=1;//流的大小起始范围
 */
 
-/*
+
 //graph_ATT
 const int N=25;//所有的点数
 const int M=112;//包含正反向边
@@ -70,7 +70,7 @@ const int Maxpath=N-1;//可能的最长路径: N-1
 const int caseN=1;//case总数
 const int Maxflow=15;//流的大小可变范围
 const int Begin_num=5;//流的大小起始范围
-*/
+
 
 /*
 //graph_ATT_big
@@ -79,7 +79,7 @@ const int M=112;//包含正反向边
 const int Maxreq=20;//一个case的流需求数量
 const int Maxpath=N-1;//可能的最长路径: N-1
 
-const int caseN=1;//case总数
+const int caseN=10;//case总数
 const int Maxflow=20;//流的大小可变范围
 const int Begin_num=5;//流的大小起始范围
 */
@@ -100,7 +100,7 @@ const int Begin_num=5;//流的大小起始范围
 int main()
 {
 	srand((unsigned)time(NULL));
-	string address="graph_all.txt";
+	string address="graph_ATT.txt";
 	ofstream outfile("result.txt");//实验结果
 	ofstream req_outfile("reqs.txt");//实验用的流需求
 	

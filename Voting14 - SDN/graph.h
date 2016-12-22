@@ -85,15 +85,15 @@ public:
 		double d,e,f;
 		for(int i=0;i<m;i++)
 		{
-			infile>>a>>b>>c;
-			infile>>d>>e>>f;
-			
+			infile>>a>>b>>c>>d>>e>>f;
+			//cout<<a<<" "<<b<<" "<<c<<endl;
 			Edge* ed=new Edge(a,b,c,d,e,f);
 			
 			incL.push_back(ed);
 			adjL[b].push_back(ed);
 			adjRL[c].push_back(ed);
 		}
+		//cout<<"graph init completed"<<endl;
 	}
 
 	//将一个case的所有req都记录在图里，方便所有的Flow调用
