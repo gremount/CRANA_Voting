@@ -54,10 +54,6 @@ public:
 	vector<vector<Edge*> > adjM;//边的邻接矩阵
 	vector<vector<double> > adj;//记录负载
 
-	vector<Req*> reqL;
-	vector<double> cost_best;//记录每个APP的最佳部署结果
-	//vector<double> cost_LP;//记录每个APP的LP部署结果
-
 	VGraph(){;}
 	VGraph(string address)
 	{
@@ -76,9 +72,6 @@ public:
 			adj[i].resize(n);
 			adjM[i].resize(n);
 		}
-			
-		cost_best.resize(APPNUM);
-		//cost_LP.resize(APPNUM);
 
 		int a,b,c;
 		double d;
@@ -95,78 +88,6 @@ public:
 		}
 		//cout<<"graph init completed"<<endl;
 	}
-
-	//将一个case的所有req都记录在图里，方便所有的Flow调用
-	void req_modify(vector<Req*> &reqL2){
-		reqL.clear();
-		int req_num=0;
-		req_num=reqL2.size();
-		for(int i=0;i<req_num;i++)
-			reqL.push_back(reqL2[i]);
-	}
-
-	void Update(int s,int flow,vector<vector<double> > &adj){
-        double x;
-		for (int i = 0; i < adjL[s].size();i++){
-			x=adj[adjL[s][i]->src][adjL[s][i]->dst]+flow;
-			if(x > adjL[s][i]->capacity)continue;
-			if (d[s] + flow/(adjL[s][i]->capacity - x + 1) < d[adjL[s][i]->dst]){
-                d[adjL[s][i]->dst] = d[s] + flow/(adjL[s][i]->capacity - x + 1);
-                p[adjL[s][i]->dst] = s;
-            }
-		}
-    }
-
-    int FindMin(){
-        set<int>::iterator it, iend;
-        iend = S.end();
-        double mine = INF;
-        int min_node = -1;
-        for (it = S.begin(); it != iend; it++){
-            if(d[*it] < mine) {
-                mine = d[*it];
-                min_node = *it;
-            }
-        }
-        return min_node;
-    }
-
-    double dijkstra(int src, int dst, int flow, vector<vector<double> > &adj){
-        S.clear();
-        V.clear();
-        for (int i = 0; i < n; i++)
-        {
-            S.insert(i);
-            d[i] = INF;
-            p[i] = -2;
-        }
-        d[src] = 0; p[src] = -1;
-        Update(src,flow,adj);
-        S.erase(src);
-        V.insert(src);
-        while (S.size() != 0)
-        {
-            int mind;
-            mind = FindMin();
-            if (mind == dst) return d[mind];
-			if (mind==-1) break;//没有路可达
-            Update(mind,flow,adj);
-            S.erase(mind);
-            V.insert(mind);
-        }
-		return INF;//没有路可达
-    }
-
-	//线性拟合 1/(c-x)
-	double linearCal(double load, double capacity)
-	{
-		double util=load/capacity;
-		if(util<0.3333) return load/capacity;
-		else if(util<0.6667) return 3*load/capacity - 2.0/3.0;
-		else if(util<0.9) return 10*load/capacity - 16.0/3.0;
-		else return 70*load/capacity - 178.0/3.0;
-	}
-
 };
 
 #endif

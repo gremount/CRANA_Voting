@@ -177,10 +177,15 @@ public:
 	}
 
 	//应用部署 获胜的方案
-	void end_implement(VGraph &g,vector<APP*> &appL)
+	void end_implement(Req &req)
 	{
 		//负载信息更新
-		;
+		for (int i = 0; i < pathRecord.size()-1; i++){
+			int tail = pathRecord[i];
+			int head = pathRecord[i + 1];
+			gv->adj[tail][head] += req.flow;
+			adjMyFlow[tail][head] += req.flow;
+		}
 	}
 
 };//APP类的结束位置

@@ -17,6 +17,7 @@ int main()
 	string result_address="result.txt";
 
 	app_voting(graph_address, req_address, result_address);
-	
+
+	getchar();
 	return 0;
 }

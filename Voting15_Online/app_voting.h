@@ -25,7 +25,7 @@ void app_voting(string graph_address, string req_address, string result_address)
 	for(int j=0;j<reqNum;j++)
 		for(int k=0;k<reqNum;k++)
 			table[j][k]=0;
-	cout << "voting complete" << endl;
+	cout << "voting init complete" << endl;
 
 	//启动APP，并初始化
 	vector<APP*> appL;//记录所有的APP
@@ -38,7 +38,6 @@ void app_voting(string graph_address, string req_address, string result_address)
 	//初始化流需求
 	vector<Req*> reqL;//流需求
 	reqL.clear();
-	gv.reqL.clear();
 	for(int j=0;j<reqNum;j++)
 	{
 		int id = 0, app_id = 0, a = 0, b = 0;
@@ -46,13 +45,15 @@ void app_voting(string graph_address, string req_address, string result_address)
 		reqFile>>id>>app_id>>a>>b>>c;
 		Req* r = new Req(id,app_id,a,b,c);
 		reqL.push_back(r);
-		gv.reqL.push_back(r);
 	}
-	cout << "read request complete" << endl;
+	cout << "read request complete" << endl<<endl;
 	
 	//针对每一个req进行投票
 	for (int i = 0; i < reqL.size(); i++)
 	{
+		cout << "request " << i << endl;
+		for (int j = 0; j<APPNUM; j++)
+			appL[j]->init();
 		//************************  投票机制开始  **********************
 		//提方案
 		for (int j = 0; j<APPNUM; j++){
@@ -123,14 +124,21 @@ void app_voting(string graph_address, string req_address, string result_address)
 				maxUtil_Voting = appL[winner]->adj[src][dst] / capacity;
 		}
 		cout << "max utilization rate = " << maxUtil_Voting << endl;
-
-		//胜利的方案部署到所有应用的adj里
-		appL[winner]->end_implement(gv, appL);
-		cout << endl;
 		*/
+
+		//胜利的方案部署到gv图的adj里和req对应的APP的adjMyFlow里
+		
+		int winner = 0;//应该是投票算出获胜者
+
+		for (int i = 0; i < appL[winner]->pathRecord.size() - 1; i++){
+			int tail = appL[winner]->pathRecord[i];
+			int head = appL[winner]->pathRecord[i + 1];
+			gv.adj[tail][head] += reqL[i]->flow;
+			appL[reqL[i]->app_id]->adjMyFlow[tail][head] += reqL[i]->flow;
+		}
+		cout << endl;
+		
 	}
-	
-	
 }
 
 #endif
