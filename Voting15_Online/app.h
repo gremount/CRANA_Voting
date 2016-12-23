@@ -9,78 +9,136 @@ class APP
 {
 public:
 	int app_id;//APP的编号
-	vector<vector<double> > adj;//该APP维护的邻接矩阵，记录负载
-	vector<Path*> path_record;//APP提出的具体方案：路径记录
+	vector<vector<double> > adj;//该APP维护的邻接矩阵，记录真实的链路上负载
+	vector<vector<double> > adjMyFlow;//记录属于自己APP的链路上负载
+	vector<int> pathRecord;//APP提出的具体方案：路径记录,由于是在线问题，所以就一条路径
 	vector<double> judge;//APP对所有方案的评价
 	 
+	//dijkstra需要用的变量
+	set<int> S;//还没有找出最短路径的节点集合
+	vector<int> p;
+	vector<double> d;
+	VGraph* g;//这里不可以声明引用，因为引用声明直接赋初始值
+
 	//初始化，只初始化一次，之后其他需求来的时候，
 	//只修改之前参数，相当于投票的基础设施只建立一次，剩下的是维护
-	APP(int app_id2)
+	APP(int app_id2,VGraph &gv)
 	{
 		app_id=app_id2;
 		adj.clear();
-		path_record.clear();
+		pathRecord.clear();
 		judge.clear();
 		adj.resize(N);
 		for(int i=0;i<N;i++)
 			adj[i].resize(N);
-		path_record.resize(Maxreq);
-		judge.resize(Maxreq);
+		adjMyFlow.resize(N);
+		for (int i = 0; i<N; i++)
+			adjMyFlow[i].resize(N);
+		judge.resize(APPNUM);
+		g = &gv;//方便dijkstra查询
+		p.resize(N);
+		d.resize(N);
 	}
 
 	//流的维护，针对新的流需求
 	void init()
 	{
-		path_record.clear();
+		pathRecord.clear();
 		judge.clear();
-		path_record.resize(Maxreq);
-		judge.resize(Maxreq);
+		judge.resize(APPNUM);
 	}
 
-	//流提出方案
-	void propose(VGraph &g,vector<APP*> &appL)
-	{	
-		vector<Req*> reqPL_app;//对自己的流用规划计算路径
-		vector<Req*> reqPL_other;//对其他的流用规划计算路径
-		if(app_id==0)
-		{
-			for(int i=0;i<g.reqL.size();i++)
-				reqPL_other.push_back(g.reqL[i]);
-			voting_lp(g,reqPL_other);
-			begin_implement(g);
-		}
-		else
-		{
-			for(int i=0;i<g.reqL.size();i++)
-			{	
-				if(app_id==g.reqL[i]->app_id) reqPL_app.push_back(g.reqL[i]);
-				else	  reqPL_other.push_back(g.reqL[i]);
+	void update(int src, Req &req){
+		for (int i = 0; i < g->adjL[src].size(); i++){
+			int dst = g->adjL[src][i]->dst;
+			double load = adj[src][dst] + req.flow;
+			//1/(c-x)排队延时公式，一个包的延时
+			double newLatency = d[src] + 1 / (g->adjL[src][i]->capacity - load);
+
+			if (load > g->adjL[src][i]->capacity)continue;			
+			if (newLatency < d[dst]){
+				d[dst] = newLatency;
+				p[dst] = src;
 			}
-			voting_lp(g,reqPL_app);
-			voting_lp(g,reqPL_other);
-			begin_implement(g);
+		}
+	}
+
+	int find_min(){
+		double dmin = INF;
+		int dnode = -1;
+		for (int i : S){
+			if (dmin > d[i]){
+				dmin = d[i];
+				dnode = i;
+			}
+		}
+		return dnode;
+	}
+
+	void record_path(Req &req)
+	{
+		int node = req.dst;
+		do{
+			pathRecord.insert(pathRecord.begin(),node);
+			node = p[node];
+		} while (node != -1);		
+	}
+
+	void dijkstra(Req &req)
+	{
+		int findIt = 0;
+		S.clear();
+		for (int i = 0; i < N; i++){
+			d[i] = INF; p[i] = INF;
+			S.insert(i);
+		}
+		
+		d[req.src] = 0; p[req.src] = -1;
+		update(req.src, req); S.erase(req.src);
+
+		while (S.size() != 0){
+			int next = find_min();
+			if (next == req.dst){
+				//already found the best path
+				findIt = 1;
+				record_path(req);
+				return;
+			}
+			update(next,req);S.erase(next); 
+		}
+		if (findIt == 0) cout << "no path found" << endl;
+	}
+
+	void reduce_cost(){
+		;
+	}
+
+
+	//流提出方案
+	void propose(Req &req)
+	{	
+		//if this flow is mine, choose the best path for this flow
+		if (req.app_id == app_id){
+			dijkstra(req);
+		}
+
+		//if this flow is not mine, choose the path which will not
+		//hurt my interest
+		if (req.app_id != app_id){
+			reduce_cost();
 		}
 	}
 
 	//流部署 自己提出的方案
 	void begin_implement(VGraph &g)
 	{
-		for(int i=0;i<Maxreq;i++)
-		{
-			int edge_num=path_record[i]->pathL.size();
-			for(int j=0;j<edge_num;j++)
-			{
-				int src,dst;
-				src=path_record[i]->pathL[j]->src;
-				dst=path_record[i]->pathL[j]->dst;
-				adj[src][dst] += g.reqL[i]->flow;
-			}
-		}
+		;
 	}
 	
 	//应用评价所有方案
 	void evaluate(VGraph &g, vector<APP*> &appL)
 	{
+		/*
 		//评价所有APP提出的方案
 		int edge_num=0;//temp记录路径权值和
 		double temp;
@@ -105,6 +163,7 @@ public:
 				judge[k]+=temp;
 			}
 		}
+		*/
 	}
 
 	//应用部署 获胜的方案

@@ -1,11 +1,11 @@
 #ifndef EXT_H
 #define EXT_H
 
-extern const int Rinf;
-extern const int Inf;
+extern const int RINF;
+extern const int INF;
 extern int APPNUM;
 extern int N;
 extern int M;
-extern int Maxreq;
+extern int MAXREQ;
 
 #endif

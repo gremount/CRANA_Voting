@@ -10,16 +10,12 @@ public:
 	int id;
 	int src,dst;
 	double capacity;//链路带宽
-	double use;//sflow测得的当前带宽消耗
-	double latency;//floodlight测得的latency
 	Edge(){;}
-	Edge(int a, int b, int c, double d, double e, double f){
+	Edge(int a, int b, int c, double d){
 		id=a;
 		src=b;
 		dst=c;
 		capacity=d;
-		use=e;
-		latency=f;
 	}
 };
 
@@ -81,12 +77,12 @@ public:
 		//cost_LP.resize(APPNUM);
 
 		int a,b,c;
-		double d,e,f;
+		double d;
 		for(int i=0;i<m;i++)
 		{
-			infile>>a>>b>>c>>d>>e>>f;
+			infile>>a>>b>>c>>d;
 			//cout<<a<<" "<<b<<" "<<c<<endl;
-			Edge* ed=new Edge(a,b,c,d,e,f);
+			Edge* ed=new Edge(a,b,c,d);
 			
 			incL.push_back(ed);
 			adjL[b].push_back(ed);
@@ -119,7 +115,7 @@ public:
     int FindMin(){
         set<int>::iterator it, iend;
         iend = S.end();
-        double mine = Inf;
+        double mine = INF;
         int min_node = -1;
         for (it = S.begin(); it != iend; it++){
             if(d[*it] < mine) {
@@ -136,7 +132,7 @@ public:
         for (int i = 0; i < n; i++)
         {
             S.insert(i);
-            d[i] = Inf;
+            d[i] = INF;
             p[i] = -2;
         }
         d[src] = 0; p[src] = -1;
@@ -153,7 +149,7 @@ public:
             S.erase(mind);
             V.insert(mind);
         }
-		return Inf;//没有路可达
+		return INF;//没有路可达
     }
 
 	//线性拟合 1/(c-x)
