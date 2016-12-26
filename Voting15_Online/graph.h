@@ -34,14 +34,6 @@ public:
 	}
 };
 
-class Path
-{
-public:
-	vector<Edge*> pathL;
-	Path(){;}
-	~Path(){;}
-};
-
 class VGraph
 {
 public:
