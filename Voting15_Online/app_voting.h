@@ -68,17 +68,22 @@ void app_voting(string graph_address, string req_address, string result_address)
 	for (int i = 0; i < reqL.size(); i++)
 	{
 		cout << "request " << i << endl;
-		resultFile << "request " << i << endl;
+		resultFile <<endl<< "******************** request  "
+			<< i <<" ********************"<< endl;
+		resultFile << "req: " << reqL[i]->src << " -> " << reqL[i]->dst 
+			<<" app_id="<<reqL[i]->app_id<<" flow="<<reqL[i]->flow<< endl;
 		for (int j = 0; j<APPNUM; j++)
 			appL[j]->init();
 		//************************  投票机制开始  **********************
 		//提方案
 		for (int j = 0; j<APPNUM; j++){
 			appL[j]->propose(*reqL[i]);
-			//cout << "app " << j << " proposal is " << endl;
-			//for (int k = 0; k < appL[j]->pathRecord.size(); k++)
-				//cout << appL[j]->pathRecord[k] << " ";
-			//cout << endl;
+			/*
+			cout << "app " << j << " proposal is " << endl;
+			for (int k = 0; k < appL[j]->pathRecord.size(); k++)
+				cout << appL[j]->pathRecord[k] << " ";
+			cout << endl;
+			*/
 		}
 		//cout << "propose complete" << endl;
 
@@ -100,10 +105,13 @@ void app_voting(string graph_address, string req_address, string result_address)
 		int winner = 0;
 		Voting vv(table, ranking, APPNUM, APPNUM);
 		winner = vv.voting(choice);
-		cout << "schulze winner = " << winner << endl;
-		resultFile << "schulze winner = " << winner << endl;
-
+		
 		// file record of table show
+		resultFile << "Sequence:      ";
+		for (int i = 0; i < appL.size(); i++){
+			resultFile.setf(ios::right);
+			resultFile << setw(11) << i;
+		}
 		resultFile << endl;
 		for (int i = 0; i < appL.size(); i++)
 		{
@@ -113,11 +121,15 @@ void app_voting(string graph_address, string req_address, string result_address)
 			resultFile << i << " judge: ";
 			for (int j = 0; j < appL.size(); j++){
 				resultFile.setf(ios::left);
-				resultFile << setw(10) << table[i][j] << " ";
+				resultFile << setw(10) <<setprecision(5)<< table[i][j] << " ";
 			}
 			resultFile << endl;
 		}
 		resultFile << endl;
+
+
+		cout << "schulze winner = " << winner << endl;
+		resultFile << "schulze winner = " << winner << endl;
 
 		//计算投票winner满意度
 		double happiness_sum = 0;

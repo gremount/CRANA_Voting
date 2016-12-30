@@ -22,10 +22,10 @@ public:
 };
 
 bool cmp(pair<int, pair<int,int> > a, pair<int, pair<int,int> > b)
-		{
-			if(a.first>b.first)return true;
-			else return false;    
-		}
+{
+	if(a.first>b.first)return true;
+	else return false;    
+}
 
 class Voting
 {
@@ -44,6 +44,7 @@ class Voting
 				for(int j=0;j<N2;j++)
 					t[i][j]=table[i][j];
 		}
+
 		int voting(int k)
 		{
 			srand((unsigned)time(NULL));

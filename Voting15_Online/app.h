@@ -1,4 +1,4 @@
-#ifndef APP_H
+ï»¿#ifndef APP_H
 #define APP_H
 
 #include "common.h"
@@ -8,19 +8,20 @@
 class APP
 {
 public:
-	int app_id;//APPµÄ±àºÅ
-	vector<vector<double> > adjMyFlow;//¼ÇÂ¼ÊôÓÚ×Ô¼ºAPPµÄÁ´Â·ÉÏ¸ºÔØ
-	vector<int> pathRecord;//APPÌá³öµÄ¾ßÌå·½°¸£ºÂ·¾¶¼ÇÂ¼,ÓÉÓÚÊÇÔÚÏßÎÊÌâ£¬ËùÒÔ¾ÍÒ»ÌõÂ·¾¶
-	vector<double> judge;//APP¶ÔËùÓĞ·½°¸µÄÆÀ¼Û
+	int app_id;//APPçš„ç¼–å·
+	vector<vector<double> > adjMyFlow;//è®°å½•å±äºè‡ªå·±APPçš„é“¾è·¯ä¸Šè´Ÿè½½
+	vector<int> pathRecord;//APPæå‡ºçš„å…·ä½“æ–¹æ¡ˆï¼šè·¯å¾„è®°å½•,ç”±äºæ˜¯åœ¨çº¿é—®é¢˜ï¼Œæ‰€ä»¥å°±ä¸€æ¡è·¯å¾„
+	vector<double> judge;//APPå¯¹æ‰€æœ‰æ–¹æ¡ˆçš„è¯„ä»·
 	 
-	//dijkstraĞèÒªÓÃµÄ±äÁ¿
-	set<int> S;//»¹Ã»ÓĞÕÒ³ö×î¶ÌÂ·¾¶µÄ½Úµã¼¯ºÏ
+	//dijkstraéœ€è¦ç”¨çš„å˜é‡
+	set<int> S;//è¿˜æ²¡æœ‰æ‰¾å‡ºæœ€çŸ­è·¯å¾„çš„èŠ‚ç‚¹é›†åˆ
 	vector<int> p;
 	vector<double> d;
-	VGraph* gv;//ÕâÀï²»¿ÉÒÔÉùÃ÷ÒıÓÃ£¬ÒòÎªÒıÓÃÉùÃ÷Ö±½Ó¸³³õÊ¼Öµ
+	vector<double> latency;
+	VGraph* gv;//è¿™é‡Œä¸å¯ä»¥å£°æ˜å¼•ç”¨ï¼Œå› ä¸ºå¼•ç”¨å£°æ˜ç›´æ¥èµ‹åˆå§‹å€¼
 
-	//³õÊ¼»¯£¬Ö»³õÊ¼»¯Ò»´Î£¬Ö®ºóÆäËûĞèÇóÀ´µÄÊ±ºò£¬
-	//Ö»ĞŞ¸ÄÖ®Ç°²ÎÊı£¬Ïàµ±ÓÚÍ¶Æ±µÄ»ù´¡ÉèÊ©Ö»½¨Á¢Ò»´Î£¬Ê£ÏÂµÄÊÇÎ¬»¤
+	//åˆå§‹åŒ–ï¼Œåªåˆå§‹åŒ–ä¸€æ¬¡ï¼Œä¹‹åå…¶ä»–éœ€æ±‚æ¥çš„æ—¶å€™ï¼Œ
+	//åªä¿®æ”¹ä¹‹å‰å‚æ•°ï¼Œç›¸å½“äºæŠ•ç¥¨çš„åŸºç¡€è®¾æ–½åªå»ºç«‹ä¸€æ¬¡ï¼Œå‰©ä¸‹çš„æ˜¯ç»´æŠ¤
 	APP(int app_id2,VGraph &gv2)
 	{
 		app_id=app_id2;
@@ -30,12 +31,13 @@ public:
 		for (int i = 0; i<N; i++)
 			adjMyFlow[i].resize(N);
 		judge.resize(APPNUM);
-		gv = &gv2;//·½±ãdijkstra²éÑ¯
+		gv = &gv2;//æ–¹ä¾¿dijkstraæŸ¥è¯¢
 		p.resize(N);
 		d.resize(N);
+		latency.resize(N);
 	}
 
-	//Á÷µÄÎ¬»¤£¬Õë¶ÔĞÂµÄÁ÷ĞèÇó
+	//æµçš„ç»´æŠ¤ï¼Œé’ˆå¯¹æ–°çš„æµéœ€æ±‚
 	void init()
 	{
 		pathRecord.clear();
@@ -47,7 +49,7 @@ public:
 		for (int i = 0; i < gv->adjL[src].size(); i++){
 			int dst = gv->adjL[src][i]->dst;
 			double load = gv->adj[src][dst] + req.flow;
-			//1/(c-x)ÅÅ¶ÓÑÓÊ±¹«Ê½£¬Ò»¸ö°üµÄÑÓÊ±
+			//1/(c-x)æ’é˜Ÿå»¶æ—¶å…¬å¼ï¼Œä¸€ä¸ªåŒ…çš„å»¶æ—¶
 			double newLatency = d[src] + 1 / (gv->adjL[src][i]->capacity - load);
 
 			if (load > gv->adjL[src][i]->capacity)continue;
@@ -104,25 +106,71 @@ public:
 		if (findIt == 0) cout << "no path found" << endl;
 	}
 
-	//Í¨¹ıÌØÊâ´¦ÀíºóµÄÍ¼£¬ÔÚ¼õÉÙ¶Ô×Ô¼ºÁ÷Ó°ÏìÏÂ£¬Ñ¡Ò»Ìõ×î¶ÌÂ·¸ø¸ÃÁ÷
-	void reduce_cost(Req &req){
-		for (int i = 0; i < N; i++){
-			for (int j = 0; j < N; j++){
-				gv->adj[i][j] += adjMyFlow[i][j];
-			}
-		}
-
-		dijkstra(req);
-		
-		//»¹Ô­Ö®Ç°µÄÍøÂç×´Ì¬
-		for (int i = 0; i < N; i++){
-			for (int j = 0; j < N; j++){
-				gv->adj[i][j] -= adjMyFlow[i][j];
+	void update_sp(int src, Req &req){
+		for (int i = 0; i < gv->adjL[src].size(); i++){
+			int dst = gv->adjL[src][i]->dst;
+			double load = gv->adj[src][dst] + req.flow;
+			//1/(c-x)æ’é˜Ÿå»¶æ—¶å…¬å¼ï¼Œä¸€ä¸ªåŒ…çš„å»¶æ—¶
+			double changeLatency = adjMyFlow[src][dst] / (gv->adjL[src][i]->capacity - load)
+				- adjMyFlow[src][dst] / (gv->adjL[src][i]->capacity - (load - req.flow));
+			if (load > gv->adjL[src][i]->capacity)continue;
+			if (d[src] + changeLatency < d[dst]){
+				d[dst] = d[src] + changeLatency;
+				p[dst] = src;
+				latency[dst] = latency[src] + 1 / (gv->adjL[src][i]->capacity - load);
 			}
 		}
 	}
 
-	//Á÷Ìá³ö·½°¸
+	//é€‰æ‹©è·¯å¾„ï¼Œå…ˆæŒ‰ç…§ä¸å½±å“è‡ªå·±çš„æµï¼Œå†æŒ‰ç…§å¯¹è¯¥æµæ¥è¯´å»¶æ—¶å°çš„è·¯å¾„
+	int find_min_sp(){
+		double dMin = INF;
+		double latencyMin = INF;
+		int dNode = -1;
+		for (int i : S){
+			if (dMin > d[i]){
+				dMin = d[i];
+				latencyMin = latency[i];
+				dNode = i;
+			}
+			if (dMin == d[i]){
+				if (latencyMin > latency[i]){
+					latencyMin = latency[i];
+					dNode = i;
+				}
+			}
+		}
+		return dNode;
+	}
+
+	//åœ¨å‡å°‘å¯¹è‡ªå·±æµå½±å“ä¸‹ï¼Œé€‰ä¸€æ¡æœ€çŸ­è·¯ç»™è¯¥æµ
+	void dijkstra_sp(Req &req){
+		int findIt = 0;
+		S.clear();
+		for (int i = 0; i < N; i++){
+			d[i] = INF;//æ–°æµå¯¹è€æµå»¶æ—¶çš„å½±å“ï¼Œå³å¢åŠ äº†å¤šå°‘å»¶æ—¶ 
+			p[i] = INF;
+			latency[i] = INF;//æ–°æµçš„å»¶æ—¶
+			S.insert(i);
+		}
+
+		d[req.src] = 0; p[req.src] = -1; latency[req.src] = 0;
+		update_sp(req.src, req); S.erase(req.src);
+
+		while (S.size() != 0){
+			int next = find_min_sp();
+			if (next == req.dst){
+				//already found the best path
+				findIt = 1;
+				record_path(req);
+				return;
+			}
+			update_sp(next, req); S.erase(next);
+		}
+		if (findIt == 0) cout << "no path found" << endl;
+	}
+
+	//æµæå‡ºæ–¹æ¡ˆ
 	void propose(Req &req)
 	{	
 		//if this flow is mine, choose the best path for this flow
@@ -133,17 +181,17 @@ public:
 		//if this flow is not mine, choose the path which will not
 		//hurt my interest
 		else{
-			reduce_cost(req);
+			dijkstra_sp(req);
 		}
 	}
 
-	//Á÷²¿Êğ ×Ô¼ºÌá³öµÄ·½°¸
+	//æµéƒ¨ç½² è‡ªå·±æå‡ºçš„æ–¹æ¡ˆ
 	void begin_implement(VGraph &g)
 	{
 		;
 	}
 	
-	//Ó¦ÓÃÆÀ¼ÛËùÓĞ·½°¸
+	//åº”ç”¨è¯„ä»·æ‰€æœ‰æ–¹æ¡ˆ
 	void evaluate(Req &req, vector<APP*> &appL)
 	{
 		/*if this flow is mine, calculate the delay of this flow*/
@@ -153,7 +201,7 @@ public:
 				for (int j = 0; j < appL[i]->pathRecord.size()-1; j++){
 					int tail = appL[i]->pathRecord[j];
 					int head = appL[i]->pathRecord[j + 1];
-					//delay=flow/(capacity-load)Ô½Ğ¡Ô½ºÃ
+					//delay=flow/(capacity-load)è¶Šå°è¶Šå¥½
 					delaySum += req.flow / 
 						(gv->adjM[tail][head]->capacity - gv->adj[tail][head] - req.flow);
 				}
@@ -168,14 +216,16 @@ public:
 				for (int j = 0; j < appL[i]->pathRecord.size() - 1; j++){
 					int tail = appL[i]->pathRecord[j];
 					int head = appL[i]->pathRecord[j + 1];
-					//effect=myLoad/(capacity-load£©Ô½Ğ¡Ô½ºÃ
+					//effect=myLoad/(capacity-loadï¼‰è¶Šå°è¶Šå¥½
 					effect = appL[app_id]->adjMyFlow[tail][head] /
-						(gv->adjM[tail][head]->capacity - gv->adj[tail][head] - req.flow);
+						(gv->adjM[tail][head]->capacity - gv->adj[tail][head] - req.flow) -
+						appL[app_id]->adjMyFlow[tail][head] /
+						(gv->adjM[tail][head]->capacity - gv->adj[tail][head]);
 				}
 				judge[i] = effect;
 			}
 		}
 	}
 
-};//APPÀàµÄ½áÊøÎ»ÖÃ
+};//APPç±»çš„ç»“æŸä½ç½®
 #endif
