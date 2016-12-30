@@ -71,7 +71,7 @@ public:
 		{
 			infile>>a>>b>>c>>d;
 			//cout<<a<<" "<<b<<" "<<c<<endl;
-			Edge* ed=new Edge(a,b,c,d);
+			Edge* ed=new Edge(a,b,c,d*10);
 			
 			incL.push_back(ed);
 			adjL[b].push_back(ed);

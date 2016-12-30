@@ -6,15 +6,29 @@
 
 void app_voting(string graph_address, string req_address, string result_address)
 {
+	//读入图
+	VGraph gv(graph_address);
+	cout << "graph complete" << endl;
+
+	//产生 req.txt
+	ofstream reqOutFile(req_address);
+	reqOutFile << MAXREQ << endl;
+	for (int i = 0; i < MAXREQ; i++){
+		int app_id = rand() % APPNUM;
+		int src = rand() % N;
+		int dst = rand() % N;
+		while (src == dst){
+			dst = rand() % N;
+		}
+		double flow = 1.0 + MINFLOW + rand() % MAXFLOW;
+		reqOutFile << i << " " << app_id << " " << src << " " 
+			<< dst << " " << flow << endl;
+	}
+
 	//读入流量矩阵: (id app_id src dst flow)
 	ifstream reqFile(req_address);
 	int reqNum=0;
 	reqFile>>reqNum;
-	MAXREQ=reqNum;
-
-	//读入图
-	VGraph gv(graph_address);
-	cout << "graph complete" << endl;
 
 	//************************  初始化  ***********************
 	//投票系统初始化
@@ -48,27 +62,30 @@ void app_voting(string graph_address, string req_address, string result_address)
 	}
 	cout << "read request complete" << endl<<endl;
 	
+	ofstream resultFile(result_address);
+
 	//针对每一个req进行投票
 	for (int i = 0; i < reqL.size(); i++)
 	{
 		cout << "request " << i << endl;
+		resultFile << "request " << i << endl;
 		for (int j = 0; j<APPNUM; j++)
 			appL[j]->init();
 		//************************  投票机制开始  **********************
 		//提方案
 		for (int j = 0; j<APPNUM; j++){
 			appL[j]->propose(*reqL[i]);
-			cout << "app " << j << " proposal is " << endl;
-			for (int k = 0; k < appL[j]->pathRecord.size(); k++)
-				cout << appL[j]->pathRecord[k] << " ";
-			cout << endl;
+			//cout << "app " << j << " proposal is " << endl;
+			//for (int k = 0; k < appL[j]->pathRecord.size(); k++)
+				//cout << appL[j]->pathRecord[k] << " ";
+			//cout << endl;
 		}
-		cout << "propose complete" << endl;
+		//cout << "propose complete" << endl;
 
 		//评价方案
 		for (int j = 0; j<APPNUM; j++)
 			appL[j]->evaluate(*reqL[i], appL);
-		cout << "evaluate complete" << endl;
+		//cout << "evaluate complete" << endl;
 
 		
 		//投票算法
@@ -84,6 +101,23 @@ void app_voting(string graph_address, string req_address, string result_address)
 		Voting vv(table, ranking, APPNUM, APPNUM);
 		winner = vv.voting(choice);
 		cout << "schulze winner = " << winner << endl;
+		resultFile << "schulze winner = " << winner << endl;
+
+		// file record of table show
+		resultFile << endl;
+		for (int i = 0; i < appL.size(); i++)
+		{
+			resultFile << "flow ";
+			resultFile.setf(ios::right);
+			resultFile.width(3);
+			resultFile << i << " judge: ";
+			for (int j = 0; j < appL.size(); j++){
+				resultFile.setf(ios::left);
+				resultFile << setw(10) << table[i][j] << " ";
+			}
+			resultFile << endl;
+		}
+		resultFile << endl;
 
 		//计算投票winner满意度
 		double happiness_sum = 0;
@@ -92,6 +126,7 @@ void app_voting(string graph_address, string req_address, string result_address)
 			happiness_sum += table[j][j] / table[j][winner];
 		happiness_avg = happiness_sum / APPNUM;
 		cout << "happiness_avg = " << happiness_avg << endl;
+		resultFile << "happiness_avg = " << happiness_avg << endl;
 		
 		//胜利的方案部署到gv图的adj里和req对应的APP的adjMyFlow里
 		for (int i = 0; i < appL[winner]->pathRecord.size() - 1; i++){

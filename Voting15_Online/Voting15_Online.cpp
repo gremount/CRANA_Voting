@@ -4,9 +4,11 @@ const double INF=9999;
 const double RINF=0.001;
 int N;//nodes num
 int M;//edges num
-int MAXREQ;//req num
 
-int APPNUM = 5;//app num
+int APPNUM = 10;//app num
+int MAXREQ = 100;//req num
+int MAXFLOW = 20;//max flow size
+int MINFLOW = 10;//min flow size
 
 //如果改图，需要修改： 上面的参数 + 图输入 + req输入的部分
 

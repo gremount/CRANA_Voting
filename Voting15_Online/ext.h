@@ -7,5 +7,7 @@ extern int APPNUM;
 extern int N;
 extern int M;
 extern int MAXREQ;
+extern int MAXFLOW;
+extern int MINFLOW;
 
 #endif
