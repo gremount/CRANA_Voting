@@ -3,11 +3,11 @@
 
 extern const double RINF;
 extern const double INF;
-extern int APPNUM;
+extern const int APPNUM;
 extern int N;
 extern int M;
-extern int MAXREQ;
-extern int MAXFLOW;
-extern int MINFLOW;
+extern const int MAXREQ;
+extern const int MAXFLOW;
+extern const int MINFLOW;
 
 #endif

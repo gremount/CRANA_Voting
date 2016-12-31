@@ -6,10 +6,10 @@ int N;//nodes num
 int M;//edges num
 
 //ABILENE2.txt图测试参数
-int APPNUM = 10;//app num
-int MAXREQ = 100;//req num
-int MAXFLOW = 30;//max flow size
-int MINFLOW = 10;//min flow size
+const int APPNUM = 10;//app num
+const int MAXREQ = 200;//req num
+const int MAXFLOW = 30;//max flow size
+const int MINFLOW = 10;//min flow size
 
 /*
 //graph_t3.txt图测试参数

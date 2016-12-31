@@ -1,4 +1,5 @@
 #include "common.h"
+#include "ext.h"
 //M2 is the number of candidates
 //N2 is how many kinds of ranking
 
@@ -31,13 +32,20 @@ class Voting
 {
 	private:
 	public:
-		double t[M2C+1][N2C+1];
-		int rank[N2C+1];
+		vector<vector<double> > t;
+		vector<int> rank;
+		vector<vector<int> > d;
+		vector<vector<int> > p;
 		int M2, N2;
-		Voting(double table[][N2C+1], int ranking[],int m2,int n2)
+
+		Voting(vector<vector<double> > &table, vector<int> &ranking, int m2, int n2)
 		{
 			M2 = m2;
 			N2 = n2;
+			t.resize(M2);
+			for (int i = 0; i < APPNUM; i++)
+				t[i].resize(N2);
+			rank.resize(N2);
 			for(int i=0;i<N2;i++)
 				rank[i]=ranking[i];
 			for(int i=0;i<M2;i++)
@@ -54,8 +62,11 @@ class Voting
 
 		int Schulze_Voting()
 		{
-			int d[M2C + 1][M2C + 1] = { 0 };
-			int p[M2C+1][M2C+1]={0};
+			d.resize(M2); p.resize(M2);
+			for (int i = 0; i < M2; i++){
+				d[i].resize(N2);
+				p[i].resize(N2);
+			}
 			int max_win = 0;//record the score of final winner
 			vector<int> winners;
 			for (int j = 0; j < N2; j++)
@@ -94,7 +105,8 @@ class Voting
 			}
 
 			//find the winner
-			int beat[M2C+1]={0};
+			vector<int> beat;
+			beat.resize(M2);
 			for(int i=0;i<M2;i++)
 			{
 				for(int j=0;j<M2;j++)

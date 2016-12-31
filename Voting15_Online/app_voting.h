@@ -32,13 +32,14 @@ void app_voting(string graph_address, string req_address, string result_address)
 
 	//************************  初始化  ***********************
 	//投票系统初始化
-	double table[M2C+1][N2C+1] = {0};//投票用的输入
-	int ranking[N2C+1]={0};//记录一种排序的投票人数
-	for(int j=0;j<reqNum;j++)
+	vector<vector<double> > table;
+	vector<int> ranking;
+	table.resize(APPNUM);
+	ranking.resize(APPNUM);
+	for (int i = 0; i < APPNUM; i++)
+		table[i].resize(APPNUM);	
+	for(int j=0;j<APPNUM;j++)
 		ranking[j]=1;//每种投票结果有1个voter,如果为2就说明该方案有得到两个voter的票
-	for(int j=0;j<reqNum;j++)
-		for(int k=0;k<reqNum;k++)
-			table[j][k]=0;
 	cout << "voting init complete" << endl;
 
 	//启动APP，并初始化
