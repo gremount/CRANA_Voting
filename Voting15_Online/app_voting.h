@@ -115,7 +115,7 @@ void app_voting(string graph_address, string req_address, string result_address)
 		resultFile << endl;
 		for (int i = 0; i < appL.size(); i++)
 		{
-			resultFile << "flow ";
+			resultFile << "APP ";
 			resultFile.setf(ios::right);
 			resultFile.width(3);
 			resultFile << i << " judge: ";
@@ -147,8 +147,32 @@ void app_voting(string graph_address, string req_address, string result_address)
 			gv.adj[tail][head] += reqL[i]->flow;
 			appL[reqL[i]->app_id]->adjMyFlow[tail][head] += reqL[i]->flow;
 		}
-		cout << endl;
 		
+		/*
+		//Êä³öadj¾ØÕó
+		resultFile << endl;
+		for (int i = 0; i < appL.size(); i++)
+		{
+			resultFile<< "APP "<<i<<endl;
+			for (int j = 0; j < N; j++){
+				for (int k = 0; k < N; k++){
+					resultFile << setw(10) << setprecision(5) 
+						<< appL[i]->adjMyFlow[j][k] << " ";
+				}
+				resultFile << endl;
+			}
+			resultFile << endl;
+		}
+		resultFile << endl;
+		resultFile << "ADJ"<< endl;
+		for (int i = 0; i < N; i++){
+			for (int j = 0; j < N; j++){
+				resultFile << setw(10) << setprecision(5)
+					<< gv.adj[i][j] << " ";
+			}
+			resultFile << endl;
+		}
+		*/
 	}
 }
 

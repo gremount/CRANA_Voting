@@ -1,7 +1,7 @@
 #include"app_voting.h"
 
-const double INF=9999;
-const double RINF=0.001;
+const double INF=1e7;
+const double RINF=1e-7;
 int N;//nodes num
 int M;//edges num
 

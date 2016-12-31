@@ -49,10 +49,11 @@ public:
 		for (int i = 0; i < gv->adjL[src].size(); i++){
 			int dst = gv->adjL[src][i]->dst;
 			double load = gv->adj[src][dst] + req.flow;
+			double capacity = gv->adjL[src][i]->capacity;
 			//1/(c-x)排队延时公式，一个包的延时
-			double newLatency = d[src] + 1 / (gv->adjL[src][i]->capacity - load);
+			double newLatency = d[src] + 1 / (capacity - load);
 
-			if (load > gv->adjL[src][i]->capacity)continue;
+			if (load > capacity)continue;
 			if (newLatency < d[dst]){
 				d[dst] = newLatency;
 				p[dst] = src;
@@ -110,14 +111,15 @@ public:
 		for (int i = 0; i < gv->adjL[src].size(); i++){
 			int dst = gv->adjL[src][i]->dst;
 			double load = gv->adj[src][dst] + req.flow;
+			double capacity = gv->adjL[src][i]->capacity;
 			//1/(c-x)排队延时公式，一个包的延时
-			double changeLatency = adjMyFlow[src][dst] / (gv->adjL[src][i]->capacity - load)
-				- adjMyFlow[src][dst] / (gv->adjL[src][i]->capacity - (load - req.flow));
-			if (load > gv->adjL[src][i]->capacity)continue;
+			double changeLatency = adjMyFlow[src][dst] / (capacity - load)
+				- adjMyFlow[src][dst] / (capacity - (load - req.flow));
+			if (load > capacity)continue;
 			if (d[src] + changeLatency < d[dst]){
 				d[dst] = d[src] + changeLatency;
 				p[dst] = src;
-				latency[dst] = latency[src] + 1 / (gv->adjL[src][i]->capacity - load);
+				latency[dst] = latency[src] + 1 / (capacity - load);
 			}
 		}
 	}
@@ -217,10 +219,9 @@ public:
 					int tail = appL[i]->pathRecord[j];
 					int head = appL[i]->pathRecord[j + 1];
 					//effect=myLoad/(capacity-load）越小越好
-					effect = appL[app_id]->adjMyFlow[tail][head] /
-						(gv->adjM[tail][head]->capacity - gv->adj[tail][head] - req.flow) -
-						appL[app_id]->adjMyFlow[tail][head] /
-						(gv->adjM[tail][head]->capacity - gv->adj[tail][head]);
+					effect += adjMyFlow[tail][head]*
+						(1/(gv->adjM[tail][head]->capacity - gv->adj[tail][head] - req.flow) -
+						1/(gv->adjM[tail][head]->capacity - gv->adj[tail][head]));
 				}
 				judge[i] = effect;
 			}
