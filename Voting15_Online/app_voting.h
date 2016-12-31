@@ -4,13 +4,8 @@
 #include"app.h"
 #include"voting.h"
 
-void app_voting(string graph_address, string req_address, string result_address)
+void generate_traffic(string req_address)
 {
-	//读入图
-	VGraph gv(graph_address);
-	cout << "graph complete" << endl;
-
-	//产生 req.txt
 	ofstream reqOutFile(req_address);
 	reqOutFile << MAXREQ << endl;
 	for (int i = 0; i < MAXREQ; i++){
@@ -21,9 +16,21 @@ void app_voting(string graph_address, string req_address, string result_address)
 			dst = rand() % N;
 		}
 		double flow = 1.0 + MINFLOW + rand() % MAXFLOW;
-		reqOutFile << i << " " << app_id << " " << src << " " 
+		reqOutFile << i << " " << app_id << " " << src << " "
 			<< dst << " " << flow << endl;
 	}
+}
+
+void app_voting(string graph_address, string req_address, string result_address)
+{
+	double happiness_sum_all = 0;//满意度总和，为了求所有论部署的满意度平均值
+
+	//读入图
+	VGraph gv(graph_address);
+	cout << "graph complete" << endl;
+
+	//产生 req.txt
+	generate_traffic(req_address);
 
 	//读入流量矩阵: (id app_id src dst flow)
 	ifstream reqFile(req_address);
@@ -107,6 +114,9 @@ void app_voting(string graph_address, string req_address, string result_address)
 		Voting vv(table, ranking, APPNUM, APPNUM);
 		winner = vv.voting(choice);
 		
+		//强制改变winner，为了实现对比方案 "selfish routing"
+		//winner = reqL[i]->app_id;
+
 		// file record of table show
 		resultFile << "Sequence:      ";
 		for (int i = 0; i < appL.size(); i++){
@@ -140,6 +150,7 @@ void app_voting(string graph_address, string req_address, string result_address)
 		happiness_avg = happiness_sum / APPNUM;
 		cout << "happiness_avg = " << happiness_avg << endl;
 		resultFile << "happiness_avg = " << happiness_avg << endl;
+		happiness_sum_all += happiness_sum;
 		
 		//胜利的方案部署到gv图的adj里和req对应的APP的adjMyFlow里
 		for (int i = 0; i < appL[winner]->pathRecord.size() - 1; i++){
@@ -175,6 +186,7 @@ void app_voting(string graph_address, string req_address, string result_address)
 		}
 		*/
 	}
+	cout << "最终满意度评价 = "<< happiness_sum_all / MAXREQ / APPNUM << endl;
 }
 
 #endif
