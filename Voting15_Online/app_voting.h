@@ -1,4 +1,4 @@
-#ifndef APP_VOTING_H
+ï»¿#ifndef APP_VOTING_H
 #define APP_VOTING_H
 
 #include"app.h"
@@ -23,22 +23,23 @@ void generate_traffic(string req_address)
 
 void app_voting(string graph_address, string req_address, string result_address)
 {
-	double happiness_sum_all = 0;//ÂúÒâ¶È×ÜºÍ£¬ÎªÁËÇóËùÓĞÂÛ²¿ÊğµÄÂúÒâ¶ÈÆ½¾ùÖµ
+	double happiness_sum_all = 0;//æ»¡æ„åº¦æ€»å’Œï¼Œä¸ºäº†æ±‚æ‰€æœ‰è®ºéƒ¨ç½²çš„æ»¡æ„åº¦å¹³å‡å€¼
+	double s2_sum_all = 0;//æ–¹å·®æ€»å’Œ
 
-	//¶ÁÈëÍ¼
+	//è¯»å…¥å›¾
 	VGraph gv(graph_address);
 	cout << "graph complete" << endl;
 
-	//²úÉú req.txt
-	generate_traffic(req_address);
+	//äº§ç”Ÿ req.txt
+	//generate_traffic(req_address);
 
-	//¶ÁÈëÁ÷Á¿¾ØÕó: (id app_id src dst flow)
+	//è¯»å…¥æµé‡çŸ©é˜µ: (id app_id src dst flow)
 	ifstream reqFile(req_address);
 	int reqNum=0;
 	reqFile>>reqNum;
 
-	//************************  ³õÊ¼»¯  ***********************
-	//Í¶Æ±ÏµÍ³³õÊ¼»¯
+	//************************  åˆå§‹åŒ–  ***********************
+	//æŠ•ç¥¨ç³»ç»Ÿåˆå§‹åŒ–
 	vector<vector<double> > table;
 	vector<int> ranking;
 	table.resize(APPNUM);
@@ -46,19 +47,32 @@ void app_voting(string graph_address, string req_address, string result_address)
 	for (int i = 0; i < APPNUM; i++)
 		table[i].resize(APPNUM);	
 	for(int j=0;j<APPNUM;j++)
-		ranking[j]=1;//Ã¿ÖÖÍ¶Æ±½á¹ûÓĞ1¸övoter,Èç¹ûÎª2¾ÍËµÃ÷¸Ã·½°¸ÓĞµÃµ½Á½¸övoterµÄÆ±
+		ranking[j]=1;//æ¯ç§æŠ•ç¥¨ç»“æœæœ‰1ä¸ªvoter,å¦‚æœä¸º2å°±è¯´æ˜è¯¥æ–¹æ¡ˆæœ‰å¾—åˆ°ä¸¤ä¸ªvoterçš„ç¥¨
 	cout << "voting init complete" << endl;
 
-	//Æô¶¯APP£¬²¢³õÊ¼»¯
-	vector<APP*> appL;//¼ÇÂ¼ËùÓĞµÄAPP
+	//å¯åŠ¨APPï¼Œå¹¶åˆå§‹åŒ–
+	vector<APP*> appL;//è®°å½•æ‰€æœ‰çš„APP
 	for(int k=0;k<APPNUM;k++)
 		appL.push_back(new APP(k,gv));
 	for(int j=0;j<APPNUM;j++)
 		appL[j]->init();
 	cout << "APP init complete" << endl;
 
-	//³õÊ¼»¯Á÷ĞèÇó
-	vector<Req*> reqL;//Á÷ĞèÇó
+	//åˆå§‹åŒ–APPèƒŒæ™¯æµé‡
+	int background_flow, background_flow_size;
+	for (int k = 0; k < APPNUM; k++){
+		for (int j = 0; j < 10; j++){
+			background_flow = rand() % M;
+			background_flow_size = 1.0 + MINFLOW + rand() % MAXFLOW;
+			int src = gv.incL[background_flow]->src;
+			int dst = gv.incL[background_flow]->dst;
+			appL[k]->adjMyFlow[src][dst] += background_flow_size;
+			gv.adj[src][dst] += background_flow_size;
+		}
+	}
+
+	//åˆå§‹åŒ–æµéœ€æ±‚
+	vector<Req*> reqL;//æµéœ€æ±‚
 	reqL.clear();
 	for(int j=0;j<reqNum;j++)
 	{
@@ -72,7 +86,7 @@ void app_voting(string graph_address, string req_address, string result_address)
 	
 	ofstream resultFile(result_address);
 
-	//Õë¶ÔÃ¿Ò»¸öreq½øĞĞÍ¶Æ±
+	//é’ˆå¯¹æ¯ä¸€ä¸ªreqè¿›è¡ŒæŠ•ç¥¨
 	for (int i = 0; i < reqL.size(); i++)
 	{
 		cout << "request " << i << endl;
@@ -82,8 +96,8 @@ void app_voting(string graph_address, string req_address, string result_address)
 			<<" app_id="<<reqL[i]->app_id<<" flow="<<reqL[i]->flow<< endl;
 		for (int j = 0; j<APPNUM; j++)
 			appL[j]->init();
-		//************************  Í¶Æ±»úÖÆ¿ªÊ¼  **********************
-		//Ìá·½°¸
+		//************************  æŠ•ç¥¨æœºåˆ¶å¼€å§‹  **********************
+		//ææ–¹æ¡ˆ
 		for (int j = 0; j<APPNUM; j++){
 			appL[j]->propose(*reqL[i]);
 			/*
@@ -95,27 +109,27 @@ void app_voting(string graph_address, string req_address, string result_address)
 		}
 		//cout << "propose complete" << endl;
 
-		//ÆÀ¼Û·½°¸
+		//è¯„ä»·æ–¹æ¡ˆ
 		for (int j = 0; j<APPNUM; j++)
 			appL[j]->evaluate(*reqL[i], appL);
 		//cout << "evaluate complete" << endl;
 
 		
-		//Í¶Æ±Ëã·¨
+		//æŠ•ç¥¨ç®—æ³•
 		for (int j = 0; j<APPNUM; j++)
 			for (int k = 0; k<APPNUM; k++)
 			{
-				if (appL[j]->judge[k] == 0) table[j][k] = RINF;//·ÀÖ¹³öÏÖ ³ı0
+				if (appL[j]->judge[k] == 0) table[j][k] = RINF;//é˜²æ­¢å‡ºç° é™¤0
 				else table[j][k] = appL[j]->judge[k];
 			}
 
-		int choice = 1;//Ñ¡ÔñÒ»ÖÖÍ¶Æ±Ëã·¨
+		int choice = 1;//é€‰æ‹©ä¸€ç§æŠ•ç¥¨ç®—æ³•
 		int winner = 0;
 		Voting vv(table, ranking, APPNUM, APPNUM);
 		winner = vv.voting(choice);
 		
-		//Ç¿ÖÆ¸Ä±äwinner£¬ÎªÁËÊµÏÖ¶Ô±È·½°¸ "selfish routing"
-		//winner = reqL[i]->app_id;
+		//å¼ºåˆ¶æ”¹å˜winnerï¼Œä¸ºäº†å®ç°å¯¹æ¯”æ–¹æ¡ˆ "selfish routing"
+		winner = reqL[i]->app_id;
 
 		// file record of table show
 		resultFile << "Sequence:      ";
@@ -142,7 +156,7 @@ void app_voting(string graph_address, string req_address, string result_address)
 		cout << "schulze winner = " << winner << endl;
 		resultFile << "schulze winner = " << winner << endl;
 
-		//¼ÆËãÍ¶Æ±winnerÂúÒâ¶È
+		//è®¡ç®—æŠ•ç¥¨winneræ»¡æ„åº¦
 		double happiness_sum = 0;
 		double happiness_avg = 0;
 		for (int j = 0; j < APPNUM; j++)
@@ -151,8 +165,20 @@ void app_voting(string graph_address, string req_address, string result_address)
 		cout << "happiness_avg = " << happiness_avg << endl;
 		resultFile << "happiness_avg = " << happiness_avg << endl;
 		happiness_sum_all += happiness_sum;
+
+		//è®¡ç®—æ»¡æ„åº¦æ–¹å·®
+		double s2_sum = 0;
+		double s2_avg = 0;
+		for (int j = 0; j < APPNUM; j++){
+			s2_sum += (happiness_avg - table[j][j] / table[j][winner])
+				* (happiness_avg - table[j][j] / table[j][winner]);
+		}
+		s2_avg = s2_sum / APPNUM;
+		cout << "s2_avg= " << s2_avg << endl;
+		resultFile << "s2_avg = " << s2_avg << endl;
+		s2_sum_all += s2_sum;
 		
-		//Ê¤ÀûµÄ·½°¸²¿Êğµ½gvÍ¼µÄadjÀïºÍreq¶ÔÓ¦µÄAPPµÄadjMyFlowÀï
+		//èƒœåˆ©çš„æ–¹æ¡ˆéƒ¨ç½²åˆ°gvå›¾çš„adjé‡Œå’Œreqå¯¹åº”çš„APPçš„adjMyFlowé‡Œ
 		for (int i = 0; i < appL[winner]->pathRecord.size() - 1; i++){
 			int tail = appL[winner]->pathRecord[i];
 			int head = appL[winner]->pathRecord[i + 1];
@@ -161,7 +187,7 @@ void app_voting(string graph_address, string req_address, string result_address)
 		}
 		
 		/*
-		//Êä³öadj¾ØÕó
+		//è¾“å‡ºadjçŸ©é˜µ
 		resultFile << endl;
 		for (int i = 0; i < appL.size(); i++)
 		{
@@ -186,7 +212,8 @@ void app_voting(string graph_address, string req_address, string result_address)
 		}
 		*/
 	}
-	cout << "×îÖÕÂúÒâ¶ÈÆÀ¼Û = "<< happiness_sum_all / MAXREQ / APPNUM << endl;
+	cout << "æœ€ç»ˆæ»¡æ„åº¦è¯„ä»· = "<< happiness_sum_all / MAXREQ / APPNUM << endl;
+	cout << "æœ€ç»ˆæ»¡æ„åº¦æ–¹å·®è¯„ä»· = " << s2_sum_all / MAXREQ / APPNUM << endl;
 }
 
 #endif

@@ -121,6 +121,12 @@ public:
 				p[dst] = src;
 				latency[dst] = latency[src] + 1 / (capacity - load);
 			}
+			else if (d[src] + changeLatency == d[dst]){
+				if (latency[dst] > latency[src] + 1 / (capacity - load)){
+					p[dst] = src;
+					latency[dst] = latency[src] + 1 / (capacity - load);
+				}
+			}
 		}
 	}
 
