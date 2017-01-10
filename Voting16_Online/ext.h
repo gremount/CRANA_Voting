@@ -9,5 +9,6 @@ extern int M;
 extern const int MAXREQ;
 extern const int MAXFLOW;
 extern const int MINFLOW;
+extern const int TESTNUM;
 
 #endif

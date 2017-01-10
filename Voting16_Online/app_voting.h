@@ -54,17 +54,18 @@ int voting_crana(vector<vector<double> > &table){
 }
 
 //app-voting算法的主要实现
-void app_voting(string graph_address, string req_address, string result_address)
+void app_voting(string graph_address, string req_address, string result_address,
+	vector<double>& teL, vector<double>& haL)
 {
 	double happiness_sum_all = 0;//满意度总和，为了求所有论部署的满意度平均值
 	double s2_sum_all = 0;//方差总和
 
 	//读入图
 	VGraph gv(graph_address);
-	cout << "graph complete" << endl;
+	//cout << "graph complete" << endl;
 
 	//产生 req.txt
-	//generate_traffic(req_address);
+	generate_traffic(req_address);
 
 	//读入流量矩阵: (id app_id src dst flow)
 	ifstream reqFile(req_address);
@@ -81,13 +82,13 @@ void app_voting(string graph_address, string req_address, string result_address)
 		table[i].resize(APPNUM);	
 	for(int j=0;j<APPNUM;j++)
 		ranking[j]=1;//每种投票结果有1个voter,如果为2就说明该方案有得到两个voter的票
-	ranking[APPNUM - 1] = APPNUM*100;
-	cout << "voting init complete" << endl;
+	//ranking[APPNUM - 1] = APPNUM/2;
+	//cout << "voting init complete" << endl;
 
 	//启动APP，并初始化
 	vector<Decider*> appL;//记录所有的Decider
 	for (int k = 0; k < APPNUM; k++){
-		if (k == APPNUM - 1){//最后一个APP是Net
+		if (k == APPNUM-1){//最后一个APP是Net
 			Decider* decider_new = new Net(k, gv);
 			appL.push_back(decider_new);
 		}
@@ -99,10 +100,9 @@ void app_voting(string graph_address, string req_address, string result_address)
 	}
 	for(int j=0;j<APPNUM;j++)
 		appL[j]->init();
-	cout << "APP init complete" << endl;
+	//cout << "APP init complete" << endl;
 
 	//初始化APP背景流量
-	/*
 	int background_flow, background_flow_size;
 	for (int k = 0; k < APPNUM; k++){
 		for (int j = 0; j < 10; j++){
@@ -114,7 +114,7 @@ void app_voting(string graph_address, string req_address, string result_address)
 			gv.adj[src][dst] += background_flow_size;
 		}
 	}
-	*/
+	
 
 	//初始化流需求
 	vector<Req*> reqL;//流需求
@@ -127,14 +127,14 @@ void app_voting(string graph_address, string req_address, string result_address)
 		Req* r = new Req(id,app_id,a,b,c);
 		reqL.push_back(r);
 	}
-	cout << "read request complete" << endl<<endl;
+	//cout << "read request complete" << endl<<endl;
 	
-	ofstream resultFile(result_address);
+	//ofstream resultFile(result_address);
 
 	//针对每一个req进行投票
 	for (int i = 0; i < reqL.size(); i++)
 	{
-		cout << "request " << i << endl;
+		//cout << "request " << i << endl;
 		//resultFile <<endl<< "******************** request  "
 			//<< i <<" ********************"<< endl;
 		//resultFile << "req: " << reqL[i]->src << " -> " << reqL[i]->dst 
@@ -152,12 +152,12 @@ void app_voting(string graph_address, string req_address, string result_address)
 			cout << endl;
 			*/
 		}
-		cout << "propose complete" << endl;
+		//cout << "propose complete" << endl;
 
 		//评价方案
 		for (int j = 0; j<APPNUM; j++)
 			appL[j]->evaluate(*reqL[i], appL);
-		cout << "evaluate complete" << endl;
+		//cout << "evaluate complete" << endl;
 
 		
 		//投票算法
@@ -178,6 +178,9 @@ void app_voting(string graph_address, string req_address, string result_address)
 
 		//强制改变winner，为了实现对比方案 "selfish routing"
 		//winner = reqL[i]->app_id;
+
+		//强制改变winner，为了实现对比方案 "TE routing"
+		//winner = APPNUM - 1;
 
 		// file record of table show
 		/*
@@ -201,7 +204,7 @@ void app_voting(string graph_address, string req_address, string result_address)
 		}
 		resultFile << endl;
 		*/
-		cout << "************************** winner = " << winner << endl;
+		//cout << "************************** winner = " << winner << endl;
 		//resultFile << "winner = " << winner << endl;
 
 		//计算投票winner满意度
@@ -210,9 +213,10 @@ void app_voting(string graph_address, string req_address, string result_address)
 		for (int j = 0; j < APPNUM; j++)
 			happiness_sum += table[j][j] / table[j][winner];
 		happiness_avg = happiness_sum / APPNUM;
-		cout << "happiness_avg = " << happiness_avg << endl;
+		//cout << "happiness_avg = " << happiness_avg << endl;
 		//resultFile << "happiness_avg = " << happiness_avg << endl;
 		happiness_sum_all += happiness_sum;
+		haL.push_back(happiness_avg);
 
 		//计算满意度方差
 		double s2_sum = 0;
@@ -222,7 +226,7 @@ void app_voting(string graph_address, string req_address, string result_address)
 				* (happiness_avg - table[j][j] / table[j][winner]);
 		}
 		s2_avg = s2_sum / APPNUM;
-		cout << "s2_avg= " << s2_avg << endl;
+		//cout << "s2_avg= " << s2_avg << endl;
 		//resultFile << "s2_avg = " << s2_avg << endl;
 		s2_sum_all += s2_sum;
 		
@@ -242,7 +246,8 @@ void app_voting(string graph_address, string req_address, string result_address)
 			if (te < gv.adj[tail][head] / gv.incL[j]->capacity)
 				te = gv.adj[tail][head] / gv.incL[j]->capacity;
 		}
-		resultFile << te << endl;
+		
+		teL.push_back(te);
 
 		/*
 		//输出adj矩阵
@@ -270,8 +275,8 @@ void app_voting(string graph_address, string req_address, string result_address)
 		}
 		*/
 	}
-	cout << "最终满意度评价 = "<< happiness_sum_all / MAXREQ / APPNUM << endl;
-	cout << "最终满意度方差评价 = " << s2_sum_all / MAXREQ / APPNUM << endl;
+	//cout << "最终满意度评价 = "<< happiness_sum_all / MAXREQ / APPNUM << endl;
+	//cout << "最终满意度方差评价 = " << s2_sum_all / MAXREQ / APPNUM << endl;
 }
 
 #endif
