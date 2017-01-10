@@ -1,17 +1,15 @@
 ﻿#ifndef APP_H
 #define APP_H
 
-#include "common.h"
-#include "graph.h"
-#include "ext.h"
+#include "decider.h"
 
-class APP
+class APP: public Decider
 {
 public:
-	int app_id;//APP的编号
-	vector<vector<double> > adjMyFlow;//记录属于自己APP的链路上负载
-	vector<int> pathRecord;//APP提出的具体方案：路径记录,由于是在线问题，所以就一条路径
-	vector<double> judge;//APP对所有方案的评价
+	//int app_id;//APP的编号
+	//vector<vector<double> > adjMyFlow;//记录属于自己APP的链路上负载
+	//vector<int> pathRecord;//APP提出的具体方案：路径记录,由于是在线问题，所以就一条路径
+	//vector<double> judge;//APP对所有方案的评价
 	 
 	//dijkstra需要用的变量
 	set<int> S;//还没有找出最短路径的节点集合
@@ -22,15 +20,8 @@ public:
 
 	//初始化，只初始化一次，之后其他需求来的时候，
 	//只修改之前参数，相当于投票的基础设施只建立一次，剩下的是维护
-	APP(int app_id2,VGraph &gv2)
+	APP(int app_id2, VGraph &gv2) :Decider(app_id2,gv2)
 	{
-		app_id=app_id2;
-		pathRecord.clear();
-		judge.clear();
-		adjMyFlow.resize(N);
-		for (int i = 0; i<N; i++)
-			adjMyFlow[i].resize(N);
-		judge.resize(APPNUM);
 		gv = &gv2;//方便dijkstra查询
 		p.resize(N);
 		d.resize(N);
@@ -192,15 +183,9 @@ public:
 			dijkstra_sp(req);
 		}
 	}
-
-	//流部署 自己提出的方案
-	void begin_implement(VGraph &g)
-	{
-		;
-	}
 	
 	//应用评价所有方案
-	void evaluate(Req &req, vector<APP*> &appL)
+	void evaluate(Req &req, vector<Decider*> &appL)
 	{
 		/*if this flow is mine, calculate the delay of this flow*/
 		if (req.app_id == app_id){

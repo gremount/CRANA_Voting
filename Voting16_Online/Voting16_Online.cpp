@@ -7,7 +7,7 @@ int M;//edges num
 
 //ABILENE2.txtÕº≤‚ ‘≤Œ ˝
 const int APPNUM = 10;//app num
-const int MAXREQ = 100;//req num
+const int MAXREQ = 200;//req num
 const int MAXFLOW = 30;//max flow size
 const int MINFLOW = 10;//min flow size
 
