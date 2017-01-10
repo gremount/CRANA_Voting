@@ -82,7 +82,7 @@ void app_voting(string graph_address, string req_address, string result_address,
 		table[i].resize(APPNUM);	
 	for(int j=0;j<APPNUM;j++)
 		ranking[j]=1;//每种投票结果有1个voter,如果为2就说明该方案有得到两个voter的票
-	//ranking[APPNUM - 1] = APPNUM/2;
+	ranking[APPNUM - 1] = APPNUM/2;
 	//cout << "voting init complete" << endl;
 
 	//启动APP，并初始化
@@ -216,6 +216,7 @@ void app_voting(string graph_address, string req_address, string result_address,
 		//cout << "happiness_avg = " << happiness_avg << endl;
 		//resultFile << "happiness_avg = " << happiness_avg << endl;
 		happiness_sum_all += happiness_sum;
+
 		haL.push_back(happiness_avg);
 
 		//计算满意度方差
