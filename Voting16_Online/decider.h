@@ -23,7 +23,7 @@ public:
 		adjMyFlow.resize(N);
 		for (int i = 0; i < N; i++)
 			adjMyFlow[i].resize(N);
-		judge.resize(APPNUM);
+		judge.resize(DECNUM);
 	}
 
 	//流的维护，针对新的流需求
@@ -31,7 +31,7 @@ public:
 	{
 		pathRecord.clear();
 		judge.clear();
-		judge.resize(APPNUM);
+		judge.resize(DECNUM);
 	}
 
 	//流提出方案

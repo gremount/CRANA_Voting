@@ -33,7 +33,7 @@ public:
 	{
 		pathRecord.clear();
 		judge.clear();
-		judge.resize(APPNUM);
+		judge.resize(DECNUM);
 	}
 
 	void update(int src, Req &req){

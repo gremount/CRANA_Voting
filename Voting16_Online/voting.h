@@ -1,7 +1,7 @@
 #include "common.h"
 #include "ext.h"
 //M2 is the number of candidates
-//N2 is how many kinds of ranking
+//N2 is the number of voters
 
 class Node2
 {
@@ -33,17 +33,19 @@ class Voting
 	private:
 	public:
 		vector<vector<double> > t;
-		vector<int> rank;
+		vector<int> rank;//各个投票者所拥有的票数
 		vector<vector<int> > d;
 		vector<vector<int> > p;
 		int M2, N2;
 
+		//M2 is the number of candidates
+		//N2 is the number of voters
 		Voting(vector<vector<double> > &table, vector<int> &ranking, int m2, int n2)
 		{
 			M2 = m2;
 			N2 = n2;
 			t.resize(M2);
-			for (int i = 0; i < APPNUM; i++)
+			for (int i = 0; i < M2; i++)
 				t[i].resize(N2);
 			rank.resize(N2);
 			for(int i=0;i<N2;i++)
@@ -58,6 +60,10 @@ class Voting
 			srand((unsigned)time(NULL));
 			if(k==1) return Schulze_Voting();
 			else {cout<<"error"<<endl;return 0;}
+		}
+
+		int Comulative_Voting(){
+			;
 		}
 
 		int Schulze_Voting()

@@ -53,8 +53,8 @@ int voting_crana(vector<vector<double> > &table){
 	return s2_min_loc;
 }
 
-//app-voting算法的主要实现
-void app_voting(string graph_address, string req_address, string result_address,
+//app-net-voting算法的主要实现
+void app_net_voting(string graph_address, string req_address, string result_address,
 	vector<double>& teL, vector<double>& haL)
 {
 	double happiness_sum_all = 0;//满意度总和，为了求所有论部署的满意度平均值
@@ -76,31 +76,41 @@ void app_voting(string graph_address, string req_address, string result_address,
 	//投票系统初始化
 	vector<vector<double> > table;
 	vector<int> ranking;
-	table.resize(APPNUM);
-	ranking.resize(APPNUM);
-	for (int i = 0; i < APPNUM; i++)
-		table[i].resize(APPNUM);	
-	for(int j=0;j<APPNUM;j++)
+	table.resize(DECNUM);
+	ranking.resize(DECNUM);
+	for (int i = 0; i < DECNUM; i++)
+		table[i].resize(DECNUM);
+	for (int j = 0; j<DECNUM; j++)
 		ranking[j]=1;//每种投票结果有1个voter,如果为2就说明该方案有得到两个voter的票
-	ranking[APPNUM - 1] = APPNUM/2;
+	for (int j = APPNUM; j < DECNUM;j++)
+		ranking[j] = APPNUM / 2;//Net投票者由于人数少，为了公平起见，给予更多的票数
 	//cout << "voting init complete" << endl;
 
-	//启动APP，并初始化
-	vector<Decider*> appL;//记录所有的Decider
+	//启动APP和Net，并初始化
+	vector<Decider*> decL;//记录所有的Decider
 	for (int k = 0; k < APPNUM; k++){
-		if (k == APPNUM-1){//最后一个APP是Net
-			Decider* decider_new = new Net(k, gv);
-			appL.push_back(decider_new);
-		}
-		else{
-			Decider* decider_new = new APP(k, gv);
-			appL.push_back(decider_new);
-		}
-		
+		Decider* decider_new = new APP(k, gv);
+		decL.push_back(decider_new);
 	}
-	for(int j=0;j<APPNUM;j++)
-		appL[j]->init();
-	//cout << "APP init complete" << endl;
+	for (int k = APPNUM; k < DECNUM; k++){
+		Decider* decider_new = new Net(APPNUM, gv);
+		decL.push_back(decider_new);
+	}
+	for (int j = 0; j<DECNUM; j++)
+		decL[j]->init();
+	//cout << "APP and Net init complete" << endl;
+
+	//记录所有的APP Decider
+	vector<Decider*> appL;
+	for (int k = 0; k < APPNUM; k++){
+		appL.push_back(decL[k]);
+	}
+
+	//记录所有的Net Decider
+	vector<Decider*> netL;
+	for (int k = APPNUM; k < DECNUM; k++){
+		netL.push_back(decL[k]);
+	}
 
 	//初始化APP背景流量
 	int background_flow, background_flow_size;
@@ -115,7 +125,6 @@ void app_voting(string graph_address, string req_address, string result_address,
 		}
 	}
 	
-
 	//初始化流需求
 	vector<Req*> reqL;//流需求
 	reqL.clear();
@@ -139,12 +148,12 @@ void app_voting(string graph_address, string req_address, string result_address,
 			//<< i <<" ********************"<< endl;
 		//resultFile << "req: " << reqL[i]->src << " -> " << reqL[i]->dst 
 			//<<" app_id="<<reqL[i]->app_id<<" flow="<<reqL[i]->flow<< endl;
-		for (int j = 0; j<APPNUM; j++)
-			appL[j]->init();
+		for (int j = 0; j<DECNUM; j++)
+			decL[j]->init();
 		//************************  投票机制开始  **********************
 		//提方案
-		for (int j = 0; j<APPNUM; j++){
-			appL[j]->propose(*reqL[i]);
+		for (int j = 0; j<DECNUM; j++){
+			decL[j]->propose(*reqL[i]);
 			/*
 			cout << "app " << j << " proposal is " << endl;
 			for (int k = 0; k < appL[j]->pathRecord.size(); k++)
@@ -155,22 +164,22 @@ void app_voting(string graph_address, string req_address, string result_address,
 		//cout << "propose complete" << endl;
 
 		//评价方案
-		for (int j = 0; j<APPNUM; j++)
-			appL[j]->evaluate(*reqL[i], appL);
+		for (int j = 0; j<DECNUM; j++)
+			decL[j]->evaluate(*reqL[i], decL);
 		//cout << "evaluate complete" << endl;
 
 		
 		//投票算法
-		for (int j = 0; j<APPNUM; j++)
-			for (int k = 0; k<APPNUM; k++)
+		for (int j = 0; j<DECNUM; j++)
+			for (int k = 0; k<DECNUM; k++)
 			{
-				if (appL[j]->judge[k] == 0) table[j][k] = RINF;//防止出现 除0
-				else table[j][k] = appL[j]->judge[k];
+				if (decL[j]->judge[k] == 0) table[j][k] = RINF;//防止出现 除0
+				else table[j][k] = decL[j]->judge[k];
 			}
 
 		int choice = 1;//选择一种投票算法
 		int winner = 0;
-		Voting vv(table, ranking, APPNUM, APPNUM);
+		Voting vv(table, ranking, DECNUM, DECNUM);
 		winner = vv.voting(choice);
 		
 		//使用crana method来计算获胜方案
@@ -180,7 +189,7 @@ void app_voting(string graph_address, string req_address, string result_address,
 		//winner = reqL[i]->app_id;
 
 		//强制改变winner，为了实现对比方案 "TE routing"
-		//winner = APPNUM - 1;
+		winner = APPNUM;
 
 		// file record of table show
 		/*
@@ -232,11 +241,11 @@ void app_voting(string graph_address, string req_address, string result_address,
 		s2_sum_all += s2_sum;
 		
 		//胜利的方案部署到gv图的adj里和req对应的APP的adjMyFlow里
-		for (int i = 0; i < appL[winner]->pathRecord.size() - 1; i++){
-			int tail = appL[winner]->pathRecord[i];
-			int head = appL[winner]->pathRecord[i + 1];
+		for (int i = 0; i < decL[winner]->pathRecord.size() - 1; i++){
+			int tail = decL[winner]->pathRecord[i];
+			int head = decL[winner]->pathRecord[i + 1];
 			gv.adj[tail][head] += reqL[i]->flow;
-			appL[reqL[i]->app_id]->adjMyFlow[tail][head] += reqL[i]->flow;
+			decL[reqL[i]->app_id]->adjMyFlow[tail][head] += reqL[i]->flow;
 		}
 
 		//计算胜利方案部署后的TE

@@ -1,12 +1,8 @@
 #include"app_voting.h"
 
-const double INF=1e7;
-const double RINF=1e-7;
-int N;//nodes num
-int M;//edges num
-
 //ABILENE2.txt图测试参数
 const int APPNUM = 10;//app num
+const int NETNUM = 1;//net num 这里只有TE为目标的网络模块
 const int MAXREQ = 100;//req num
 const int MAXFLOW = 30;//max flow size
 const int MINFLOW = 10;//min flow size
@@ -21,7 +17,11 @@ int MINFLOW = 10;//min flow size
 int TESTNUM = 10;//test num
 */
 
-//如果改图，需要修改： 上面的参数 + 图输入 + req输入的部分
+const double INF = 1e7;
+const double RINF = 1e-7;
+int N;//nodes num
+int M;//edges num
+const int DECNUM = APPNUM + NETNUM;//decider num (app + net)
 
 int main()
 {
@@ -41,7 +41,7 @@ int main()
 	
 	for (int i = 0; i < TESTNUM; i++){
 		cout << "TEST " << i << endl;
-		app_voting(graph_address, req_address, result_address, teL[i], haL[i]);
+		app_net_voting(graph_address, req_address, result_address, teL[i], haL[i]);
 		for (int j = 0; j < MAXREQ; j++){
 			teL_avg[j] += teL[i][j];
 			haL_avg[j] += haL[i][j];
