@@ -1,11 +1,11 @@
-#include"app_voting.h"
+#include"app_net_voting.h"
 
 //ABILENE2.txt图测试参数
 const int APPNUM = 10;//app num
 const int NETNUM = 1;//net num 这里只有TE为目标的网络模块
 const int MAXREQ = 100;//req num
-const int MAXFLOW = 30;//max flow size
-const int MINFLOW = 10;//min flow size
+const int MAXFLOW = 300;//max flow size
+const int MINFLOW = 200;//min flow size
 const int TESTNUM = 1000;//test num
 
 /*

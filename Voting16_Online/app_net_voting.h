@@ -1,5 +1,5 @@
-﻿#ifndef APP_VOTING_H
-#define APP_VOTING_H
+﻿#ifndef APP_NET_VOTING_H
+#define APP_NET_VOTING_H
 
 #include"app.h"
 #include"net.h"
@@ -83,7 +83,7 @@ void app_net_voting(string graph_address, string req_address, string result_addr
 	for (int j = 0; j<DECNUM; j++)
 		ranking[j]=1;//每种投票结果有1个voter,如果为2就说明该方案有得到两个voter的票
 	for (int j = APPNUM; j < DECNUM;j++)
-		ranking[j] = APPNUM / 2;//Net投票者由于人数少，为了公平起见，给予更多的票数
+		ranking[j] = 100;//Net投票者由于人数少，为了公平起见，给予更多的票数
 	//cout << "voting init complete" << endl;
 
 	//启动APP和Net，并初始化
@@ -189,7 +189,7 @@ void app_net_voting(string graph_address, string req_address, string result_addr
 		//winner = reqL[i]->app_id;
 
 		//强制改变winner，为了实现对比方案 "TE routing"
-		winner = APPNUM;
+		//winner = APPNUM;
 
 		// file record of table show
 		/*
@@ -213,7 +213,7 @@ void app_net_voting(string graph_address, string req_address, string result_addr
 		}
 		resultFile << endl;
 		*/
-		//cout << "************************** winner = " << winner << endl;
+		cout << "************************** winner = " << winner << endl;
 		//resultFile << "winner = " << winner << endl;
 
 		//计算投票winner满意度
