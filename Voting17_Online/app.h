@@ -109,18 +109,30 @@ public:
 			double load = gv->adj[src][dst] + req.flow;
 			double capacity = gv->adjL[src][i]->capacity;
 			//1/(c-x)排队延时公式，一个包的延时
-			double changeLatency = adjMyFlow[src][dst] / (capacity - load + DIVZERO)
-				- adjMyFlow[src][dst] / (capacity - (load - req.flow) + DIVZERO);
+			double capa_load = 0;
+			if (capacity - load == 0)
+				capa_load = DIVZERO;
+			else
+				capa_load = capacity - load;
+			
+			double changeLatency = 0;
+			if ((capacity - (load-req.flow))!=0)
+				changeLatency = adjMyFlow[src][dst] / capa_load
+					- adjMyFlow[src][dst] / (capacity - (load - req.flow));
+			else
+				changeLatency = adjMyFlow[src][dst] / capa_load
+					- adjMyFlow[src][dst] / DIVZERO;
+
 			if (load > capacity)continue;
 			if (d[src] + changeLatency < d[dst]){
 				d[dst] = d[src] + changeLatency;
 				p[dst] = src;
-				latency[dst] = latency[src] + 1 / (capacity - load + DIVZERO);
+				latency[dst] = latency[src] + 1 / capa_load;
 			}
 			else if (d[src] + changeLatency == d[dst]){
-				if (latency[dst] > latency[src] + 1 / (capacity - load + DIVZERO)){
+				if (latency[dst] > latency[src] + 1 / capa_load){
 					p[dst] = src;
-					latency[dst] = latency[src] + 1 / (capacity - load + DIVZERO);
+					latency[dst] = latency[src] + 1 / capa_load;
 				}
 			}
 		}
@@ -200,8 +212,12 @@ public:
 					int tail = appL[i]->pathRecord[j];
 					int head = appL[i]->pathRecord[j + 1];
 					//delay=flow/(capacity-load)越小越好
-					delaySum += req.flow / 
-						(gv->adjM[tail][head]->capacity - gv->adj[tail][head] - req.flow + DIVZERO);
+					double capa_load = 0;
+					if (gv->adjM[tail][head]->capacity - gv->adj[tail][head] - req.flow == 0)
+						capa_load = DIVZERO;
+					else
+						capa_load = gv->adjM[tail][head]->capacity - gv->adj[tail][head] - req.flow;
+					delaySum += req.flow / capa_load;
 				}
 				judge[i] = delaySum;
 			}
@@ -215,9 +231,18 @@ public:
 					int tail = appL[i]->pathRecord[j];
 					int head = appL[i]->pathRecord[j + 1];
 					//effect=myLoad/(capacity-load）越小越好
-					effect += adjMyFlow[tail][head]*
-						(1 / (gv->adjM[tail][head]->capacity - gv->adj[tail][head] - req.flow + DIVZERO) -
-						1 / (gv->adjM[tail][head]->capacity - gv->adj[tail][head] + DIVZERO));
+					double capa_load = 0;
+					if (gv->adjM[tail][head]->capacity - gv->adj[tail][head] == 0)
+						capa_load = DIVZERO;
+					else
+						capa_load = gv->adjM[tail][head]->capacity - gv->adj[tail][head];
+
+					if (gv->adjM[tail][head]->capacity - gv->adj[tail][head] - req.flow != 0)
+						effect += adjMyFlow[tail][head]*
+							(1 / (gv->adjM[tail][head]->capacity - gv->adj[tail][head] - req.flow) -
+							1 / capa_load);
+					else
+						effect += adjMyFlow[tail][head] *(1 / DIVZERO - 1 / capa_load);
 				}
 				judge[i] = effect;
 			}
