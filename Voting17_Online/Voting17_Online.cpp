@@ -4,9 +4,9 @@
 const int APPNUM = 10;//app num
 const int NETNUM = 1;//net num 这里只有TE为目标的网络模块
 const int MAXREQ = 100;//req num
-const int MAXFLOW = 30;//max flow size
-const int MINFLOW = 20;//min flow size
-const int TESTNUM = 10000;//test num
+const int MAXFLOW = 20;//max flow size
+const int MINFLOW = 10;//min flow size
+const int TESTNUM = 5000;//test num
 const int BIGGER = 10;//BIGGER GRAPH CAPACITY
 
 /*
@@ -57,7 +57,7 @@ int main()
 		haL_avg.resize(MAXREQ);
 		
 		for (int i = 0; i < TESTNUM; i++){
-			
+			//cout << "TEST " << i << endl;
 			app_net_voting(graph_address, req_address, result_address, teL[i], haL[i]);
 			for (int j = 0; j < MAXREQ; j++){
 				teL_avg[j] += teL[i][j];
