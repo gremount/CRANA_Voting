@@ -93,8 +93,8 @@ void app_voting(string graph_address, string req_address, string path_address)
 	ifstream reqFile(req_address);
 	int reqNum=0;
 	reqFile>>reqNum;
-	APPNUM=reqNum;
-	Maxreq=reqNum;
+	APPNUM=reqNum+9;//中立者10名，MLU每隔10%，一个中立者，不需要0%的中立者
+	REQNUM=reqNum;
 
 	cout<<reqNum<<endl;
 
@@ -105,10 +105,10 @@ void app_voting(string graph_address, string req_address, string path_address)
 	//投票系统初始化
 	double table[M2C+1][N2C+1] = {0};//投票用的输入
 	int ranking[N2C+1]={0};//记录一种排序的投票人数
-	for(int j=0;j<reqNum;j++)
+	for(int j=0;j<APPNUM;j++)
 		ranking[j]=1;//每种投票结果有1个voter,如果为2就说明该方案有得到两个voter的票
-	for(int j=0;j<reqNum;j++)
-		for(int k=0;k<reqNum;k++)
+	for(int j=0;j<REQNUM;j++)
+		for(int k=0;k<APPNUM;k++)
 			table[j][k]=0;
 
 	//启动APP，并初始化
@@ -122,7 +122,7 @@ void app_voting(string graph_address, string req_address, string path_address)
 	vector<Req*> reqL;//流需求
 	reqL.clear();
 	gv.reqL.clear();
-	for(int j=0;j<reqNum;j++)
+	for(int j=0;j<REQNUM;j++)
 	{
 		int app_id=0,a=0,b=0;
 		double c=0;
@@ -154,11 +154,11 @@ void app_voting(string graph_address, string req_address, string path_address)
 	}
 
 	//评价方案
-	for(int j=0;j<APPNUM;j++)
+	for(int j=0;j<REQNUM;j++)
 		appL[j]->evaluate(gv,appL);
 
 	//投票算法
-	for(int j=0;j<APPNUM;j++)
+	for(int j=0;j<REQNUM;j++)
 		for(int k=0;k<APPNUM;k++)
 		{
 			if(appL[j]->judge[k]==0) table[j][k]=10000;//如果是0，说明流没有摆在网络中
@@ -176,7 +176,7 @@ void app_voting(string graph_address, string req_address, string path_address)
 	cout<<"crana winner = "<<winner<<endl;
 	
 	ofstream pathFile(path_address);
-	for(int i=0;i<Maxreq;i++)
+	for(int i=0;i<REQNUM;i++)
 	{
 		pathFile<<i<<" ";
 		vector<int> realPath;
@@ -199,18 +199,20 @@ void app_voting(string graph_address, string req_address, string path_address)
 
 	//计算投票winner满意度
 	double happiness=0;//一轮所有流的满意度和，越高越好,0<=满意度<=1
-	for(int j=0;j<APPNUM;j++)
+	for(int j=0;j<REQNUM;j++)
 		happiness += gv.cost_best[j]/table[j][winner];//最好抉择评分/当前抉择评分 
 
 	//计算投票winner的应用满意度方差
+	/*
 	double s2_voting=0;
-	double happiness_avg=happiness/APPNUM;
-	for(int j=0;j<APPNUM;j++)
+	double happiness_avg=happiness/REQNUM;
+	for(int j=0;j<REQNUM;j++)
 	{
 		if(gv.cost_best[j]==0) continue;
 		s2_voting+=(gv.cost_best[j]/table[j][winner]-happiness_avg) * (gv.cost_best[j]/table[j][winner]-happiness_avg);
 	}
-	s2_voting=s2_voting/APPNUM;
+	s2_voting=s2_voting/REQNUM;
+	*/
 
 	//统计网络latency
 	double latencyVoting=0;

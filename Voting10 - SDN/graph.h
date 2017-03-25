@@ -192,12 +192,12 @@ public:
 			for(int d=0;d<K;d++)
 				load+=x[d][i]*reqL[d]->flow;
 			double capacity=incL[i]->capacity;
-		model.add(cost[i]>=load/(capacity));   // [0,1/3]
-		model.add(cost[i]>=3.0*load/(capacity)-(2.0/3.0));  //[1/3,2/3]
-		model.add(cost[i]>=10.0*load/(capacity)-(16.0/3.0)); // [2/3,9/10]
-		model.add(cost[i]>=70.0*load/(capacity)-(178.0/3.0));  //[9/10,1]s
-		for(int d=0;d<K;d++)
-			goal += cost[i]*x[d][i]*reqL[d]->flow;	
+			model.add(cost[i]>=load/(capacity));   // [0,1/3]
+			model.add(cost[i]>=3.0*load/(capacity)-(2.0/3.0));  //[1/3,2/3]
+			model.add(cost[i]>=10.0*load/(capacity)-(16.0/3.0)); // [2/3,9/10]
+			model.add(cost[i]>=70.0*load/(capacity)-(178.0/3.0));  //[9/10,1]s
+			for(int d=0;d<K;d++)
+				goal += cost[i]*x[d][i]*reqL[d]->flow;	
 		}
 		model.add(IloMinimize(environment, goal));
 
@@ -219,71 +219,69 @@ public:
 					model.add(constraint==0);
 			}
 
-		//约束2，容量约束
-		for(int i=0;i<m;i++)
-		{
-			IloExpr constraint(environment);
-			for(int d=0;d<K;d++)
-				constraint += reqL[d]->flow * x[d][i];
-			model.add(constraint <= incL[i]->capacity);
-		}
+			//约束2，容量约束
+			for(int i=0;i<m;i++)
+			{
+				IloExpr constraint(environment);
+				for(int d=0;d<K;d++)
+					constraint += reqL[d]->flow * x[d][i];
+				model.add(constraint <= incL[i]->capacity);
+			}
 
-		//计算模型
-		solver.setOut(environment.getNullStream());
-		double obj=Inf;
-		if(solver.solve())
-		{
-			obj=solver.getObjValue();
+			//计算模型
+			solver.setOut(environment.getNullStream());
+			double obj=Inf;
+			if(solver.solve())
+			{
+				obj=solver.getObjValue();
 
-			//展示流量所走的路径，并且修改各条link的capacity
+				//展示流量所走的路径，并且修改各条link的capacity
 		
-			//先部署，方便计算延时
-			for(int d=0;d<K;d++)
-			{
-				for(int i=0;i<m;i++)
+				//先部署，方便计算延时
+				for(int d=0;d<K;d++)
 				{
-					if(solver.getValue(x[d][i])>0.5)
+					for(int i=0;i<m;i++)
 					{
-						//cout<<"from node "<<incL[i]->src<<" to node "<<incL[i]->dst<< " has flow "<<solver.getValue(x[d][i])*reqL[d]->flow<<endl;
-						adj[incL[i]->src][incL[i]->dst] += reqL[d]->flow;
+						if(solver.getValue(x[d][i])>0.5)
+						{
+							//cout<<"from node "<<incL[i]->src<<" to node "<<incL[i]->dst<< " has flow "<<solver.getValue(x[d][i])*reqL[d]->flow<<endl;
+							adj[incL[i]->src][incL[i]->dst] += reqL[d]->flow;
+						}
+					}
+				}
+
+				//再计算延时
+				double latency=0;
+				cost_best[app_id]=0;
+				for(int d=0;d<K;d++)
+				{
+					latency=0;
+					for(int i=0;i<m;i++)
+					{
+						if(solver.getValue(x[d][i])>0.5)
+							latency+=reqL[d]->flow*linearCal(adj[incL[i]->src][incL[i]->dst],incL[i]->capacity);
+					}
+					cost_best[app_id] += latency;
+				}
+
+				//再撤销，方便下一个应用计算最优方案
+				for(int d=0;d<K;d++)
+				{
+					for(int i=0;i<m;i++)
+					{
+						if(solver.getValue(x[d][i])>0.5)
+						{
+							adj[incL[i]->src][incL[i]->dst] -= reqL[d]->flow;
+						}
 					}
 				}
 			}
+			else
+				cout<<"Error: Unfeasible solve"<<endl;
 
-			//再计算延时
-			double latency=0;
-			cost_best[app_id]=0;
-			for(int d=0;d<K;d++)
-			{
-				latency=0;
-				for(int i=0;i<m;i++)
-				{
-					if(solver.getValue(x[d][i])>0.5)
-						latency+=reqL[d]->flow*linearCal(adj[incL[i]->src][incL[i]->dst],incL[i]->capacity);
-				}
-				cost_best[app_id] += latency;
-			}
-
-			//再撤销，方便下一个应用计算最优方案
-			for(int d=0;d<K;d++)
-			{
-				for(int i=0;i<m;i++)
-				{
-					if(solver.getValue(x[d][i])>0.5)
-					{
-						adj[incL[i]->src][incL[i]->dst] -= reqL[d]->flow;
-					}
-				}
-			}
+			environment.end();
+			return obj;
 		}
-
-
-		else
-			cout<<"Error: Unfeasible solve"<<endl;
-
-		environment.end();
-		return obj;
-	}
 
 };
 
