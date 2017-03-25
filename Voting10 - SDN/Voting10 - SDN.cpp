@@ -12,6 +12,9 @@ int Maxreq=0;//req num
 int main()
 {
 	srand((unsigned)time(NULL));
+	string graph_address="D:\\Eclipse Project 32_2\\\\floodlight\\inputFile\\topo.txt";
+	string req_address="D:\\Eclipse Project 32_2\\\\floodlight\\inputFile\\req.txt";
+	string path_address="D:\\Eclipse Project 32_2\\\\floodlight\\inputFile\\path.txt";
 
 	app_voting(graph_address, req_address, path_address);
 	
