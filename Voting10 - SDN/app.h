@@ -11,7 +11,7 @@ class APP
 public:
 	int app_id;//APP的编号
 	vector<vector<double> > adj;//该APP维护的邻接矩阵，记录负载
-	vector<Path*> path_record;//APP提出的具体方案：路径记录
+	vector<vector<Edge*> > path_record;//APP提出的具体方案：路径记录
 	vector<double> judge;//APP对所有方案的评价
 
 	//初始化，只初始化一次，之后其他需求来的时候，
@@ -26,7 +26,7 @@ public:
 		for(int i=0;i<N;i++)
 			adj[i].resize(N);
 		path_record.resize(REQNUM);
-		judge.resize(REQNUM);
+		judge.resize(APPNUM);
 	}
 
 	//流的维护，针对新的流需求
@@ -35,7 +35,7 @@ public:
 		path_record.clear();
 		judge.clear();
 		path_record.resize(REQNUM);
-		judge.resize(REQNUM);
+		judge.resize(APPNUM);
 	}
 
 	//流提出方案
@@ -65,7 +65,6 @@ public:
 		{
 			for(int i=0;i<g.reqL.size();i++)
 				reqPL_other.push_back(g.reqL[i]);
-			int has_route=0;
 			neutral_lp(g,reqPL_other);
 			begin_implement(g);
 		}
@@ -76,12 +75,12 @@ public:
 	{
 		for(int i=0;i<REQNUM;i++)
 		{
-			int edge_num=path_record[i]->pathL.size();
+			int edge_num=path_record[i].size();
 			for(int j=0;j<edge_num;j++)
 			{
 				int src,dst;
-				src=path_record[i]->pathL[j]->src;
-				dst=path_record[i]->pathL[j]->dst;
+				src=path_record[i][j]->src;
+				dst=path_record[i][j]->dst;
 				adj[src][dst] += g.reqL[i]->flow;
 			}
 		}
@@ -102,13 +101,13 @@ public:
 					//judge[k]++;
 					continue;
 				}//该流不属于自己，就不管该流的利益
-				edge_num=appL[k]->path_record[i]->pathL.size();
+				edge_num=appL[k]->path_record[i].size();
 				temp=0;
 				for(int j=0;j<edge_num;j++)
 				{
-					int src=appL[k]->path_record[i]->pathL[j]->src;
-					int dst=appL[k]->path_record[i]->pathL[j]->dst;
-					int capacity=appL[k]->path_record[i]->pathL[j]->capacity;
+					int src=appL[k]->path_record[i][j]->src;
+					int dst=appL[k]->path_record[i][j]->dst;
+					int capacity=appL[k]->path_record[i][j]->capacity;
 					temp+=g.reqL[i]->flow*linearCal(appL[k]->adj[src][dst],capacity);
 				}
 				judge[k]+=temp;
@@ -231,13 +230,13 @@ public:
 			{
 				//cout<<"flow "<<reqL[d]->id<<endl;
 				distance=0;
-				Path* path=new Path();
+				vector<Edge*> path;
 				for(int i=0;i<g.m;i++)
 				{
 					if(solver.getValue(x[d][i])>0.5)
 					{
 						//cout<<"from node "<<g->incL[i]->src<<" to node "<<g->incL[i]->dst<< " has flow "<<reqL[d]->flow<<" "<<solver.getValue(x[d][i])<<endl;
-						path->pathL.push_back(g.incL[i]);
+						path.push_back(g.incL[i]);
 						distance += 1;
 					}
 				}
@@ -342,13 +341,13 @@ public:
 			{
 				//cout<<"flow "<<reqL[d]->id<<endl;
 				distance=0;
-				Path* path=new Path();
+				vector<Edge*> path;
 				for(int i=0;i<g.m;i++)
 				{
 					if(solver.getValue(x[d][i])>0.5)
 					{
 						//cout<<"from node "<<g->incL[i]->src<<" to node "<<g->incL[i]->dst<< " has flow "<<reqL[d]->flow<<" "<<solver.getValue(x[d][i])<<endl;
-						path->pathL.push_back(g.incL[i]);
+						path.push_back(g.incL[i]);
 						distance += 1;
 					}
 				}

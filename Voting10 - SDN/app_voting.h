@@ -184,11 +184,11 @@ void app_voting(string graph_address, string req_address, string path_address)
 		Edge* empty_edge=new Edge(-1,-1,-1,-1,-1,-1);
 		while(src!=reqL[i]->dst)
 		{
-			for(int j=0;j<appL[winner]->path_record[i]->pathL.size();j++)
-				if(appL[winner]->path_record[i]->pathL[j]->src==src){
-					realPath.push_back(appL[winner]->path_record[i]->pathL[j]->id);
-					src=appL[winner]->path_record[i]->pathL[j]->dst;
-					appL[winner]->path_record[i]->pathL[j]=empty_edge;
+			for(int j=0;j<appL[winner]->path_record[i].size();j++)
+				if(appL[winner]->path_record[i][j]->src==src){
+					realPath.push_back(appL[winner]->path_record[i][j]->id);
+					src=appL[winner]->path_record[i][j]->dst;
+					appL[winner]->path_record[i][j]=empty_edge;
 					break;
 				}
 		}
