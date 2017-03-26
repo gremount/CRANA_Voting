@@ -6,6 +6,6 @@ extern const int Inf;
 extern int APPNUM;
 extern int N;
 extern int M;
-extern int Maxreq;
+extern int REQNUM;
 
 #endif

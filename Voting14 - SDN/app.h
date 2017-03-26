@@ -25,8 +25,8 @@ public:
 		adj.resize(N);
 		for(int i=0;i<N;i++)
 			adj[i].resize(N);
-		path_record.resize(Maxreq);
-		judge.resize(Maxreq);
+		path_record.resize(REQNUM);
+		judge.resize(REQNUM);
 	}
 
 	//流的维护，针对新的流需求
@@ -34,8 +34,8 @@ public:
 	{
 		path_record.clear();
 		judge.clear();
-		path_record.resize(Maxreq);
-		judge.resize(Maxreq);
+		path_record.resize(REQNUM);
+		judge.resize(REQNUM);
 	}
 
 	//流提出方案
@@ -66,7 +66,7 @@ public:
 	//流部署 自己提出的方案
 	void begin_implement(VGraph &g)
 	{
-		for(int i=0;i<Maxreq;i++)
+		for(int i=0;i<REQNUM;i++)
 		{
 			int edge_num=path_record[i]->pathL.size();
 			for(int j=0;j<edge_num;j++)
@@ -88,7 +88,7 @@ public:
 		for(int k=0;k<APPNUM;k++)
 		{
 			judge[k]=0;
-			for(int i=0;i<Maxreq;i++)
+			for(int i=0;i<REQNUM;i++)
 			{
 				if(g.reqL[i]->app_id!=app_id){
 					//judge[k]++;
