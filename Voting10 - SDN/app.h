@@ -92,27 +92,46 @@ public:
 		//评价所有APP提出的方案
 		int edge_num=0;//temp记录路径权值和
 		double temp;
-		for(int k=0;k<APPNUM;k++)
-		{
-			judge[k]=0;
-			for(int i=0;i<REQNUM;i++)
+		if(app_id==0){//网络评价
+			for(int k=0;k<APPNUM;k++)
 			{
-				if(g.reqL[i]->app_id!=app_id){
-					//judge[k]++;
-					continue;
-				}//该流不属于自己，就不管该流的利益
-				edge_num=appL[k]->path_record[i].size();
-				temp=0;
-				for(int j=0;j<edge_num;j++)
+				judge[k]=0;
+				double MLU=0;
+				for(int i=0;i<g.incL.size();i++)
 				{
-					int src=appL[k]->path_record[i][j]->src;
-					int dst=appL[k]->path_record[i][j]->dst;
-					int capacity=appL[k]->path_record[i][j]->capacity;
-					temp+=g.reqL[i]->flow*linearCal(appL[k]->adj[src][dst],capacity);
+					int src=g.incL[i]->src;
+					int dst=g.incL[i]->dst;
+					double capacity=g.incL[i]->capacity;
+					if(MLU<appL[k]->adj[src][dst]/capacity)
+						MLU=appL[k]->adj[src][dst]/capacity;
 				}
-				judge[k]+=temp;
+				judge[k]=MLU;
 			}
 		}
+		else{
+			for(int k=0;k<APPNUM;k++)
+			{
+				judge[k]=0;
+				for(int i=0;i<REQNUM;i++)
+				{
+					if(g.reqL[i]->app_id!=app_id){
+						//judge[k]++;
+						continue;
+					}//该流不属于自己，就不管该流的利益
+					edge_num=appL[k]->path_record[i].size();
+					temp=0;
+					for(int j=0;j<edge_num;j++)
+					{
+						int src=appL[k]->path_record[i][j]->src;
+						int dst=appL[k]->path_record[i][j]->dst;
+						int capacity=appL[k]->path_record[i][j]->capacity;
+						temp+=g.reqL[i]->flow*linearCal(appL[k]->adj[src][dst],capacity);
+					}
+					judge[k]+=temp;
+				}
+			}
+		}
+		
 	}
 
 	//应用部署 获胜的方案

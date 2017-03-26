@@ -87,7 +87,7 @@ int selectMinS2Proposal(VGraph gv, double table[][M2C+1], int winner)
 	//****************************   END OF 最高满意度方案和最小满意度方差方案 评价  
 }
 
-void app_voting(string graph_address, string req_address, string path_address)
+void app_net_voting(string graph_address, string req_address, string path_address)
 {
 	//读入流量矩阵: (id app_id src dst flow)
 	ifstream reqFile(req_address);
@@ -107,6 +107,7 @@ void app_voting(string graph_address, string req_address, string path_address)
 	int ranking[N2C+1]={0};//记录一种排序的投票人数
 	for(int j=0;j<APPNUM;j++)
 		ranking[j]=1;//每种投票结果有1个voter,如果为2就说明该方案有得到两个voter的票
+	ranking[0]=REQNUM/2;//网络投票者的票数为流需求数量的一半
 	for(int j=0;j<REQNUM;j++)
 		for(int k=0;k<APPNUM;k++)
 			table[j][k]=0;
@@ -161,7 +162,7 @@ void app_voting(string graph_address, string req_address, string path_address)
 	for(int j=0;j<REQNUM;j++)
 		for(int k=0;k<APPNUM;k++)
 		{
-			if(appL[j]->judge[k]==0) table[j][k]=10000;//如果是0，说明流没有摆在网络中
+			if(appL[j]->judge[k]==0) table[j][k]=1000000000;//如果是0，说明流没有摆在网络中
 			else table[j][k]=appL[j]->judge[k];
 		}
 	

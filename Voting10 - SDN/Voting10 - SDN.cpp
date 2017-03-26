@@ -16,7 +16,7 @@ int main()
 	string req_address="D:\\Eclipse Project 32_2\\\\floodlight\\inputFile\\req.txt";
 	string path_address="D:\\Eclipse Project 32_2\\\\floodlight\\inputFile\\path.txt";
 
-	app_voting(graph_address, req_address, path_address);
+	app_net_voting(graph_address, req_address, path_address);
 	
 	return 0;
 }
