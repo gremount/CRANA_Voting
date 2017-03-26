@@ -1,4 +1,4 @@
-#include"app_voting.h"
+#include"app_net_voting.h"
 
 const int Inf=9999;
 const int Rinf=0.001;
