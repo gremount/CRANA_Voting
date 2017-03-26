@@ -12,9 +12,9 @@ int REQNUM=0;//req num
 int main()
 {
 	srand((unsigned)time(NULL));
-	string graph_address="D:\\Eclipse Project 32_2\\\\floodlight\\inputFile\\topo.txt";
-	string req_address="D:\\Eclipse Project 32_2\\\\floodlight\\inputFile\\req.txt";
-	string path_address="D:\\Eclipse Project 32_2\\\\floodlight\\inputFile\\path.txt";
+	string graph_address="C:\\CRANA\\fl\\floodlight\\src\\main\\java\\net\\floodlightcontroller\\crana\\files\\status\\sflowStatistic.tsv";
+	string req_address="C:\\CRANA\\fl\\floodlight\\src\\main\\java\\net\\floodlightcontroller\\crana\\files\\info\\Demands.tsv";
+	string path_address="C:\\CRANA\\fl\\floodlight\\src\\main\\java\\net\\floodlightcontroller\\crana\\files\\cache\\path.tsv";
 
 	app_net_voting(graph_address, req_address, path_address);
 	

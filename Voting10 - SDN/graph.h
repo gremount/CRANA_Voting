@@ -10,17 +10,19 @@ class Edge
 public:
 	int id;
 	int src,dst;
+	int srcPort,dstPort;
 	double capacity;//链路带宽
 	double use;//sflow测得的当前带宽消耗
-	double latency;//floodlight测得的latency
+	//double latency;//floodlight测得的latency
 	Edge(){;}
-	Edge(int a, int b, int c, double d, double e, double f){
+	Edge(int a, int b, int c, int d, int e, double f, double g){
 		id=a;
 		src=b;
-		dst=c;
-		capacity=d;
-		use=e;
-		latency=f;
+		srcPort=c;
+		dst=d;
+		dstPort=e;
+		capacity=f;
+		use=g;
 	}
 };
 
@@ -58,9 +60,32 @@ public:
 	VGraph(string address)
 	{
 		ifstream infile(address);
-		infile>>n>>m;
-		N=n;//给全局变量赋值
-		M=m;//给全局变量赋值
+		//read demands
+		string str;
+		int edges=0;
+		int nodes=0;
+		getline(infile,str);
+		vector<double> linkinfo;
+		linkinfo.resize(7);
+		while(infile!=NULL){
+			for(int i=0;i<7;i++)
+				infile>>linkinfo[i];
+			Edge* ed=new Edge(edges,linkinfo[1],linkinfo[2],linkinfo[3],
+				linkinfo[4],linkinfo[5],linkinfo[6]);
+			incL.push_back(ed);
+
+			int src=linkinfo[1];
+			int dst=linkinfo[3];
+			if(src>nodes)nodes=src;
+			if(dst>nodes)nodes=dst;
+			edges++;
+		}
+		edges--;
+		nodes++;//最大点编号+1
+		N=nodes;//给全局变量赋值
+		M=edges;//给全局变量赋值
+		n=nodes;
+		m=edges;
 
 		d.resize(n);
         p.resize(n);
@@ -73,19 +98,14 @@ public:
 		cost_best.resize(APPNUM);
 		//cost_LP.resize(APPNUM);
 
-		int a,b,c;
-		double d,e,f;
 		for(int i=0;i<m;i++)
 		{
-			infile>>a>>b>>c>>d>>e>>f;
-			//cout<<a<<" "<<b<<" "<<c<<endl;
-			Edge* ed=new Edge(a,b,c,d,e,f);
-			
-			incL.push_back(ed);
-			adjL[b].push_back(ed);
-			adjRL[c].push_back(ed);
+			int src=incL[i]->src;
+			int dst=incL[i]->dst;
+			adjL[src].push_back(incL[i]);
+			adjRL[dst].push_back(incL[i]);
 		}
-		//cout<<"graph init completed"<<endl;
+		cout<<"graph init completed"<<endl;
 	}
 
 	//将一个case的所有req都记录在图里，方便所有的Flow调用

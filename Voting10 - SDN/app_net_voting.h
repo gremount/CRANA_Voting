@@ -89,17 +89,41 @@ int selectMinS2Proposal(VGraph gv, double table[][M2C+1], int winner)
 
 void app_net_voting(string graph_address, string req_address, string path_address)
 {
+	//初始化流需求
+	vector<Req*> reqL;//流需求
+	reqL.clear();
+
 	//读入流量矩阵: (id app_id src dst flow)
-	ifstream reqFile(req_address);
-	int reqNum=0;
-	reqFile>>reqNum;
-	APPNUM=reqNum+9;//中立者10名，MLU每隔10%，一个中立者，不需要0%的中立者
+	ifstream infile(req_address);
+	string str;
+	int cnt=0;
+	getline(infile,str);
+	vector<double> e8;
+	e8.resize(8);
+	while(infile!=NULL){
+		for(int i=0;i<8;i++)
+			infile>>e8[i];
+		cnt++;
+		int app_id=e8[0];
+		int src=e8[3];
+		int dst=e8[5];
+		double flow=e8[7];
+		Req* r = new Req(app_id,app_id,src,dst,flow);
+		reqL.push_back(r);
+	}
+	cnt--;
+
+	int reqNum=cnt;
+	APPNUM=reqNum+9;
 	REQNUM=reqNum;
 
 	cout<<reqNum<<endl;
 
 	//读入图
 	VGraph gv(graph_address);
+	gv.reqL.clear();
+	for(int i=0;i<REQNUM;i++)
+		gv.reqL.push_back(reqL[i]);
 	
 	//************************  初始化  ***********************
 	//投票系统初始化
@@ -118,20 +142,6 @@ void app_net_voting(string graph_address, string req_address, string path_addres
 		appL.push_back(new APP(k));
 	for(int j=0;j<APPNUM;j++)
 		appL[j]->init();
-
-	//初始化流需求
-	vector<Req*> reqL;//流需求
-	reqL.clear();
-	gv.reqL.clear();
-	for(int j=0;j<REQNUM;j++)
-	{
-		int app_id=0,a=0,b=0;
-		double c=0;
-		reqFile>>app_id>>a>>b>>c;
-		Req* r = new Req(j,app_id,a,b,c);
-		reqL.push_back(r);
-		gv.reqL.push_back(r);
-	}
 	
 	//************************  投票机制开始  **********************
 	//算最完美方案，所有的自己的流都第一个走得到的方案
@@ -177,25 +187,31 @@ void app_net_voting(string graph_address, string req_address, string path_addres
 	cout<<"crana winner = "<<winner<<endl;
 	
 	ofstream pathFile(path_address);
+	pathFile<<"id	path"<<endl;
 	for(int i=0;i<REQNUM;i++)
 	{
 		pathFile<<i<<" ";
 		vector<int> realPath;
 		int src=reqL[i]->src;
-		Edge* empty_edge=new Edge(-1,-1,-1,-1,-1,-1);
+		Edge* empty_edge=new Edge(-1,-1,-1,-1,-1,-1,-1);
+		pathFile<<reqL[i]->src<<"_1,";
 		while(src!=reqL[i]->dst)
 		{
 			for(int j=0;j<appL[winner]->path_record[i].size();j++)
 				if(appL[winner]->path_record[i][j]->src==src){
-					realPath.push_back(appL[winner]->path_record[i][j]->id);
+					
+					int src2=appL[winner]->path_record[i][j]->src;
+					int srcPort=appL[winner]->path_record[i][j]->srcPort;
+					int dst=appL[winner]->path_record[i][j]->dst;
+					int dstPort=appL[winner]->path_record[i][j]->dstPort;
+					pathFile<<src2<<"_"<<srcPort<<","<<dst<<"_"<<dstPort<<",";
+
 					src=appL[winner]->path_record[i][j]->dst;
 					appL[winner]->path_record[i][j]=empty_edge;
 					break;
 				}
 		}
-		for(int j=0;j<realPath.size();j++)
-			pathFile<<realPath[j]<<" ";
-		pathFile<<endl;
+		pathFile<<reqL[i]->dst<<"_1"<<endl;
 	}
 
 	//计算投票winner满意度
